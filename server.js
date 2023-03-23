@@ -1,12 +1,12 @@
 const express = require('express');
 const serveStatic = require("serve-static")
-var history = require('а')
+var history = require('connect-history-api-fallback')
 const path = require('path');
 
 app = express();
 
 app.use(history({
-    verbose: true
+	verbose: true
 }))
 
 app.use(serveStatic(path.join(__dirname, 'dist')));
