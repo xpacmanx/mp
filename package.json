@@ -5,20 +5,21 @@
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview --port 4173",
-		"postinstall": "vite build",
-		"start": "node server.js"
+    "postinstall": "vite build",
+    "start": "node server.js"
   },
   "dependencies": {
+    "connect-history-api-fallback": "^2.0.0",
+    "express": "latest",
+    "serve-static": "latest",
     "vue": "^3.2.37",
     "vue-router": "^4.0.3",
-    "vuex": "^4.0.0",
-		"express": "latest",
-		"serve-static": "latest"
+    "vuex": "^4.0.0"
   },
   "devDependencies": {
     "@vitejs/plugin-vue": "^3.0.1",
-    "vite": "^3.0.1",
     "sass": "^1.32.7",
-    "sass-loader": "^12.0.0"
+    "sass-loader": "^12.0.0",
+    "vite": "^3.0.1"
   }
 }
