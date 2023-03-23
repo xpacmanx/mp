@@ -83,6 +83,6 @@ nav {
 }
 
 .content-with-menu {
-  padding-left: 90px;
+  padding-left: 100px;
 }
 </style>
