@@ -3,13 +3,17 @@
   "version": "0.0.0",
   "scripts": {
     "dev": "vite",
-    "build": "vite build",
-    "preview": "vite preview --port 4173"
+    "build": "vite build --base=/dist",
+    "preview": "vite preview --port 4173",
+		"postinstall": "vite build --base=/dist",
+		"start": "node server.js"
   },
   "dependencies": {
     "vue": "^3.2.37",
     "vue-router": "^4.0.3",
-    "vuex": "^4.0.0"
+    "vuex": "^4.0.0",
+		"express": "latest",
+		"serve-static": "latest"
   },
   "devDependencies": {
     "@vitejs/plugin-vue": "^3.0.1",
