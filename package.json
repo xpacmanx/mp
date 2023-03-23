@@ -3,9 +3,9 @@
   "version": "0.0.0",
   "scripts": {
     "dev": "vite",
-    "build": "vite build --base=/dist",
+    "build": "vite build",
     "preview": "vite preview --port 4173",
-		"postinstall": "vite build --base=/dist",
+		"postinstall": "vite build",
 		"start": "node server.js"
   },
   "dependencies": {
