@@ -42,7 +42,12 @@ export default {
 	mounted(){
 		mpr({
 			url: '/get/warehouses',
-			
+		}).then(response => {
+			for (const item of response.data.result) {
+				item.add = 0;
+				this.warehouses.push(item);
+			}
+			this.loaded = true;
 		});
 		// axios.get('https://robot.teslalasers.com/webhook/test/get/warehouses').then(response => {
 		//   for (const item of response.data.result) {
