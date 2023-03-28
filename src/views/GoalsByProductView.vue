@@ -4,7 +4,7 @@
     <Header />
     <div class="content-with-menu">
       <div class="top-menu">
-        <h2>3. Goals by product</h2>
+        <h2>4. Goals by product</h2>
         <select>
           <option>Коледино</option>
           <option>Санкт-Петербург</option>
@@ -15,7 +15,7 @@
         </div>
       </div>
       <div class="content">
-        <HelloWorld msg="Welcome to Your Vue.js App"/>
+<!--         <HelloWorld msg="Welcome to Your Vue.js App"/> -->
       </div>
     </div>
   </div>
