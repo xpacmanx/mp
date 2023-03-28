@@ -1,6 +1,6 @@
 import axios from 'axios'
 
-console.log(import.meta.env.VITE_API_CLIENT, import.meta.env.API_SECRET)
+console.log(import.meta.env.VITE_API_CLIENT, import.meta.env.API_CLIENT, import.meta.env.API_SECRET)
 
 function createRequest(config) {
 	let { method, data, url, query, headers } = config;
