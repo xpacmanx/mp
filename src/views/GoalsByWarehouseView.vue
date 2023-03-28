@@ -27,6 +27,7 @@ import HelloWorld from '@/components/HelloWorld.vue'
 import Menu from '@/components/navigation/Menu.vue'
 import Header from '@/components/navigation/Header.vue'
 import mpr from './../tools/mpr'
+import axios from 'axios'
 
 export default {
   name: 'GoalsByWarehouseView',
@@ -41,14 +42,17 @@ export default {
 	},
 	mounted(){
 		mpr({
-			url: '/get/warehouses',
+			url: '/warehouses/all',
 		}).then(response => {
 			for (const item of response.data.result) {
 				item.add = 0;
 				this.warehouses.push(item);
 			}
 			this.loaded = true;
-		});
+		}).catch((error) => {
+	     console.log('error', error);
+	  });
+
 		// axios.get('https://robot.teslalasers.com/webhook/test/get/warehouses').then(response => {
 		//   for (const item of response.data.result) {
 		// 		item.add = 0;
