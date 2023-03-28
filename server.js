@@ -8,7 +8,9 @@ const path = require('path')
 app = express()
 
 app.use(basicAuth({
-    users: { 'admin': 'Nikola1856' }
+	users: { 'admin': 'Nikola1856' },
+	challenge: true,
+	realm: 'Imb4T3st4pp',
 }))
 
 app.use(history({
