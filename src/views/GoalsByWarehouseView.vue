@@ -38,6 +38,7 @@ export default {
 		return {
 			loaded: false,
 			warehouses: [],
+			goals: [],
 		}
 	},
 	mounted(){
