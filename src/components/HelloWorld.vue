@@ -55,30 +55,6 @@ defineProps({
 <style lang="scss">
 @import "./src/scss/_variables.scss";
   
-.table {
-  width: 100%;
-  border-collapse: collapse;
-
-  tr, th, td {
-    margin: 0;
-    padding: 5px;
-    border: rgba($dark-color, 0.1) solid 1px;
-    border-collapse: collapse;
-    background: rgba($dark-color, .02);
-  }
-
-  td.editable {
-    background: $super-light-color;
-  }
-  
-  th {
-    font-weight: bold;
-    text-align: center;
-    font-size: 0.8em;
-    padding: 9px 5px;
-  }
-}
-  
 h1 {
   font-weight: 500;
   font-size: 2.6rem;

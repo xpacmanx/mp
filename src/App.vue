@@ -70,6 +70,43 @@ a {
   color: $main-color;
 }
 
+.table {
+  width: 100%;
+  border-collapse: collapse;
+
+  tr, th, td {
+    margin: 0;
+    padding: 5px;
+    border: rgba($dark-color, 0.1) solid 1px;
+    border-collapse: collapse;
+    background: rgba($dark-color, .02);
+
+		input {
+			width: 100%;
+			text-align: center;
+			appearance: none;
+			border: #ccc solid 1px;
+		}
+
+		input::-webkit-outer-spin-button,
+		input::-webkit-inner-spin-button {
+		  -webkit-appearance: none;
+		  margin: 0;
+		}
+  }
+
+  td.editable {
+    background: $super-light-color;
+  }
+  
+  th {
+    font-weight: bold;
+    text-align: center;
+    font-size: 0.6em;
+    padding: 9px 5px;
+  }
+}
+
 nav {
 
   a {
