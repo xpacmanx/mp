@@ -19,8 +19,6 @@ function createRequest(config) {
 		data['client-id'] = import.meta.env.VITE_API_CLIENT
 		data['secret'] = import.meta.env.VITE_API_SECRET
 	}
-
-	console.log(params);
 	
 	return axios({
 		method: method,
