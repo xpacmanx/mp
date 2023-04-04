@@ -13,6 +13,7 @@
     "connect-history-api-fallback": "^2.0.0",
     "express": "latest",
     "express-basic-auth": "^1.2.1",
+    "moment": "^2.29.4",
     "serve-static": "latest",
     "vue": "^3.2.37",
     "vue-router": "^4.0.3",

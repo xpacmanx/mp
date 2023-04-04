@@ -31,11 +31,19 @@ const routes = [
 		}
 	},
 	{
+		path: '/goalsbywarehouse/:wid',
+		name: 'goalsbywarehousebyid',
+		component: GoalsByWarehouseView,
+		meta: {
+			title: '3. Get Warehouses by ID'
+		}
+	},
+	{
 		path: '/goalsbywarehouse',
 		name: 'goalsbywarehouse',
 		component: GoalsByWarehouseView,
 		meta: {
-			title: 'Home Dashboard 4'
+			title: '3. Get Warehouses by ID'
 		}
 	},
 	// {

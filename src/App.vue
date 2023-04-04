@@ -50,7 +50,9 @@ a {
 }
 
 .content {
+	width: 100%;
   padding: 20px;
+	overflow: scroll;
 }
 
 .btn {
@@ -72,6 +74,7 @@ a {
 
 .table {
   width: 100%;
+	overflow: scroll;
   border-collapse: collapse;
 
   tr, th, td {
@@ -86,6 +89,8 @@ a {
 			text-align: center;
 			appearance: none;
 			border: #ccc solid 1px;
+			font-size: 1em;
+			height: 100%;
 		}
 
 		input::-webkit-outer-spin-button,
