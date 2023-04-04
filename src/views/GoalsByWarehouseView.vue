@@ -156,6 +156,7 @@ export default {
 			const newGoal = {};
 			newGoal.warehouse_id = this.current_warehouse.id;
 			for (const name in goal) {
+				if (goal[name] == '') continue;
 				newGoal[name] = goal[name];
 			}
 			delete newGoal.name;
