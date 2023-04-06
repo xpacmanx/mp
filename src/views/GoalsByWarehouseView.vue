@@ -78,7 +78,6 @@
 </template>
 
 <script>
-import HelloWorld from '@/components/HelloWorld.vue'
 import Menu from '@/components/navigation/Menu.vue'
 import Header from '@/components/navigation/Header.vue'
 import mpr from './../tools/mpr'
@@ -87,7 +86,7 @@ import moment from 'moment'
 export default {
   name: 'GoalsByWarehouseView',
   components: {
-    HelloWorld, Menu, Header
+    Menu, Header
   },
 	data(){
 		return {
@@ -107,7 +106,7 @@ export default {
 		loadWarehouses(id){
 			this.warehouses = [];
 			this.warehouses_loaded = false;
-			console.log('ID', id, );
+			// console.log('ID', id, );
 			
 			mpr({
 				url: '/warehouses/all',
@@ -156,7 +155,7 @@ export default {
 			const newGoal = {};
 			newGoal.warehouse_id = this.current_warehouse.id;
 			for (const name in goal) {
-				if (goal[name] == '') continue;
+				if (goal[name] == '' || !(goal[name] > 0)) continue;
 				newGoal[name] = goal[name];
 			}
 			delete newGoal.name;
@@ -209,7 +208,7 @@ export default {
 				method: 'post',
 				data: {goals: this.goals_updates}
 			})
-			console.log(result);
+			// console.log(result);
 			return result;
 		},
 	},
