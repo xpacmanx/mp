@@ -2,6 +2,7 @@
   <div class="home">
     <Menu />
     <Header />
+		<form @submit.prevent="onSubmit">
     <div class="content-with-menu">
       <div class="top-menu">
         <h2>3. Goals by warehouse</h2>
@@ -16,64 +17,65 @@
 	        </select>
 				</span>
         <div>
-          <button v-if="loaded && !saving" class="btn" @click="save()">Сохранить</button>
+          <button type="submit" v-if="loaded && !saving" class="btn">Сохранить</button>
 					<span v-if="saving">Сохраняется..</span>
         </div>
       </div>
       <div class="content">
 				<p v-if="!loaded">Загрузка контента...</p>
-        <table v-if="loaded" class="table">
-					<thead>
-						<tr>
-							<th>#</th>
-							<th>Название товара</th>
-							<th>Код</th>
-							<th>Приоритет склада</th>
-							<th>Срок подготовки товара к отгрузке, дней (подгружается из МС)</th>
-							<th>Ожидаемый срок с момента создания подсортного задания до приемки на данном складе маркетплейсом, дней</th>
-							<th>Наличие на какое кол-во дней должно быть</th>
-							<th>Планируем ли дальше продавать на этом складе</th>
-							<th>Целевое кол-во продаж в месяц с {{current_warehouse.type.toUpperCase()}} {{current_warehouse.name}} До коэф.</th>
-							<th>Временный коэффициент для учета сезона (может быть не надо)</th>
-							<th>Целевое кол-во продаж в месяц с {{current_warehouse.type.toUpperCase()}} {{current_warehouse.name}} После коэф.</th>
-							<th>Переключатель: формулам ориентироваться на Целевое кол-во или на Факт. оборот</th>
-							<th>Кол-во продаж с {{current_warehouse.type.toUpperCase()}} {{current_warehouse.name}} за 30 дней Факт</th>
-							<th>Дата последней актуализации строки человеком</th>
-							<th>{{current_warehouse.type.toUpperCase()}} Текущая доходность</th>
-							<th>Мастер</th>
-							<th>{{current_warehouse.type.toUpperCase()}} Планируем ли и дальше продавать</th>
-							<th>{{current_warehouse.type.toUpperCase()}} Кол-во продаж за 7 дней Со всех складов</th>
-							<th>{{current_warehouse.type.toUpperCase()}} Кол-во продаж за 30 дней Со всех складов</th>
-							<th>{{current_warehouse.type.toUpperCase()}} Целевое кол-во продаж в месяц Со всех складов</th>
-						</tr>
-					</thead>
-					<tbody>
-						<tr v-for="(goal,i) in goals" :key="goal.product_id">
-							<td>{{goal.product_id}}</td>
-							<td>{{goal.name}}</td>
-							<td>{{goal.code}}</td>
-							<td><input type="number" v-model.number="goal.priority" @input="handleUpdateGoal(goal)" min="1" max="10" /></td>
-							<td>{{goal.days_to_ready}}</td>
-							<td>{{Number(goal.days_to_ready) + Number(current_warehouse.ship_days)}}</td>
-							<td><input type="number" v-model.number="goal.goal_days" @input="handleUpdateGoal(goal)" min="1" max="60" /></td>
-							<td><input type="number" v-model.number="goal.active_for_sell" @input="handleUpdateGoal(goal)" min="0" max="1" /></td>
-							<td><input type="number" v-model.number="goal.sales_goal" @input="handleUpdateGoal(goal)" /></td>
-							<td><input type="number" v-model.number="goal.season_koef" @input="handleUpdateGoal(goal)" /></td>
-							<td>{{goal.season_koef > 0 ? goal.sales_goal * goal.season_koef : goal.sales_goal}}</td>
-							<td><input type="number" v-model.number="goal.goal_sale_toggle" @input="handleUpdateGoal(goal)" /></td>
-							<td>{{goal.sales}}</td>
-							<td>{{niceDate(goal.last_updated)}}</td>
-							<td>{{goal[current_warehouse.type + '_profitability']}}</td>
-							<td>{{goal.master}}</td>
-							<td>{{goal[current_warehouse.type + '_active_for_sell']}}</td>
-							<td>{{goal[current_warehouse.type + '_sales7']}}</td>
-							<td>{{goal[current_warehouse.type + '_sales30']}}</td>
-							<td>{{goal[current_warehouse.type + '_sales_goal']}}</td>
-						</tr>
-					</tbody>
-				</table>
+	        <table v-if="loaded" class="table">
+						<thead>
+							<tr>
+								<th>#</th>
+								<th>Название товара</th>
+								<th>Код</th>
+								<th>Приоритет склада</th>
+								<th>Срок подготовки товара к отгрузке, дней (подгружается из МС)</th>
+								<th>Ожидаемый срок с момента создания подсортного задания до приемки на данном складе маркетплейсом, дней</th>
+								<th>Наличие на какое кол-во дней должно быть</th>
+								<th>Планируем ли дальше продавать на этом складе</th>
+								<th>Целевое кол-во продаж в месяц с {{current_warehouse.type.toUpperCase()}} {{current_warehouse.name}} До коэф.</th>
+								<th>Временный коэффициент для учета сезона (может быть не надо)</th>
+								<th>Целевое кол-во продаж в месяц с {{current_warehouse.type.toUpperCase()}} {{current_warehouse.name}} После коэф.</th>
+								<th>Переключатель: формулам ориентироваться на Целевое кол-во или на Факт. оборот</th>
+								<th>Кол-во продаж с {{current_warehouse.type.toUpperCase()}} {{current_warehouse.name}} за 30 дней Факт</th>
+								<th>Дата последней актуализации строки человеком</th>
+								<th>{{current_warehouse.type.toUpperCase()}} Текущая доходность</th>
+								<th>Мастер</th>
+								<th>{{current_warehouse.type.toUpperCase()}} Планируем ли и дальше продавать</th>
+								<th>{{current_warehouse.type.toUpperCase()}} Кол-во продаж за 7 дней Со всех складов</th>
+								<th>{{current_warehouse.type.toUpperCase()}} Кол-во продаж за 30 дней Со всех складов</th>
+								<th>{{current_warehouse.type.toUpperCase()}} Целевое кол-во продаж в месяц Со всех складов</th>
+							</tr>
+						</thead>
+						<tbody>
+							<tr v-for="(goal,i) in goals" :key="goal.product_id">
+								<td>{{goal.product_id}}</td>
+								<td>{{goal.name}}</td>
+								<td>{{goal.code}}</td>
+								<td><input type="number" v-model.number="goal.priority" @input="handleUpdateGoal(goal)" min="1" max="10" /></td>
+								<td>{{goal.days_to_ready}}</td>
+								<td>{{Number(goal.days_to_ready) + Number(current_warehouse.ship_days)}}</td>
+								<td><input type="number" v-model.number="goal.goal_days" @input="handleUpdateGoal(goal)" min="1" max="60" /></td>
+								<td><input type="number" v-model.number="goal.active_for_sell" @input="handleUpdateGoal(goal)" min="0" max="1" /></td>
+								<td><input type="number" v-model.number="goal.sales_goal" @input="handleUpdateGoal(goal)" min="0" /></td>
+								<td><input type="number" v-model.number="goal.season_koef" @input="handleUpdateGoal(goal)" min="0" /></td>
+								<td>{{goal.season_koef > 0 ? goal.sales_goal * goal.season_koef : goal.sales_goal}}</td>
+								<td><input type="number" v-model.number="goal.goal_sale_toggle" @input="handleUpdateGoal(goal)" min="0" max="1" /></td>
+								<td>{{goal.sales}}</td>
+								<td>{{niceDate(goal.last_updated)}}</td>
+								<td>{{goal[current_warehouse.type + '_profitability']}}</td>
+								<td>{{goal.master}}</td>
+								<td>{{goal[current_warehouse.type + '_active_for_sell']}}</td>
+								<td>{{goal[current_warehouse.type + '_sales7']}}</td>
+								<td>{{goal[current_warehouse.type + '_sales30']}}</td>
+								<td>{{goal[current_warehouse.type + '_sales_goal']}}</td>
+							</tr>
+						</tbody>
+					</table>
       </div>
     </div>
+		</form>
   </div>
 </template>
 
@@ -210,6 +212,9 @@ export default {
 			})
 			// console.log(result);
 			return result;
+		},
+		onSubmit(){
+			this.save();
 		},
 	},
 	mounted(){
