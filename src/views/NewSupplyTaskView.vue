@@ -85,20 +85,20 @@
 							<td></td>
 							<td></td>
 							<td></td>
-							<td>{{goal[current_warehouse.type + '_active_for_sell']}}</td>
-							<td>{{goal[current_warehouse.type + '_sales7']}}</td>
-							<td>{{goal[current_warehouse.type + '_sales30']}}</td>
-							<td>{{goal[current_warehouse.type + '_sales_goal']}}</td>
+							<td></td>
+							<td></td>
+							<td></td>
+							<td></td>
 							<td></td>
 							<td></td>
 							<td></td>
 							<td></td>
 							<td></td>
 							<td>{{goal.master}}</td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
+							<td>{{goal[current_warehouse.type + '_active_for_sell']}}</td>
+							<td>{{goal[current_warehouse.type + '_sales7']}}</td>
+							<td>{{goal[current_warehouse.type + '_sales30']}}</td>
+							<td>{{goal[current_warehouse.type + '_sales_goal']}}</td>
 							<td></td>
 							<td></td>
 							<td></td>
