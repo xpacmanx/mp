@@ -7,9 +7,15 @@
         <h2>2. Подсорт для выбранного склада</h2>
 				<span v-if="!warehouses_loaded">Загрузка складов...</span>
         <select v-if="warehouses_loaded" @change="wChange($event)">
-          <option v-for="warehouse in warehouses" :key="warehouse.id" :value="warehouse.id" :selected="warehouse.id == current_warehouse.id">{{warehouse.id}}. {{warehouse.name}}</option>
+          <option v-for="warehouse in warehouses" :key="warehouse.id" :value="warehouse.id" :selected="warehouse.id == current_warehouse.id">{{warehouse.id}}. [{{warehouse.type.toUpperCase()}}] {{warehouse.name}}</option>
         </select>
-				
+				<div>
+					<input type="text" /><br/>
+					<input type="text" />
+				</div>
+				<div>
+					Вес: 0кг
+				</div>
         <div>
           <button class="btn">Создать подсорт</button>
           <button class="btn btn-transparent">Предпросмотр</button>
@@ -17,12 +23,13 @@
       </div>
       <div class="content">
 				<p v-if="!loaded">Загрузка контента...</p>
-        <table v-if="loaded" class="table">
+        <table class="table" v-if="loaded">
 					<thead>
 						<tr>
 							<th>#</th>
 							<th>Название товара</th>
 							<th>Код</th>
+							<th>Подготовить</th>
 							<th>Программа предлагает Переместить в Подготовить</th>
 							<th>Основной склад + Упакованное (расчет)</th>
 							<th>Находится</th>
@@ -65,23 +72,42 @@
 							<td>{{goal.product_id}}</td>
 							<td>{{goal.name}}</td>
 							<td>{{goal.code}}</td>
-							<td><input type="number" v-model.number="goal.priority" @input="handleUpdateGoal(goal)" min="1" max="10" /></td>
-							<td>{{goal.days_to_ready}}</td>
-							<td>{{Number(goal.days_to_ready) + Number(current_warehouse.ship_days)}}</td>
-							<td><input type="number" v-model.number="goal.goal_days" @input="handleUpdateGoal(goal)" min="1" max="60" /></td>
-							<td><input type="number" v-model.number="goal.active_for_sell" @input="handleUpdateGoal(goal)" min="0" max="1" /></td>
-							<td><input type="number" v-model.number="goal.sales_goal" @input="handleUpdateGoal(goal)" /></td>
-							<td><input type="number" v-model.number="goal.season_koef" @input="handleUpdateGoal(goal)" /></td>
-							<td>{{goal.season_koef > 0 ? goal.sales_goal * goal.season_koef : goal.sales_goal}}</td>
-							<td><input type="number" v-model.number="goal.goal_sale_toggle" @input="handleUpdateGoal(goal)" /></td>
-							<td>{{goal.sales}}</td>
-							<td>{{niceDate(goal.last_updated)}}</td>
-							<td>{{goal[current_warehouse.type + '_profitability']}}</td>
-							<td>{{goal.master}}</td>
+							<td><input type="number" value="0" @input="handleUpdateGoal(goal)" min="1" max="999" /></td>
+							<td>0</td>
+							<td></td>
+							<td></td>
+							<td></td>
+							<td></td>
+							<td></td>
+							<td></td>
+							<td></td>
+							<td></td>
+							<td></td>
+							<td></td>
+							<td></td>
 							<td>{{goal[current_warehouse.type + '_active_for_sell']}}</td>
 							<td>{{goal[current_warehouse.type + '_sales7']}}</td>
 							<td>{{goal[current_warehouse.type + '_sales30']}}</td>
 							<td>{{goal[current_warehouse.type + '_sales_goal']}}</td>
+							<td></td>
+							<td></td>
+							<td></td>
+							<td></td>
+							<td></td>
+							<td>{{goal.master}}</td>
+							<td></td>
+							<td></td>
+							<td></td>
+							<td></td>
+							<td></td>
+							<td></td>
+							<td></td>
+							<td></td>
+							<td></td>
+							<td></td>
+							<td></td>
+							<td></td>
+							<td></td>
 						</tr>
 					</tbody>
 				</table>
@@ -98,6 +124,9 @@ import moment from 'moment'
 	
 export default {
   name: 'NewSupplyTaskView',
+	components: {
+    Menu, Header
+  },
 	data(){
 		return {
 			warehouses_loaded: false,
@@ -109,10 +138,96 @@ export default {
 			goals: [],
 		}
 	},
-  components: {
-    Menu, Header
-  },
+	methods: {
+			wChange(event){
+			this.choose(event.target.value);
+		},
+		loadWarehouses(id){
+			this.warehouses = [];
+			this.warehouses_loaded = false;
+			// console.log('ID', id, );
+			
+			mpr({
+				url: '/warehouses/all',
+			}).then(response => {
+				for (const item of response.data.result) {
+					item.add = 0;
+					this.warehouses.push(item);
+				}
+				this.warehouses_loaded = true;
+				if (id !== undefined) {
+					console.log('choose ID', id);
+					this.choose(Number(id));
+				} else {
+					this.choose(this.warehouses[0].id);	
+				}
+			}).catch((error) => {
+		     console.log('/warehouses/all error', error);
+		  });
+		},
+		choose(id) {
+			this.loaded = false;
+			// this.$route.params.wid = id;
+			
+			mpr({
+				url: '/supplytask/new',
+				params: {
+					id: id,
+				}
+			}).then(response => {
+				this.current_warehouse = this.warehouses.find(w => w.id == id);
+				this.goals_updated = [];
+				this.goals = [];
+				console.log(response.data.result);
+				for (const item of response.data.result) {
+					this.goals.push(item);
+				}
+				this.loaded = true;
+			}).catch((error) => {
+		     console.log('getGoalsByWarehouse Error', error);
+		  });
+		},
+		niceDate(date){
+			const momentDate = moment(date).format('DD.MM.YYYY')
+			return momentDate == 'Invalid date' ? '-' : momentDate;
+		},
+		handleUpdateGoal(goal) {
+			const newGoal = {};
+			newGoal.warehouse_id = this.current_warehouse.id;
+			for (const name in goal) {
+				if (goal[name] == '' || !(goal[name] > 0)) continue;
+				newGoal[name] = goal[name];
+			}
+			delete newGoal.name;
+			delete newGoal.code;
+			delete newGoal.last_updated;
+			delete newGoal.days_to_ready;
+			delete newGoal.wb_profitability;
+			delete newGoal.ozon_profitability;
+			delete newGoal.master;
+			delete newGoal.wb_active_for_sell;
+			delete newGoal.wb_sales_goal;
+			delete newGoal.wb_sales7;
+			delete newGoal.wb_sales30;
+			delete newGoal.ozon_active_for_sell;
+			delete newGoal.ozon_sales_goal;
+			delete newGoal.ozon_sales7;
+			delete newGoal.ozon_sales30;
+			
+			if (this.goals_updates.find(current => current.product_id == newGoal.product_id) !== undefined) {
+				for (const current in this.goals_updates) {
+					if (this.goals_updates[current].product_id == newGoal.product_id) {
+						this.goals_updates[current] = newGoal;
+						break;
+					}
+				}	
+			} else {
+				this.goals_updates.push(newGoal);
+			}
+		},
+	},
 	mounted(){
+		this.loadWarehouses();
 	}
 }
 </script>
