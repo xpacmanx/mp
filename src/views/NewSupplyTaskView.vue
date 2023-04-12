@@ -14,11 +14,11 @@
 					<input type="text" />
 				</div>
 				<div>
-					Вес: 0кг
+					Вес: {{calcWeight()}}кг
 				</div>
         <div>
           <button class="btn">Создать подсорт</button>
-          <button class="btn btn-transparent">Предпросмотр</button>
+          <button class="btn btn-transparent" @click="makeSort()">Предпросмотр</button>
         </div>
       </div>
       <div class="content">
@@ -48,18 +48,18 @@
 							<th>Готово по факту</th>
 							<th>Подготовить</th>
 							<th>Останется после перемещения</th>
-							<th>WB Текущая доходность</th>
+							<th>{{current_warehouse.type.toUpperCase()}} Текущая доходность</th>
 							<th>Осталось товара (наш склад + транзит + МП)</th>
-							<th>Осталось товара (наш склад + транзит WB + FBW + FBS WB)</th>
+							<th>Осталось товара (наш склад + транзит {{current_warehouse.type.toUpperCase()}} + FBW + FBS {{current_warehouse.type.toUpperCase()}})</th>
 							<th>Мастер</th>
-							<th>WB Планируем ли и дальше продавать</th>
-							<th>WB Кол-во продаж за 7 дней</th>
-							<th>WB Кол-во продаж за 30 дней</th>
-							<th>WB Целевое кол-во продаж в месяц</th>
-							<th>WB На скольки складах есть товар</th>
-							<th>WB Осталось товара складах маркетплейса</th>
-							<th>WB Товар в офисе, распределенный для МП</th>
-							<th>WB Товар в транзите МП</th>
+							<th>{{current_warehouse.type.toUpperCase()}} Планируем ли и дальше продавать</th>
+							<th>{{current_warehouse.type.toUpperCase()}} Кол-во продаж за 7 дней</th>
+							<th>{{current_warehouse.type.toUpperCase()}} Кол-во продаж за 30 дней</th>
+							<th>{{current_warehouse.type.toUpperCase()}} Целевое кол-во продаж в месяц</th>
+							<th>{{current_warehouse.type.toUpperCase()}} На скольки складах есть товар</th>
+							<th>{{current_warehouse.type.toUpperCase()}} Осталось товара складах маркетплейса</th>
+							<th>{{current_warehouse.type.toUpperCase()}} Товар в офисе, распределенный для МП</th>
+							<th>Товар в транзите МП</th>
 							<th>Ожидание товара 1я неделя</th>
 							<th>Ожидание товара 2я неделя</th>
 							<th>Ожидание товара 3я неделя</th>
@@ -72,26 +72,26 @@
 							<td>{{goal.product_id}}</td>
 							<td>{{goal.name}}</td>
 							<td>{{goal.code}}</td>
-							<td><input type="number" value="0" @input="handleUpdateGoal(goal)" min="1" max="999" /></td>
-							<td>0</td>
+							<td><input type="number" v-model="goal.task" @input="handleUpdateGoal(goal)" min="1" max="999" /></td>
+							<td>?</td>
+							<td>?</td>
+							<td></td>
+							<td>{{goal.days_to_ready}}</td>
+							<td>?</td>
+							<td>?</td>
+							<td>?</td>
+							<td>{{goal.goal_days}}</td>
+							<td>-</td>
+							<td>-</td>
+							<td>-</td>
+							<td>{{goal.goal_toggle}}</td>
+							<td>{{goal.goal_priority}}</td>
+							<td>{{goal.goal_active}}</td>
 							<td></td>
 							<td></td>
 							<td></td>
 							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
+							<td>{{ getPercent(goal[current_warehouse.type + '_profitability']) }}</td>
 							<td></td>
 							<td></td>
 							<td>{{goal.master}}</td>
@@ -103,11 +103,11 @@
 							<td></td>
 							<td></td>
 							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
+							<td>{{goal.arrived1}}</td>
+							<td>{{goal.arrived2}}</td>
+							<td>{{goal.arrived3}}</td>
+							<td>{{goal.arrived4}}</td>
+							<td>{{goal.arrived5}}</td>
 						</tr>
 					</tbody>
 				</table>
@@ -130,17 +130,40 @@ export default {
 	data(){
 		return {
 			warehouses_loaded: false,
-			loaded: true,
+			loaded: false,
 			saving: false,
 			current_warehouse: {},
 			warehouses: [],
-			goals_updates: [],
 			goals: [],
 		}
 	},
 	methods: {
-			wChange(event){
+		wChange(event){
 			this.choose(event.target.value);
+		},
+		calcWeight() {
+			let weight = 0
+			if (this.goals.length > 0) {
+				for (const item of this.goals) {
+					if (item.task == undefined) item.task = 0;
+					if (item.weight == undefined) item.weight = 0;
+					weight += item.task*item.weight;
+				}
+			}
+			return weight.toFixed(2);
+		},
+		makeSort() {
+			this.goals.sort((a,b) => a.id - b.id);
+			this.goals.sort((a,b) => b.task - a.task);
+		},
+		getPercent(n){
+			if (n == '' || n == null) return '0%';
+			let f = parseFloat(n);
+			if (typeof f == 'number') {
+				f *= 100;
+				return f.toFixed(2) + '%';
+			}
+			else return '0%';
 		},
 		loadWarehouses(id){
 			this.warehouses = [];
@@ -180,6 +203,7 @@ export default {
 				this.goals = [];
 				console.log(response.data.result);
 				for (const item of response.data.result) {
+					item.task = 0;
 					this.goals.push(item);
 				}
 				this.loaded = true;

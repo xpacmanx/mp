@@ -3,6 +3,7 @@ import HomeView from '../views/HomeView.vue'
 import GoalsByProductView from '../views/GoalsByProductView.vue'
 import GoalsByWarehouseView from '../views/GoalsByWarehouseView.vue'
 import NewSupplyTaskView from '../views/NewSupplyTaskView.vue'
+import ConnectionsView from '../views/ConnectionsView.vue'
 
 
 const routes = [
@@ -44,6 +45,14 @@ const routes = [
 		component: GoalsByWarehouseView,
 		meta: {
 			title: '3. Get Warehouses by ID'
+		}
+	},
+	{
+		path: '/connections',
+		name: 'connections',
+		component: ConnectionsView,
+		meta: {
+			title: 'Connections'
 		}
 	},
 	// {
