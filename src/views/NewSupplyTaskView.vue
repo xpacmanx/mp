@@ -75,7 +75,7 @@
 							<td><input type="number" v-model="goal.task" @input="handleUpdateGoal(goal)" min="1" max="999" /></td>
 							<td>?</td>
 							<td>?</td>
-							<td></td>
+							<td>{{currentWhQty(goal, current_warehouse.name)}}</td>
 							<td>{{goal.days_to_ready}}</td>
 							<td>?</td>
 							<td>?</td>
@@ -99,8 +99,8 @@
 							<td>{{goal[current_warehouse.type + '_sales7']}}</td>
 							<td>{{goal[current_warehouse.type + '_sales30']}}</td>
 							<td>{{goal[current_warehouse.type + '_sales_goal']}}</td>
-							<td></td>
-							<td></td>
+							<td>{{countStocks(goal,current_warehouse.type)}}</td>
+							<td>{{countStocksQty(goal,current_warehouse.type)}}</td>
 							<td></td>
 							<td></td>
 							<td>{{goal.arrived1}}</td>
@@ -151,6 +151,24 @@ export default {
 				}
 			}
 			return weight.toFixed(2);
+		},
+		currentWhQty(item,wh_name) {
+			let qty = 0;
+			let stock = item.stocks.find(stock => stock.name == wh_name);
+			if (stock != undefined) qty = stock.qty;
+			return qty;
+			
+		},
+		countStocks(item,type){
+			return item.stocks.filter(a => a.type == type).length;
+		},
+		countStocksQty(item,type){
+			let qty = 0;
+			for (const stock of item.stocks) {
+				if (stock.type != type) continue;
+				qty += Number(stock.qty);
+			}
+			return qty;
 		},
 		makeSort() {
 			this.goals.sort((a,b) => a.id - b.id);
