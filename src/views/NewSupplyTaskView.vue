@@ -7,11 +7,11 @@
         <h2>2. Подсорт для выбранного склада</h2>
 				<span v-if="!warehouses_loaded">Загрузка складов...</span>
         <select v-if="warehouses_loaded" @change="wChange($event)">
-          <option v-for="warehouse in warehouses" :key="warehouse.id" :value="warehouse.id" :selected="warehouse.id == current_warehouse.id">{{warehouse.id}}. [{{warehouse.type.toUpperCase()}}] {{warehouse.name}}</option>
+          <option v-for="warehouse in warehouses" :key="warehouse.id" :value="warehouse.id" :selected="warehouse.id == current_warehouse.id">{{warehouse.id}}. {{warehouse.slug_name}}</option>
         </select>
 				<div>
-					<input type="text" /><br/>
-					<input type="text" />
+					<input type="text" placeholder="Дата задания" disabled /><br/>
+					<input type="text" placeholder="Дата оприходывания" disabled />
 				</div>
 				<div>
 					Вес: {{calcWeight()}}кг
@@ -25,90 +25,50 @@
 				<p v-if="!loaded">Загрузка контента...</p>
         <table class="table" v-if="loaded">
 					<thead>
-						<tr>
-							<th>#</th>
-							<th>Название товара</th>
-							<th>Код</th>
-							<th>Подготовить</th>
-							<th>Программа предлагает Переместить в Подготовить</th>
-							<th>Основной склад + Упакованное (расчет)</th>
-							<th>Находится</th>
-							<th>Срок подготовки товара к отгрузке, дней (подгружается из МС)</th>
-							<th>На сколько дней находится на выбранном складе сейчас</th>
-							<th>Расчетное наличие на день приемки [сегодняшняя дата + срок поставки] без текущей поставки</th>
-							<th>На сколько дней будет на день приемки [сегодняшняя дата + срок поставки] без текущей поставки</th>
-							<th>Наличие на какое кол-во дней должно быть (N)</th>
-							<th>Кол-во продаж за N дней</th>
-							<th>Рассчетно от факта за 30 дней</th>
-							<th>Кол-во продаж за N дней Цель</th>
-							<th>Статус переключателя Цель/Факт</th>
-							<th>Приоритет склада</th>
-							<th>Планируем ли дальше продавать на этом складе</th>
-							<th>В транзите</th>
-							<th>Готово по факту</th>
-							<th>Подготовить</th>
-							<th>Останется после перемещения</th>
-							<th>{{current_warehouse.type.toUpperCase()}} Текущая доходность</th>
-							<th>Осталось товара (наш склад + транзит + МП)</th>
-							<th>Осталось товара (наш склад + транзит {{current_warehouse.type.toUpperCase()}} + FBW + FBS {{current_warehouse.type.toUpperCase()}})</th>
-							<th>Мастер</th>
-							<th>{{current_warehouse.type.toUpperCase()}} Планируем ли и дальше продавать</th>
-							<th>{{current_warehouse.type.toUpperCase()}} Кол-во продаж за 7 дней</th>
-							<th>{{current_warehouse.type.toUpperCase()}} Кол-во продаж за 30 дней</th>
-							<th>{{current_warehouse.type.toUpperCase()}} Целевое кол-во продаж в месяц</th>
-							<th>{{current_warehouse.type.toUpperCase()}} На скольки складах есть товар</th>
-							<th>{{current_warehouse.type.toUpperCase()}} Осталось товара складах маркетплейса</th>
-							<th>{{current_warehouse.type.toUpperCase()}} Товар в офисе, распределенный для МП</th>
-							<th>Товар в транзите МП</th>
-							<th>Ожидание товара 1я неделя</th>
-							<th>Ожидание товара 2я неделя</th>
-							<th>Ожидание товара 3я неделя</th>
-							<th>Ожидание товара 4я неделя</th>
-							<th>Ожидание товара 5я неделя</th>
-						</tr>
+						<th>#</th>
+						<th class="table__title">Название товара</th>
+						<th class="table__code">Код</th>
+						<th>Подготовить</th>
+						<th>Программа предлагает Переместить в Подготовить</th>
+						<th>Основной склад + Упакованное (расчет)</th>
+						<th>Находится</th>
+						<th>Срок подготовки товара к отгрузке, дней (подгружается из МС)</th>
+						<th>На сколько дней находится в городе выбранного склада сейчас</th>
+						<th>Расчетное наличие на день приемки [сегодняшняя дата + срок поставки] без текущей поставки</th>
+						<th>На сколько дней будет на день приемки [сегодняшняя дата + срок поставки] без текущей поставки в городе выбранного склада</th>
+						<th>Наличие на какое кол-во дней должно быть
+(N)</th>
+						<th>Кол-во продаж за N дней в городе выбранного склада Рассчетно от факта за 30 дней</th>
+						<th>Кол-во продаж за N дней в городе выбранного склада Цель</th>
+						<th>Статус переключателя Цель/Факт</th>
+						<th>Приоритет склада</th>
+						<th>Планируем ли дальше продавать на этом складе</th>
+						<th>В транзите в город выбранного склада</th>
+						<th>Готово по факту в город выбранного склада</th>
+						<th>Подготовить в город выбранного склада</th>
+						<th>Останется после перемещения</th>
+						<th>{{current_warehouse.type.toUpperCase()}} Текущая доходность</th>
+						<th>Осталось товара (наш склад + транзит + МП)</th>
+						<th>Осталось товара (наш склад + транзит {{current_warehouse.type.toUpperCase()}} + FBW + FBS {{current_warehouse.type.toUpperCase()}})</th>
+						<th>Мастер</th>
+						<th>{{current_warehouse.type.toUpperCase()}} Планируем ли и дальше продавать</th>
+						<th>{{current_warehouse.type.toUpperCase()}} Кол-во продаж за 7 дней</th>
+						<th>{{current_warehouse.type.toUpperCase()}} Кол-во продаж за 30 дней</th>
+						<th>{{current_warehouse.type.toUpperCase()}} Целевое кол-во продаж в месяц</th>
+						<th>{{current_warehouse.type.toUpperCase()}} На скольки складах есть товар</th>
+						<th>{{current_warehouse.type.toUpperCase()}} Осталось товара складах маркетплейса</th>
+						<th>{{current_warehouse.type.toUpperCase()}} Товар в офисе, распределенный для МП</th>
+						<th>Товар в транзите МП</th>
+						<th>Ожидание товара 1я неделя</th>
+						<th>Ожидание товара 2я неделя</th>
+						<th>Ожидание товара 3я неделя</th>
+						<th>Ожидание товара 4я неделя</th>
+						<th>Ожидание товара 5я неделя</th>
 					</thead>
 					<tbody>
-						<tr v-for="(goal,i) in goals" :key="goal.product_id">
-							<td>{{goal.product_id}}</td>
-							<td>{{goal.name}}</td>
-							<td>{{goal.code}}</td>
-							<td><input type="number" v-model="goal.task" @input="handleUpdateGoal(goal)" min="1" max="999" /></td>
-							<td>?</td>
-							<td>?</td>
-							<td>{{currentWhQty(goal, current_warehouse.name)}}</td>
-							<td>{{goal.days_to_ready}}</td>
-							<td>?</td>
-							<td>?</td>
-							<td>?</td>
-							<td>{{goal.goal_days}}</td>
-							<td>-</td>
-							<td>-</td>
-							<td>-</td>
-							<td>{{goal.goal_toggle}}</td>
-							<td>{{goal.goal_priority}}</td>
-							<td>{{goal.goal_active}}</td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td>{{ getPercent(goal[current_warehouse.type + '_profitability']) }}</td>
-							<td></td>
-							<td></td>
-							<td>{{goal.master}}</td>
-							<td>{{goal[current_warehouse.type + '_active_for_sell']}}</td>
-							<td>{{goal[current_warehouse.type + '_sales7']}}</td>
-							<td>{{goal[current_warehouse.type + '_sales30']}}</td>
-							<td>{{goal[current_warehouse.type + '_sales_goal']}}</td>
-							<td>{{countStocks(goal,current_warehouse.type)}}</td>
-							<td>{{countStocksQty(goal,current_warehouse.type)}}</td>
-							<td></td>
-							<td></td>
-							<td>{{goal.arrived1}}</td>
-							<td>{{goal.arrived2}}</td>
-							<td>{{goal.arrived3}}</td>
-							<td>{{goal.arrived4}}</td>
-							<td>{{goal.arrived5}}</td>
-						</tr>
+						<SupplyTaskRow v-for="(task,i) in goals" :key="task.product_id" :task="task" :whtype="current_warehouse.type" :whname="current_warehouse.slug_name" :region="current_warehouse.region" />
+						<!-- tr v-for="(goal,i) in goals" :key="goal.product_id">
+						</tr -->
 					</tbody>
 				</table>
       </div>
@@ -119,13 +79,14 @@
 <script>
 import Menu from '@/components/navigation/Menu.vue'
 import Header from '@/components/navigation/Header.vue'
+import SupplyTaskRow from '@/components/SupplyTaskRow.vue'
 import mpr from './../tools/mpr'
 import moment from 'moment'
 	
 export default {
   name: 'NewSupplyTaskView',
 	components: {
-    Menu, Header
+    Menu, Header, SupplyTaskRow
   },
 	data(){
 		return {
@@ -170,9 +131,11 @@ export default {
 			}
 			return qty;
 		},
-		makeSort() {
-			this.goals.sort((a,b) => a.id - b.id);
-			this.goals.sort((a,b) => b.task - a.task);
+		getStocks(name, id) {
+			const goal = this.goals.find(goal => goal.product_id = id);
+			const stock = goal.stocks.find(stock => stock.name == name);
+			if (stock) return stock.qty;
+			return 'Склад не создан';
 		},
 		getPercent(n){
 			if (n == '' || n == null) return '0%';
@@ -183,6 +146,11 @@ export default {
 			}
 			else return '0%';
 		},
+		makeSort() {
+			this.goals.sort((a,b) => a.id - b.id);
+			this.goals.sort((a,b) => b.task - a.task);
+		},
+
 		loadWarehouses(id){
 			this.warehouses = [];
 			this.warehouses_loaded = false;

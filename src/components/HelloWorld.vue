@@ -1,9 +1,19 @@
 <script setup>
+import { computed } from 'vue'
+	
 defineProps({
-  msg: {
-    type: String,
+  task: {
+    type: Object,
     required: true
-  }
+  },
+	whname: {
+		type: String,
+		required: true
+	},
+	whtype: {
+		type: String,
+		required: true
+	}
 })
 </script>
 

@@ -68,7 +68,7 @@
   
     a {
       display: block;
-      padding: 0 25px;
+      padding: 0 10px;
       height: 70px;
       text-align: center;
       color: $dark-color;

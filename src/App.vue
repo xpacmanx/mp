@@ -77,6 +77,16 @@ a {
 	overflow: scroll;
   border-collapse: collapse;
 
+	&__title {
+		min-width: 350px;
+	}
+
+	&__code {
+		width: 100%;
+		max-width: 120px;
+		overflow: scroll;
+	}
+
   tr, th, td {
     margin: 0;
     padding: 5px;
@@ -110,6 +120,12 @@ a {
     font-size: 0.6em;
     padding: 9px 5px;
   }
+
+	tr:hover, td:active {
+		td {
+			background: rgba(193, 255, 66, 0.05);
+		}
+	}
 }
 
 nav {
@@ -125,6 +141,6 @@ nav {
 }
 
 .content-with-menu {
-  padding-left: 100px;
+  padding-left: 70px;
 }
 </style>

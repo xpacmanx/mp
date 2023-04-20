@@ -8,7 +8,7 @@
         <h2>3. Goals by warehouse</h2>
 				<span v-if="!warehouses_loaded">Загрузка складов...</span>
         <select v-if="warehouses_loaded" @change="wChange($event)">
-          <option v-for="warehouse in warehouses" :key="warehouse.id" :value="warehouse.id" :selected="warehouse.id == current_warehouse.id">{{warehouse.id}}. {{warehouse.name}}</option>
+          <option v-for="warehouse in warehouses" :key="warehouse.id" :value="warehouse.id" :selected="warehouse.id == current_warehouse.id">{{warehouse.id}}. {{warehouse.slug_name}}</option>
         </select>
 				<span v-if="loaded">
 					Ожидаемый срок:
