@@ -89,7 +89,7 @@ a {
 
   tr, th, td {
     margin: 0;
-    padding: 5px;
+    padding: 3px;
     border: rgba($dark-color, 0.1) solid 1px;
     border-collapse: collapse;
     background: rgba($dark-color, .02);
@@ -109,6 +109,11 @@ a {
 		  margin: 0;
 		}
   }
+
+	td {
+		font-size: 12px;
+		line-height: 1.2em;
+	}
 
   td.editable {
     background: $super-light-color;
