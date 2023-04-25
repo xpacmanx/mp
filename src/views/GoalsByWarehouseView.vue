@@ -34,11 +34,11 @@
 								<th>Ожидаемый срок с момента создания подсортного задания до приемки на данном складе маркетплейсом, дней</th>
 								<th>Наличие на какое кол-во дней должно быть</th>
 								<th>Планируем ли дальше продавать на этом складе</th>
-								<th>Целевое кол-во продаж в месяц с {{current_warehouse.type.toUpperCase()}} {{current_warehouse.name}} До коэф.</th>
+								<th>Целевое кол-во продаж в месяц с {{current_warehouse.type.toUpperCase()}} {{current_warehouse.slug_name}} До коэф.</th>
 								<th>Временный коэффициент для учета сезона (может быть не надо)</th>
-								<th>Целевое кол-во продаж в месяц с {{current_warehouse.type.toUpperCase()}} {{current_warehouse.name}} После коэф.</th>
+								<th>Целевое кол-во продаж в месяц с {{current_warehouse.type.toUpperCase()}} {{current_warehouse.slug_name}} После коэф.</th>
 								<th>Переключатель: формулам ориентироваться на Целевое кол-во или на Факт. оборот</th>
-								<th>Кол-во продаж с {{current_warehouse.type.toUpperCase()}} {{current_warehouse.name}} за 30 дней Факт</th>
+								<th>Кол-во продаж с {{current_warehouse.type.toUpperCase()}} {{current_warehouse.slug_name}} за 30?? дней Факт</th>
 								<th>Дата последней актуализации строки человеком</th>
 								<th>{{current_warehouse.type.toUpperCase()}} Текущая доходность</th>
 								<th>Мастер</th>
@@ -62,7 +62,7 @@
 								<td><input type="number" v-model.number="goal.season_koef" @input="handleUpdateGoal(goal)" min="0" /></td>
 								<td>{{goal.season_koef > 0 ? goal.sales_goal * goal.season_koef : goal.sales_goal}}</td>
 								<td><input type="number" v-model.number="goal.goal_sale_toggle" @input="handleUpdateGoal(goal)" min="0" max="1" /></td>
-								<td>{{goal.sales}}</td>
+								<td><input type="number" v-model.number="goal.sales" @input="handleUpdateGoal(goal)" min="0" max="9999999999" /></td>
 								<td>{{niceDate(goal.last_updated)}}</td>
 								<td>{{goal[current_warehouse.type + '_profitability']}}</td>
 								<td>{{goal.master}}</td>

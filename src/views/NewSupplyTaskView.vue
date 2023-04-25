@@ -16,14 +16,28 @@
 				<div>
 					Вес: {{calcWeight()}}кг
 				</div>
-        <div>
-          <button class="btn">Создать подсорт</button>
+        <div v-if="positions.length > 0 && process_status">
+          <button class="btn" @click="makeTask()">Создать подсорт</button>
           <button class="btn btn-transparent" @click="makeSort()">Предпросмотр</button>
         </div>
       </div>
       <div class="content">
+				<div class="process" v-if="!process_status">
+					<h3>Создания задания к подсорту..</h3>
+					<div v-if="process_success">
+						Задание к подсорту создано 🥰<br/>
+						Я сообщу в телеграме, когда обновлю остатки<br/>
+						<b>Пока не сообщу, не начинай новый подсорт, а то данные будут неправильные.</b>
+					</div>
+					<div v-if="!process_success">
+						<p>Не закрывайте вкладку, пока все пункты не будут исполнены.</p>
+						<ol>
+							<li v-for="p in process">{{p.title}} - <span>{{p.status}}</span></li>
+						</ol>
+					</div>
+				</div>
 				<p v-if="!loaded">Загрузка контента...</p>
-        <table class="table" v-if="loaded">
+        <table class="table" v-if="loaded && process_status">
 					<thead>
 						<th>#</th>
 						<th class="table__title">Название товара</th>
@@ -67,7 +81,7 @@
 						<th>Ожидание товара 5я неделя</th>
 					</thead>
 					<tbody>
-						<SupplyTaskRow v-for="(task,i) in tasks" :key="task.product_id" :task="task" :whtype="current_warehouse.type" :whname="current_warehouse.slug_name" :region="current_warehouse.region" :estimateDate="estimateDate" :fromDate="fromDate" :supplytasks="supply_tasks" />
+						<SupplyTaskRow v-for="(task,i) in tasks" :key="task.product_id" :task="task" :whtype="current_warehouse.type" :whname="current_warehouse.slug_name" :region="current_warehouse.region" :estimateDate="estimateDate" :fromDate="fromDate" :supplytasks="filteredSupplytasks" :regionWarehouses="regionWarehouses" :warehouses="warehouses" />
 					</tbody>
 				</table>
       </div>
@@ -96,6 +110,26 @@ export default {
 			supply_tasks: [],
 			warehouses: [],
 			tasks: [],
+			process: [
+				{
+					id: 1,
+					url: '/supplytask/create',
+					title: 'Создание подсорта внутри системы',
+					status: 'Ожидание',
+				},
+				{
+					id: 2,
+					url: '/supplytask/msupdate',
+					title: 'Создание перемещения в моем складе',
+					status: 'Ожидание',
+				},
+				{
+					id: 3,
+					url: '/automation/stock/sheet/update',
+					title: 'Обновление остатков в старом подсорте',
+					status: 'Ожидание',
+				},
+			],
 			fromDate: '',
 		}
 	},
@@ -105,7 +139,7 @@ export default {
 			if (this.current_warehouse.ship_days == undefined) return "Загрузка..";
 			estimated.add(this.current_warehouse.ship_days, 'days');
 			estimated.add(this.longestDate, 'days');
-			console.log(this.longestDate);
+			// console.log(this.longestDate);
 			return estimated.format('DD.MM.YYYY');
 		},
 		longestDate(){
@@ -115,29 +149,53 @@ export default {
 			}
 			return 0;
 		},
+		process_status() {
+			return this.process.filter(step => step.status == 'Ожидание').length == 3
+		},
+		process_success() {
+			return this.process.filter(step => step.status == 'Готово').length == 3
+		},
 		positions() {
 			const arr = [];
 			const tasks = this.tasks.filter(task => task.task > 0);
 			for (const task of tasks) {
+				let qty = Number(task.task);
+				let weight = task.weight;
 				arr.push({
-					id: task.id,
-					qty: Number(task.task),
+					id: task.product_id,
+					qty: qty,
+					weight: (weight*qty).toFixed(2),
 				})
 			}
-			return [];
+			return arr;
+		},
+		requestData() {
+			return {
+				start_date: moment().format('YYYY-MM-DD'),
+		    estimated_date: moment(this.estimateDate, 'DD.MM.YYYY').format('YYYY-MM-DD'),
+		    finish_date: moment(this.estimateDate, 'DD.MM.YYYY').format('YYYY-MM-DD'),
+		    warehouse_id: this.current_warehouse.id,
+		    qty_amount: this.calcQty(),
+		    weight_amount: this.calcWeight(),
+		    status_id: 1,
+				positions: this.positions
+			}
 		},
 		filteredSupplytasks() {
 			const from = moment(this.fromDate, 'DD.MM.YYYY');
 			const to = moment(this.estimateDate, 'DD.MM.YYYY');
-			// console.log(this.supply_tasks);
 			const tasks = this.supply_tasks.filter(task => moment(task.finishDate).isBetween(from, to, undefined, '[]'));
 			return tasks;
+		},
+		regionWarehouses() {
+			return this.warehouses.filter(w => w.region == this.current_warehouse.region);
 		},
 	},
 	methods: {
 		wChange(event){
 			this.choose(event.target.value);
 		},
+		
 		calcWeight() {
 			let weight = 0
 			if (this.tasks.length > 0) {
@@ -150,9 +208,61 @@ export default {
 			return weight.toFixed(2);
 		},
 		
+		calcQty() {
+			let qty = 0
+			if (this.tasks.length > 0) {
+				for (const item of this.tasks) {
+					if (item.task == undefined) item.task = 0;
+					qty += item.task;
+				}
+			}
+			return qty;
+		},
+		
 		makeSort() {
 			this.tasks.sort((a,b) => a.id - b.id);
 			this.tasks.sort((a,b) => b.task - a.task);
+		},
+
+		reset() {
+			for (const step of this.process) {
+				step.status = 'Ожидание';
+			}
+		},
+
+		async makeTask() {
+			try {
+				let response = {};
+				for (const step of this.process) {
+					step.status = 'Выполняется..';
+					if (step.id == 1) {
+						response = await mpr({
+							url: step.url,
+							method: 'post',
+							data: this.requestData,
+						});
+					} else if (step.id == 2) {
+						const id = response.data.result[0].supplytask_id;
+						response = await mpr({
+							method: 'get',
+							url: step.url,
+							params: {
+								id: id,
+							},
+						});
+					} else {
+						response = await mpr({
+							url: step.url,
+							method: 'get'
+						})
+					}
+					
+					step.status = 'Готово';
+				}
+			} catch(err) {
+				console.log(err);
+				// alert(err);
+			}
 		},
 
 		loadWarehouses(id){
@@ -169,7 +279,7 @@ export default {
 				}
 				this.warehouses_loaded = true;
 				if (id !== undefined) {
-					console.log('choose ID', id);
+					// console.log('choose ID', id);
 					this.choose(Number(id));
 				} else {
 					this.choose(this.warehouses[0].id);	
@@ -181,6 +291,7 @@ export default {
 		choose(id) {
 			this.loaded = false;
 			// this.$route.params.wid = id;
+			this.reset();
 			
 			mpr({
 				url: '/supplytask/new',
@@ -190,8 +301,7 @@ export default {
 			}).then(response => {
 				this.current_warehouse = this.warehouses.find(w => w.id == id);
 				this.tasks = [];
-				this.tasks = [];
-				console.log(response.data.result);
+				// console.log(response.data.supplytasks);
 				for (const item of response.data.result) {
 					item.task = 0;
 					this.tasks.push(item);
@@ -207,23 +317,6 @@ export default {
 		niceDate(date){
 			const momentDate = moment(date).format('DD.MM.YYYY')
 			return momentDate == 'Invalid date' ? '-' : momentDate;
-		},
-		handleUpdateTask() {
-			// const tasks = this.tasks.filter(task => task.task > 0);
-			// console.log(tasks);
-			// const newPosition = {};
-			// newPosition.warehouse_id = this.current_warehouse.id;
-			
-			// if (this.tasks_positions.find(current => current.product_id == newGoal.product_id) !== undefined) {
-			// 	for (const current in this.goals_updates) {
-			// 		if (this.goals_updates[current].product_id == newGoal.product_id) {
-			// 			this.goals_updates[current] = newGoal;
-			// 			break;
-			// 		}
-			// 	}	
-			// } else {
-			// 	this.goals_updates.push(newGoal);
-			// }
 		},
 	},
 	mounted() {

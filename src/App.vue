@@ -24,6 +24,29 @@ a {
   }
 }
 
+.process {
+	padding: 10px;
+	text-align: left;
+	
+	h3 {
+		font-weight: bold;
+	}
+
+	ol {
+		margin: 0;
+		padding: 0;
+		list-style-position: inside;
+	}
+
+	span {
+		display: inline-block;
+		border-left: #222 solid 2px;
+		padding: 0px 5px;
+		font-size: 0.8em;
+		font-weight: bold;
+	}
+}
+
 .top-menu {
   background: lighten($light-color, 50%);
   height: 70px;
@@ -85,6 +108,12 @@ a {
 		width: 100%;
 		max-width: 120px;
 		overflow: scroll;
+		-ms-overflow-style: none;  /* IE and Edge */
+	  scrollbar-width: none;  /* Firefox */
+		
+		&::-webkit-scrollbar {
+		  display: none;
+		}
 	}
 
   tr, th, td {

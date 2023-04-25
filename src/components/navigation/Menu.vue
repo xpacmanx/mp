@@ -10,13 +10,13 @@
     </li>
 <!--     <li>
       <router-link to="/">Home</router-link>
-    </li> -->
-    <li>
+    </li>
+		<li>
       <router-link to="/">
         <i>1</i>
         <span>-</span>
       </router-link>
-    </li>
+    </li>-->
     <li>
       <router-link to="/newsupplytask">
         <i>2</i>
@@ -29,12 +29,12 @@
         <span>Цели факты для выбранного склада</span>
       </router-link>
     </li>
-    <li>
+<!--    <li>
       <router-link to="/goalsbyproduct">
         <i>4</i>
         <span>Цели и факты для выбранного товара</span>
       </router-link>
-    </li>
+    </li>-->
   </nav>
 </template>
 

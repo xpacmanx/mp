@@ -37,6 +37,14 @@ const props = defineProps({
 		type: Object,
 		required: true
 	},
+	regionWarehouses: {
+		type: Object,
+		required: true
+	},
+	warehouses: {
+		type: Object,
+		required: true
+	},
 })
 
 const percent = computed(() => {
@@ -95,6 +103,18 @@ const stocks = props.task.stocks.filter(stock => stock.name.includes(name + whty
 	return qty;
 }
 
+
+function getStocksById(id) {
+	let qty = 0;
+	let whtype = props.whtype;
+	if (whtype == 'wb') whtype = 'WB';
+	if (whtype == 'ozon') whtype = 'Ozon';
+	
+const stocks = props.task.stocks.filter(stock => stock.wid == id);
+	qty = stocks.reduce((sum, s) => sum + s.qty, 0);
+	return qty;
+}
+
 function getExactlyStocks(name) {
 	let qty = 0;
 	const stocks = props.task.stocks.find(stock => stock.name == name);
@@ -149,6 +169,11 @@ const lost = computed(() => {
 	return Number(mainAndPacked.value) - Number(props.task.task);
 });
 
+const goalNDays = computed(() => {
+	if (props.task.goal_sales_goal != null && props.task.goal_days != null) return Math.round(Number(props.task.goal_sales_goal) / 30 * Number(props.task.goal_days));
+	return 0;
+});
+
 const ourStockAndMp = computed(() => {
 	let qty = 0;
 	qty += Number(mainAndPacked.value); //main and packed
@@ -166,29 +191,163 @@ const ourStockAndMpFbs = computed(() => {
 	return qty;
 });
 
+const salesPerDay = computed(() => {
+	let qty = 0;
+	const goals = props.task.goals.filter(goal => goal.region == props.region && goal.type == props.whtype)
+	if (goals.length > 0) {
+		qty = goals.reduce((sum, item) => sum + Number(item.sales_per_day), 0);
+	}
+	return qty;
+});
+
 const countRegionDays = computed(() => {
 	let days = 0;
-	if (Number(countRegionStocks.value) > 0 && props.task.sales_per_day != undefined) {
-		days = Number(countRegionStocks.value) / parseFloat(props.task.sales_per_day);
-		// console.log(countRegionStocks.value, props.task.sales_per_day, days);
+	if (Number(countRegionStocks.value) > 0 && salesPerDay.value != undefined) {
+		days = Number(countRegionStocks.value) / parseFloat(salesPerDay.value);
 	}
 	return Math.floor(days);
 });
 
 const countSupplyTaskByDate = computed(() => {
-	const current = Number(countRegionStocks.value);
+	const currentQty = Number(countRegionStocks.value);
+	const sales_Per_Day = Number(salesPerDay.value);
 	const from = moment(props.fromDate, 'DD.MM.YYYY');
 	const to = moment(props.estimateDate, 'DD.MM.YYYY');
 	const days = to.diff(from, 'days');
+	const result = {qty: currentQty, messages: []}
 	if (days > 0) {
-		console.log(props.task.supplytasks);
-		for (let i = 1; i < days;i++) {
-			const cur = from.add(i, 'd');
-			// props.supplytasks.filter(task => task.finishDate )
+		for (let i = 1; i <= days; i++) {
+			const current = moment(from).add(i, 'days');
+			const supplytasks = props.supplytasks.filter(task => moment(task.finish_date).isSame(current, 'day') && task.product_id == props.task.product_id);
+			if (supplytasks.length > 0) {
+				supplytasks.forEach(task => result.messages.push({
+					id: task.id,
+					date: moment(task.finish_date).format('DD.MM.YYYY'),
+					qty: task.qty,
+				}))
+			}
+			const incomeQty = supplytasks.reduce((sum, task) => task.qty, 0);
+			result.qty += incomeQty;
+			result.qty -= sales_Per_Day;
+			if (result.qty < 0) result.qty = 0;
 		}
 	}
-	return '';
-  // props.task.sales_per_day
+	result.qty = Math.floor(result.qty);
+	return result;
+});
+
+const groupByType = computed(() => {
+	const result = {
+		wb: {},
+		ozon: {},
+	};
+	for (const w of props.warehouses) {
+		if (result[w.type][w.region] == undefined) result[w.type][w.region] = [];
+			result[w.type][w.region].push(w);
+	}
+	return result;
+})
+
+function countSupplyTaskForWhId(id){
+	const currentQty = getStocksById(id);
+	const sales_Per_Day = Number(salesPerDay.value);
+	const from = moment(props.fromDate, 'DD.MM.YYYY');
+	const to = moment(props.estimateDate, 'DD.MM.YYYY');
+	const days = to.diff(from, 'days');
+	const result = {qty: 0};
+	if (days > 0) {
+		for (let i = 1; i <= days; i++) {
+			const current = moment(from).add(i, 'days');
+			const supplytasks = props.supplytasks.filter(task => moment(task.finish_date).isSame(current, 'day') && task.product_id == props.task.product_id && task.warehouse_id == id);
+
+			const incomeQty = supplytasks.reduce((sum, task) => task.qty, 0);
+			result.qty += incomeQty;
+			result.qty -= sales_Per_Day;
+			if (result.qty < 0) result.qty = 0;
+		}
+	}
+	result.qty = Math.floor(result.qty);
+	return result.qty;
+}
+
+function getGoalNdays(id) {
+	const task = props.task.goals.find(g => g.warehouse_id == id);
+	if (task == undefined) return 0;
+		// console.log('helo', Math.round(Number(task.sales_goal) / 30 * Number(task.goal_days)));
+	if (task.sales_goal != null && task.goal_days != null) return Math.round(Number(task.sales_goal) / 30 * Number(task.goal_days));
+	return 0;
+}
+
+const countSupplyTaskByDateDays = computed(() => {
+	let days = 0;
+	if (salesPerDay.value == 0 || salesPerDay.value == null) return "Infinity";
+	if (countSupplyTaskByDate.value.qty > 0) {
+		days = countSupplyTaskByDate.value.qty / salesPerDay.value;
+	}
+	return Math.floor(days);
+});
+
+const suggestion = computed(() => {
+	let qty = 0;
+	const goal = Number(goalNDays.value);
+
+	// Step 0
+	if (goal == 0) return 0 + '(п0)';
+
+	// Step 1
+	const regionalWarehousesIds = props.regionWarehouses.map(w => w.id);
+
+	let amount1 = 0;
+	if (props.task.goals.length > 0) {
+
+		for (const id of regionalWarehousesIds) {
+			amount1 += getGoalNdays(id) - countSupplyTaskForWhId(id);
+		}
+
+		if (amount1 <= 0) return 0 + ' (п1)';
+	}
+
+	// Step 2
+
+	if (props.task.goals.length > 0) {
+
+		const sum = {
+			wb: {},
+			ozon: {},
+		}
+		for (const type in groupByType.value) {
+			for (const region in groupByType.value[type]) {
+				for (const w of groupByType.value[type][region]) {
+					if (sum[type][region] == undefined) sum[type][region] = 0;
+					// if (getGoalNdays(w.id) > 0) {
+					// 	console.log('hi', w.id, getGoalNdays(w.id));	
+					// }
+					sum[type][region] += getGoalNdays(w.id) - countSupplyTaskForWhId(w.id);
+					if (sum[type][region] <= 0) sum[type][region] = 0;
+				}
+			}
+		}
+		let amount2 = 0;
+		for (const region in sum[props.whtype]) {
+			amount2 += sum[props.whtype][region];
+		}
+
+		// console.log(amount2)
+
+		// Step 3
+		const condition = Number(mainAndPacked.value) - amount2;
+		if (condition <= 0) {
+			// TODO mark cell yellow
+			const condition2 = amount1 / amount2 * Number(mainAndPacked.value);
+			if (condition2 <= 0) return 0 + ' п3.1';
+			return condition2 + ' п3.1';
+		} else {
+			return amount1 + ' п3.2'; 
+		}
+		
+	}
+	
+	return qty;
 });
 
 // function handleUpdateTask (task) {
@@ -203,6 +362,10 @@ const countSupplyTaskByDate = computed(() => {
 		if (props.task.task == '') props.task.task = 0;
 	}
 
+	function getMessages(messages) {
+		return messages;
+	}
+
 </script>
 
 <template>
@@ -211,17 +374,28 @@ const countSupplyTaskByDate = computed(() => {
 		<td>{{task.name}}</td>
 		<td class="table__code">{{task.code}}</td>
 		<td><input type="number" v-model.number="task.task" @input="onEdit" @focus="checkZero" @blur="makeZero" min="1" max="999" /></td>
-		<td>?</td>
+		<td>{{suggestion}}</td>
 		<td>{{mainAndPacked}}</td>
 		<td>{{currentWhQty}}</td>
 		<td>{{ countRegionStocks }}</td>
 		<td>{{task.days_to_ready}}</td>
 		<td>{{ countRegionDays }}</td>
-		<td>{{ countSupplyTaskByDate }}</td>
-		<td>?</td>
+		<td>
+			{{ countSupplyTaskByDate.qty }} 
+			<div class="messages" v-if="countSupplyTaskByDate.messages.length > 0">
+				<span>📋
+					<ul class="messages__list">
+						<li v-for="item in getMessages(countSupplyTaskByDate.messages)">
+							{{item.date}}: {{item.qty}}шт
+						</li>
+					</ul>
+				</span>
+			</div>
+		</td>
+		<td>{{ countSupplyTaskByDateDays }}</td>
 		<td>{{task.goal_days}}</td>
 		<td>-</td>
-		<td>-</td>
+		<td>{{ goalNDays }}</td>
 		<td>{{task.goal_toggle}}</td>
 		<td>{{task.goal_priority}}</td>
 		<td>{{task.goal_active}}</td>
@@ -248,3 +422,38 @@ const countSupplyTaskByDate = computed(() => {
 		<td>{{task.arrived5}}</td>
 	</tr>
 </template>
+
+<style lang="scss">
+.messages {
+	display: inline;
+	position: relative;
+	
+	&__list {
+		display: none;
+		position: absolute;
+		background: #fff;
+		padding: 10px;
+		left: 15px;
+		top: -10px;
+		z-index: 1;
+		border-radius: 5px;
+		box-shadow: rgba(0,0,0,.1) 0 1px 2px;
+
+		li {
+			white-space: nowrap;
+			list-style: none;
+		}
+	}
+	
+	span {
+		font-size: 1.2em;
+		cursor: pointer;
+	
+		&:hover {
+			.messages__list {
+				display: block;
+			}
+		}
+	}
+}
+</style>
