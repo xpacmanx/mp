@@ -53,7 +53,7 @@ const percent = computed(() => {
 	let f = parseFloat(n);
 	if (typeof f == 'number') {
 		f *= 100;
-		return f.toFixed(2) + '%';
+		return f.toFixed(0) + '%';
 	}
 	else return '0%';
 })

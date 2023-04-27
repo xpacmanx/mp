@@ -7,22 +7,28 @@
         <h2>Главная страница</h2>
       </div>
       <div class="content">
-        <h1>Dashboard</h1>
+        <h1>Dashboard </h1>
 				<div class="panels">
 					<div class="panel">
 						<h2>Продукты</h2>
-						<div class="panel__number">...</div>
-						<button class="btn" @click="syncProducts()">Синхронизировать</button>
+						<div class="panel__number">{{products.qty}}</div>
+						<button v-if="!products.sync" class="btn" @click="syncProducts()">Синхронизировать</button>
+						<p v-else>Синхронизация..</p>
+						<p>Дата последней синхронизации:<br />{{products.date}}</p>
 					</div>
 					<div class="panel">
 						<h2>Склады</h2>
-						<div class="panel__number">...</div>
-						<button class="btn" @click="syncWarehouses()">Синхронизировать</button>
+						<div class="panel__number">{{warehouses.total.qty}}</div>
+						<button v-if="!warehouses.total.sync" class="btn" @click="syncWarehouses()">Синхронизировать</button>
+						<p v-else>Синхронизация..</p>
+						<p>Дата последней синхронизации:<br />{{warehouses.total.date}}</p>
 					</div>
 					<div class="panel">
 						<h2>Остатки</h2>
-						<div class="panel__number">...</div>
-						<button class="btn" @click="syncStocks()">Синхронизировать</button>
+						<div class="panel__number">{{stocks.qty}}</div>
+						<button v-if="!stocks.sync" class="btn" @click="syncStocks()">Синхронизировать</button>
+						<p v-else>Синхронизация..</p>
+						<p>Дата последней синхронизации:<br />{{stocks.date}}</p>
 					</div>
 				</div>
       </div>
@@ -41,25 +47,111 @@ export default {
   components: {
   	Menu, Header
   },
+	data() {
+		return {
+			products: {
+				qty: '...',
+				date: '',
+				sync: false,
+			},
+			warehouses: {
+				wb: {
+					qty: '...',
+					date: '',
+				},
+				ozon: {
+					qty: '...',
+					date: '',
+				},
+				total: {
+					qty: '...',
+					date: '',
+					sync: false,
+				},
+			},
+			stocks: {
+				qty: '...',
+				date: '',
+				sync: false,
+			},
+		}
+	},
 	methods: {
 		syncProducts() {
+			this.products.sync = true;
 			mpr({
 				url: '/automation/products/sync'
+			}).then(res => {
+				this.updateDashboard();
+				this.products.sync = false;
+			}).catch(error => {
+				this.products.sync = false;
+				alert('Синхронизация затянулась, сообщу о завершение в телеграме');
 			});
-			alert('Синхронизация началась, сообщу о завершение в телеграме');
 		},
 		syncWarehouses() {
+			this.warehouses.total.sync = true;
 			mpr({
 				url: '/automation/warehouses/sync'
+			}).then(res => {
+				this.updateDashboard();
+				this.warehouses.total.sync = false;
+			}).catch(error => {
+				this.warehouses.total.sync = false;
+				alert('Синхронизация затянулась, сообщу о завершение в телеграме');
 			});
-			alert('Синхронизация началась, сообщу о завершение в телеграме');
 		},
 		syncStocks() {
+			this.stocks.sync = true;
 			mpr({
 				url: '/automation/stocks/sync'
+			}).then(res => {
+				this.updateDashboard();
+				this.stocks.sync = false;
+			}).catch(error => {
+				this.stocks.sync = false;
+				alert('Синхронизация затянулась, сообщу о завершение в телеграме');
 			});
-			alert('Синхронизация началась, сообщу о завершение в телеграме');
+		},
+		updateDashboard() {
+			mpr({
+				url: '/dashboard/'
+			}).then(res => {
+				if (res.data.dashboard !== undefined) {
+					for (const item of res.data.dashboard) {
+						switch (item.name) {
+							case 'warehouses': 
+								this.warehouses.total = {
+									qty: item.qty,
+									date: moment(item.last_updated.slice(0, -5)).format('DD.MM.YYYY в hh:mm'),
+								}
+							break;
+							case 'ozon': 
+								this.warehouses.ozon = {
+									qty: item.qty,
+									date: moment(item.last_updated.slice(0, -5)).format('DD.MM.YYYY в hh:mm'),
+								}
+							break;
+							case 'wb': 
+								this.warehouses.wb = {
+									qty: item.qty,
+									date: moment(item.last_updated.slice(0, -5)).format('DD.MM.YYYY в hh:mm'),
+								}
+							break;
+							default:
+								this[item.name] = {
+									qty: item.qty,
+									date: moment(item.last_updated.slice(0, -5)).format('DD.MM.YYYY в hh:mm'),
+								}
+							break
+						}
+					}
+				}
+			})
 		}
+	},
+	mounted() {
+		this.updateDashboard();
 	}
 }
 </script>
@@ -76,13 +168,14 @@ h1 {
 	display: flex;	
 	flex-direction: row;
 	flex-wrap: nowrap;
-	justify-content: space-between;
+	justify-content: space-around;
 }
 	
 .panel {
 	background: $light-color;
 	border-radius: 8px;
 	padding: 15px;
+	min-width: 20%;
 
 	h2 {
 		font-size: 16px;
@@ -93,6 +186,13 @@ h1 {
 		margin: 30px 0;
 		font-size: 38px;
 		font-weight: bold;
+	}
+
+	p {
+		font-size: 12px;
+		margin-top: 10px;
+		color: rgba($dark-color, .4);
+	
 	}
 }
 </style>
