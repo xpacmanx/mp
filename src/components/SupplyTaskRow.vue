@@ -394,7 +394,7 @@ const suggestion = computed(() => {
 		</td>
 		<td>{{ countSupplyTaskByDateDays }}</td>
 		<td>{{task.goal_days}}</td>
-		<td>-</td>
+		<td>{{ task.goal_sales }}</td>
 		<td>{{ goalNDays }}</td>
 		<td>{{task.goal_toggle}}</td>
 		<td>{{task.goal_priority}}</td>
