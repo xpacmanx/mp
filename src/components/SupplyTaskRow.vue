@@ -103,7 +103,6 @@ const stocks = props.task.stocks.filter(stock => stock.name.includes(name + whty
 	return qty;
 }
 
-
 function getStocksById(id) {
 	let qty = 0;
 	let whtype = props.whtype;
@@ -195,10 +194,19 @@ const salesPerDay = computed(() => {
 	let qty = 0;
 	const goals = props.task.goals.filter(goal => goal.region == props.region && goal.type == props.whtype)
 	if (goals.length > 0) {
+		console.log(goals);
 		qty = goals.reduce((sum, item) => sum + Number(item.sales_per_day), 0);
 	}
 	return qty;
 });
+
+function getGoalById(id) {
+	console.log('getGoalById');
+	const goal = props.task.goals.find(goal => goal.warehouse_id == id);
+	if (goal !== undefined) return goal.sales_per_day;
+	return 0;
+}
+
 
 const countRegionDays = computed(() => {
 	let days = 0;
@@ -216,7 +224,7 @@ const countSupplyTaskByDate = computed(() => {
 	const days = to.diff(from, 'days');
 	const result = {qty: currentQty, messages: []}
 	if (days > 0) {
-		for (let i = 1; i <= days; i++) {
+		for (let i = 0; i <= days; i++) {
 			const current = moment(from).add(i, 'days');
 			const supplytasks = props.supplytasks.filter(task => moment(task.finish_date).isSame(current, 'day') && task.product_id == props.task.product_id);
 			if (supplytasks.length > 0) {
@@ -250,13 +258,14 @@ const groupByType = computed(() => {
 
 function countSupplyTaskForWhId(id){
 	const currentQty = getStocksById(id);
-	const sales_Per_Day = Number(salesPerDay.value);
+	const sales_Per_Day = getGoalById(id);
+	// const sales_Per_Day = Number(salesPerDay.value);
 	const from = moment(props.fromDate, 'DD.MM.YYYY');
 	const to = moment(props.estimateDate, 'DD.MM.YYYY');
 	const days = to.diff(from, 'days');
 	const result = {qty: 0};
 	if (days > 0) {
-		for (let i = 1; i <= days; i++) {
+		for (let i = 0; i <= days; i++) {
 			const current = moment(from).add(i, 'days');
 			const supplytasks = props.supplytasks.filter(task => moment(task.finish_date).isSame(current, 'day') && task.product_id == props.task.product_id && task.warehouse_id == id);
 
@@ -273,8 +282,7 @@ function countSupplyTaskForWhId(id){
 function getGoalNdays(id) {
 	const task = props.task.goals.find(g => g.warehouse_id == id);
 	if (task == undefined) return 0;
-		// console.log('helo', Math.round(Number(task.sales_goal) / 30 * Number(task.goal_days)));
-	if (task.sales_goal != null && task.goal_days != null) return Math.round(Number(task.sales_goal) / 30 * Number(task.goal_days));
+	if (task.sales_goal != null && task.goal_days != null) return Math.round((Number(task.sales_goal) / 30) * Number(task.goal_days));
 	return 0;
 }
 
@@ -319,9 +327,6 @@ const suggestion = computed(() => {
 			for (const region in groupByType.value[type]) {
 				for (const w of groupByType.value[type][region]) {
 					if (sum[type][region] == undefined) sum[type][region] = 0;
-					// if (getGoalNdays(w.id) > 0) {
-					// 	console.log('hi', w.id, getGoalNdays(w.id));	
-					// }
 					sum[type][region] += getGoalNdays(w.id) - countSupplyTaskForWhId(w.id);
 					if (sum[type][region] <= 0) sum[type][region] = 0;
 				}
@@ -336,9 +341,9 @@ const suggestion = computed(() => {
 
 		// Step 3
 		const condition = Number(mainAndPacked.value) - amount2;
-		if (condition <= 0) {
+		if (condition < 0) {
 			// TODO mark cell yellow
-			const condition2 = amount1 / amount2 * Number(mainAndPacked.value);
+			const condition2 = (amount1 / amount2) * Number(mainAndPacked.value);
 			if (condition2 <= 0) return 0 + ' п3.1';
 			return condition2 + ' п3.1';
 		} else {

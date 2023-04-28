@@ -4,7 +4,7 @@
     <Header />
     <div class="content-with-menu">
       <div class="top-menu">
-        <h2>Главная страница</h2>
+        <h2>Начальная страница</h2>
       </div>
       <div class="content">
         <h1>Dashboard </h1>
@@ -14,21 +14,21 @@
 						<div class="panel__number">{{products.qty}}</div>
 						<button v-if="!products.sync" class="btn" @click="syncProducts()">Синхронизировать</button>
 						<p v-else>Синхронизация..</p>
-						<p>Дата последней синхронизации:<br />{{products.date}}</p>
+						<p>Дата последнего изменения:<br />{{products.date}}</p>
 					</div>
 					<div class="panel">
 						<h2>Склады</h2>
 						<div class="panel__number">{{warehouses.total.qty}}</div>
 						<button v-if="!warehouses.total.sync" class="btn" @click="syncWarehouses()">Синхронизировать</button>
 						<p v-else>Синхронизация..</p>
-						<p>Дата последней синхронизации:<br />{{warehouses.total.date}}</p>
+						<p>Дата последнего изменения:<br />{{warehouses.total.date}}</p>
 					</div>
 					<div class="panel">
 						<h2>Остатки</h2>
 						<div class="panel__number">{{stocks.qty}}</div>
 						<button v-if="!stocks.sync" class="btn" @click="syncStocks()">Синхронизировать</button>
 						<p v-else>Синхронизация..</p>
-						<p>Дата последней синхронизации:<br />{{stocks.date}}</p>
+						<p>Дата последнего изменения:<br />{{stocks.date}}</p>
 					</div>
 				</div>
       </div>
