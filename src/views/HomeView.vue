@@ -10,7 +10,7 @@
         <h1>Dashboard </h1>
 				<div class="panels">
 					<div class="panel">
-						<h2>Продукты</h2>
+						<h2>Товаров</h2>
 						<div class="panel__number">{{products.qty}}</div>
 						<button v-if="!products.sync" class="btn" @click="syncProducts()">Синхронизировать</button>
 						<p v-else>Синхронизация..</p>
@@ -24,11 +24,18 @@
 						<p>Дата последнего изменения:<br />{{warehouses.total.date}}</p>
 					</div>
 					<div class="panel">
-						<h2>Остатки</h2>
-						<div class="panel__number">{{stocks.qty}}</div>
+						<h2>WB остатки</h2>
+						<div class="panel__number">{{wbstocks.qty}}</div>
 						<button v-if="!stocks.sync" class="btn" @click="syncStocks()">Синхронизировать</button>
 						<p v-else>Синхронизация..</p>
-						<p>Дата последнего изменения:<br />{{stocks.date}}</p>
+						<p>Дата последнего изменения:<br />{{wbstocks.date}}</p>
+					</div>
+					<div class="panel">
+						<h2>Ozon остатки</h2>
+						<div class="panel__number">{{ozonstocks.qty}}</div>
+						<button v-if="!stocks.sync" class="btn" @click="syncStocks()">Синхронизировать</button>
+						<p v-else>Синхронизация..</p>
+						<p>Дата последнего изменения:<br />{{ozonstocks.date}}</p>
 					</div>
 				</div>
       </div>
@@ -70,6 +77,16 @@ export default {
 				},
 			},
 			stocks: {
+				qty: '...',
+				date: '',
+				sync: false,
+			},
+			wbstocks: {
+				qty: '...',
+				date: '',
+				sync: false,
+			},
+			ozonstocks: {
 				qty: '...',
 				date: '',
 				sync: false,

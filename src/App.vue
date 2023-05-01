@@ -76,6 +76,7 @@ a {
 	width: 100%;
   padding: 20px;
 	overflow: scroll;
+	min-height: 80vh;
 }
 
 .btn {
@@ -176,5 +177,39 @@ nav {
 
 .content-with-menu {
   padding-left: 70px;
+}
+
+.sorting {
+	display: flex;
+	flex-direction: row;
+	margin-top: 10px;
+	margin-bottom: -10px;
+	justify-content: flex-end;
+	font-size: 12px;
+
+	span {
+		margin-top: 5px;
+		margin-left: 15px;
+	}
+	
+	div {
+		display: flex;
+	}
+	
+	ul {
+		display: flex;
+		list-style: none;
+    margin-left: 10px;
+    padding: 0;
+		
+		li {
+			cursor: pointer;
+			background: #eee;
+			border-radius: 10px;
+			padding: 5px;
+			list-style: none;
+			margin-right: 5px;
+		}
+	}
 }
 </style>

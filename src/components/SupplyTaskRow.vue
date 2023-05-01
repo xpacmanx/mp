@@ -3,10 +3,6 @@ import moment from 'moment'
 import { computed, defineEmits } from 'vue'
 
 const emit = defineEmits(['onEdit'])
-
-function onEdit() {
-  emit('onEdit');
-}
 	
 const props = defineProps({
   task: {
@@ -46,6 +42,11 @@ const props = defineProps({
 		required: true
 	},
 })
+
+function onEdit(prop, value) {
+	// console.log(props.task);
+  emit('onEdit', prop, value, props.task.product_id);
+}
 
 const percent = computed(() => {
 	const n = props.task[props.whtype + '_profitability'];
@@ -161,6 +162,7 @@ const mainAndPacked = computed(() => {
 		if (stock.name == 'Основной склад (Рассчет)') qty += stock.qty;
 		if (stock.name == '2 - Упакованное') qty += stock.qty;
 	}
+	onEdit('mainAndPacked', qty);
 	return qty;
 });
 
@@ -169,8 +171,12 @@ const lost = computed(() => {
 });
 
 const goalNDays = computed(() => {
-	if (props.task.goal_sales_goal != null && props.task.goal_days != null) return Math.round(Number(props.task.goal_sales_goal) / 30 * Number(props.task.goal_days));
-	return 0;
+	let qty = 0;
+	if (props.task.goal_sales_goal != null && props.task.goal_days != null) {
+	qty = Math.round(Number(props.task.goal_sales_goal) / 30 * Number(props.task.goal_days));
+	}
+	onEdit('goalNDays', qty);
+	return qty;
 });
 
 const ourStockAndMp = computed(() => {
@@ -194,14 +200,14 @@ const salesPerDay = computed(() => {
 	let qty = 0;
 	const goals = props.task.goals.filter(goal => goal.region == props.region && goal.type == props.whtype)
 	if (goals.length > 0) {
-		console.log(goals);
+		// console.log(goals);
 		qty = goals.reduce((sum, item) => sum + Number(item.sales_per_day), 0);
 	}
 	return qty;
 });
 
 function getGoalById(id) {
-	console.log('getGoalById');
+	// console.log('getGoalById');
 	const goal = props.task.goals.find(goal => goal.warehouse_id == id);
 	if (goal !== undefined) return goal.sales_per_day;
 	return 0;
@@ -281,8 +287,13 @@ function countSupplyTaskForWhId(id){
 
 function getGoalNdays(id) {
 	const task = props.task.goals.find(g => g.warehouse_id == id);
-	if (task == undefined) return 0;
-	if (task.sales_goal != null && task.goal_days != null) return Math.round((Number(task.sales_goal) / 30) * Number(task.goal_days));
+	if (task == undefined) {
+		return 0;
+	}
+	if (task.sales_goal != null && task.goal_days != null) {
+		let qty = Math.round((Number(task.sales_goal) / 30) * Number(task.goal_days));
+		return qty;
+	}
 	return 0;
 }
 
@@ -296,11 +307,15 @@ const countSupplyTaskByDateDays = computed(() => {
 });
 
 const suggestion = computed(() => {
+
 	let qty = 0;
 	const goal = Number(goalNDays.value);
 
 	// Step 0
-	if (goal == 0) return 0 + '(п0)';
+	if (goal == 0) {
+		onEdit('suggestion', 0);
+		return 0 + '(п0)';
+	}
 
 	// Step 1
 	const regionalWarehousesIds = props.regionWarehouses.map(w => w.id);
@@ -312,7 +327,10 @@ const suggestion = computed(() => {
 			amount1 += getGoalNdays(id) - countSupplyTaskForWhId(id);
 		}
 
-		if (amount1 <= 0) return 0 + ' (п1)';
+		if (amount1 <= 0) {
+			onEdit('suggestion', 0);
+			return 0 + ' (п1)';
+		}
 	}
 
 	// Step 2
@@ -344,14 +362,20 @@ const suggestion = computed(() => {
 		if (condition < 0) {
 			// TODO mark cell yellow
 			const condition2 = (amount1 / amount2) * Number(mainAndPacked.value);
-			if (condition2 <= 0) return 0 + ' п3.1';
+			if (condition2 <= 0) {
+				onEdit('suggestion', 0);
+				return 0 + ' п3.1';
+			}
+			onEdit('suggestion', condition2);
 			return condition2 + ' п3.1';
 		} else {
+			onEdit('suggestion', amount1);
 			return amount1 + ' п3.2'; 
 		}
 		
 	}
-	
+
+	onEdit('suggestion', qty);
 	return qty;
 });
 
@@ -378,7 +402,7 @@ const suggestion = computed(() => {
 		<td>{{task.product_id}}</td>
 		<td>{{task.name}}</td>
 		<td class="table__code">{{task.code}}</td>
-		<td><input type="number" v-model.number="task.task" @input="onEdit" @focus="checkZero" @blur="makeZero" min="1" max="999" /></td>
+		<td><input type="number" v-model.number="task.task" @focus="checkZero" @blur="makeZero" min="1" max="999" /></td>
 		<td>{{suggestion}}</td>
 		<td>{{mainAndPacked}}</td>
 		<td>{{currentWhQty}}</td>

@@ -21,6 +21,20 @@
           <button class="btn btn-transparent" @click="makeSort()">Предпросмотр</button>
         </div>
       </div>
+			<div class="sorting" v-if="loaded && process_status">
+				<div>
+					<span>Сортировка:</span>
+					<ul>
+						<li v-for="(item,i) in sorting" @click="removeSort('sorting', i)">{{item.name.includes('computed') ? item.name.split('.')[1] : item.name}} <span>{{item.direction == 'asc' ? '↑' : '↓'}}</span> | 🅧</li>
+					</ul>
+				</div>
+				<div>
+					<span>Фильтрация:</span>
+					<ul>
+						<li v-for="(item,i) in filters" @click="removeSort('filters', i)">{{item.name.includes('computed') ? item.name.split('.')[1] : item.name}} | 🅧</li>
+					</ul>
+				</div>
+			</div>
       <div class="content">
 				<div class="process" v-if="!process_status">
 					<h3>Создания задания к подсорту..</h3>
@@ -39,49 +53,73 @@
 				<p v-if="!loaded">Загрузка контента...</p>
         <table class="table" v-if="loaded && process_status">
 					<thead>
-						<th>#</th>
-						<th class="table__title">Название товара</th>
-						<th class="table__code">Код</th>
-						<th>Подготовить</th>
-						<th>Программа предлагает Переместить в Подготовить</th>
-						<th>Основной склад + Упакованное (расчет)</th>
-						<th>Находится на складе</th>
-						<th>Находится в регионе</th>
-						<th>Срок подготовки товара к отгрузке, дней (подгружается из МС)</th>
-						<th>На сколько дней находится в городе выбранного склада сейчас</th>
-						<th>Расчетное наличие на день приемки [сегодняшняя дата + срок поставки] без текущей поставки</th>
-						<th>На сколько дней будет на день приемки [сегодняшняя дата + срок поставки] без текущей поставки в городе выбранного склада</th>
-						<th>Наличие на какое кол-во дней должно быть
-(N)</th>
-						<th>Кол-во продаж за N дней в городе выбранного склада Рассчетно от факта за 30 дней</th>
-						<th>Кол-во продаж за N дней в городе выбранного склада Цель</th>
-						<th>Статус переключателя Цель/Факт</th>
-						<th>Приоритет склада</th>
-						<th>Планируем ли дальше продавать на этом складе</th>
-						<th>В транзите в город выбранного склада</th>
-						<th>Готово по факту в город выбранного склада</th>
-						<th>Подготовить в город выбранного склада</th>
-						<th>Останется после перемещения</th>
-						<th>{{current_warehouse.type.toUpperCase()}} Текущая доходность</th>
-						<th>Осталось товара (наш склад + транзит + МП)</th>
-						<th>Осталось товара (наш склад + транзит {{current_warehouse.type.toUpperCase()}} + FBW + FBS {{current_warehouse.type.toUpperCase()}})</th>
-						<th>Мастер</th>
-						<th>{{current_warehouse.type.toUpperCase()}} Планируем ли и дальше продавать</th>
-						<th>{{current_warehouse.type.toUpperCase()}} Кол-во продаж за 7 дней</th>
-						<th>{{current_warehouse.type.toUpperCase()}} Кол-во продаж за 30 дней</th>
-						<th>{{current_warehouse.type.toUpperCase()}} Целевое кол-во продаж в месяц</th>
-						<th>{{current_warehouse.type.toUpperCase()}} На скольки складах есть товар</th>
-						<th>{{current_warehouse.type.toUpperCase()}} Осталось товара складах маркетплейса</th>
-						<th>{{current_warehouse.type.toUpperCase()}} Товар в офисе, распределенный для МП</th>
-						<th>Товар в транзите МП</th>
-						<th>Ожидание товара 1я неделя</th>
-						<th>Ожидание товара 2я неделя</th>
-						<th>Ожидание товара 3я неделя</th>
-						<th>Ожидание товара 4я неделя</th>
-						<th>Ожидание товара 5я неделя</th>
+							<th>#</th>
+							<th class="table__title">Название товара</th>
+							<th class="table__code">Код</th>
+							<th>Подготовить</th>
+							<th>
+								Программа предлагает Переместить в Подготовить 
+								<Sorting :filters="filters" :sorting="sorting" name="computed.suggestion" @onSort="onSort"/>
+							</th>
+							<th>
+								Основной склад + Упакованное (расчет)
+								<Sorting :filters="filters" :sorting="sorting" name="computed.mainAndPacked" @onSort="onSort"/>
+							</th>
+							<th>Находится на складе</th>
+							<th>Находится в регионе</th>
+							<th>Срок подготовки товара к отгрузке, дней (подгружается из МС)</th>
+							<th>На сколько дней находится в городе выбранного склада сейчас</th>
+							<th>Расчетное наличие на день приемки
+	[сегодняшняя дата + срок поставки]
+	без текущей поставки
+	в городе выбранного склада</th>
+							<th>На сколько дней будет
+	на день приемки
+	[сегодняшняя дата + срок поставки]
+	без текущей поставки
+	в городе выбранного склада</th>
+							<th>Наличие на какое кол-во дней должно быть
+	(N)</th>
+							<th>Кол-во
+	продаж
+	за N дней
+	в городе выбранного склада
+	
+	Рассчетно от факта за 30 дней</th>
+							<th>
+								Кол-во продаж за N дней в городе выбранного склада Цель
+								<Sorting :filters="filters" :sorting="sorting" name="computed.goalNDays" @onSort="onSort"/>
+							</th>
+							<th>Статус переключателя Цель/Факт</th>
+							<th>Приоритет склада</th>
+							<th>
+								Планируем ли дальше продавать на этом складе
+								<Sorting :filters="filters" :sorting="sorting" name="goal_active" @onSort="onSort"/>
+							</th>
+							<th>В транзите в город выбранного склада</th>
+							<th>Готово по факту в город выбранного склада</th>
+							<th>Подготовить в город выбранного склада</th>
+							<th>Останется после перемещения</th>
+							<th>{{current_warehouse.type.toUpperCase()}} Текущая доходность</th>
+							<th>Осталось товара (наш склад + транзит + МП)</th>
+							<th>Осталось товара (наш склад + транзит {{current_warehouse.type.toUpperCase()}} + FBW + FBS {{current_warehouse.type.toUpperCase()}})</th>
+							<th>Мастер</th>
+							<th>{{current_warehouse.type.toUpperCase()}} Планируем ли и дальше продавать</th>
+							<th>{{current_warehouse.type.toUpperCase()}} Кол-во продаж за 7 дней</th>
+							<th>{{current_warehouse.type.toUpperCase()}} Кол-во продаж за 30 дней</th>
+							<th>{{current_warehouse.type.toUpperCase()}} Целевое кол-во продаж в месяц</th>
+							<th>{{current_warehouse.type.toUpperCase()}} На скольки складах есть товар</th>
+							<th>{{current_warehouse.type.toUpperCase()}} Осталось товара складах маркетплейса</th>
+							<th>{{current_warehouse.type.toUpperCase()}} Товар в офисе, распределенный для МП</th>
+							<th>Товар в транзите МП</th>
+							<th>Ожидание товара 1я неделя</th>
+							<th>Ожидание товара 2я неделя</th>
+							<th>Ожидание товара 3я неделя</th>
+							<th>Ожидание товара 4я неделя</th>
+							<th>Ожидание товара 5я неделя</th>
 					</thead>
 					<tbody>
-						<SupplyTaskRow v-for="(task,i) in tasks" :key="task.product_id" :task="task" :whtype="current_warehouse.type" :whname="current_warehouse.slug_name" :region="current_warehouse.region" :estimateDate="estimateDate" :fromDate="fromDate" :supplytasks="filteredSupplytasks" :regionWarehouses="regionWarehouses" :warehouses="warehouses" />
+						<SupplyTaskRow v-for="(task,i) in sortedData" :key="task.product_id" :task="task" :whtype="current_warehouse.type" :whname="current_warehouse.slug_name" :region="current_warehouse.region" :estimateDate="estimateDate" :fromDate="fromDate" :supplytasks="filteredSupplytasks" :regionWarehouses="regionWarehouses" :warehouses="warehouses" @onEdit="onEdit"/>
 					</tbody>
 				</table>
       </div>
@@ -93,13 +131,14 @@
 import Menu from '@/components/navigation/Menu.vue'
 import Header from '@/components/navigation/Header.vue'
 import SupplyTaskRow from '@/components/SupplyTaskRow.vue'
+import Sorting from '@/components/SortingComponent.vue'
 import mpr from './../tools/mpr'
 import moment from 'moment'
 	
 export default {
   name: 'NewSupplyTaskView',
 	components: {
-    Menu, Header, SupplyTaskRow
+    Menu, Header, SupplyTaskRow, Sorting
   },
 	data(){
 		return {
@@ -110,6 +149,8 @@ export default {
 			supply_tasks: [],
 			warehouses: [],
 			tasks: [],
+			filters: [],
+			sorting: [],
 			process: [
 				{
 					id: 1,
@@ -169,6 +210,44 @@ export default {
 			}
 			return arr;
 		},
+		sortedData() {
+			let arr = [];
+			for (const task of this.tasks) {
+				arr.push(task);
+			}
+			
+			//filters
+			if (this.filters.length > 0) {
+				for (let filter of this.filters) {
+					let name = filter.name + '';
+					const computed = filter.name.includes('computed');
+					if (computed) name = filter.name.split('.')[1];
+					// console.log('filter =>', name, arr);
+					arr = arr.filter(task => 
+						computed ? 
+						task.computed[name] != 0  :
+						task[name] != 0 && task[name] != null
+					);
+				}
+			}
+			//sorting
+			if (this.sorting.length > 0) {
+				for (const sort of this.sorting) {
+					let name = sort.name + '';
+					let computed = sort.name.includes('computed');
+					if (computed) name = sort.name.split('.')[1];
+					let versa = 1;
+					if (sort.direction == 'desc') versa = -1;
+					arr = arr.sort((a,b) => 
+						computed ? 
+						(a.computed[name])*versa - (b.computed[name])*versa :
+						(a[name])*versa - (b[name])*versa
+					);
+				}
+			}
+			// console.log('Длина массива:', arr.length);
+			return arr;
+		},
 		requestData() {
 			return {
 				start_date: moment().format('YYYY-MM-DD'),
@@ -192,6 +271,58 @@ export default {
 		},
 	},
 	methods: {
+		onEdit(prop, value, id) {
+			const task = this.tasks.find(task => task.product_id == id);
+			// console.log('onEdit',id, prop, value);
+			if (task !== undefined) {
+				task.computed[prop] = value;
+				// console.log(task);
+			}
+		},
+
+		onSort(type, name, value) {
+			// console.log(type,name,value, this.sorting);
+			if (type == 'sort') {
+				const sort = this.sorting.find(sort => sort.name == name );
+				if (sort == undefined) {
+					this.sorting.push({
+						name: name,
+						direction: value,
+					})
+				} else {
+					if (sort.direction == value) {
+						for (let i in this.sorting) {
+							if (this.sorting[i].name == name) {
+								this.sorting.splice(i, 1);
+							}
+						}
+					} else {
+						sort.direction = value;
+					}
+				}
+			}
+
+			if (type == 'filter') {
+				const filter = this.filters.find(sort => sort.name == name);
+				if (filter == undefined) {
+					this.filters.push({
+						name: name
+					})
+				} else {
+					for (let i in this.filters) {
+						if (this.filters[i].name == name) {
+							this.filters.splice(i, 1);
+						}
+					}
+				}
+			}
+		},
+		
+		removeSort(type, i) {
+			if (i == -1) this[type] = [];
+			this[type].splice(i, 1);
+		},
+		
 		wChange(event){
 			this.choose(event.target.value);
 		},
@@ -220,8 +351,10 @@ export default {
 		},
 		
 		makeSort() {
-			this.tasks.sort((a,b) => a.id - b.id);
-			this.tasks.sort((a,b) => b.task - a.task);
+			this.sorting = [{name:'task', direction: 'desc'}];
+			this.filters = [];
+			// this.tasks.sort((a,b) => a.id - b.id);
+			// this.tasks.sort((a,b) => b.task - a.task);
 		},
 
 		reset() {
@@ -290,6 +423,9 @@ export default {
 		},
 		choose(id) {
 			this.loaded = false;
+			this.filters = [];
+			this.sorting = [];
+			
 			// this.$route.params.wid = id;
 			this.reset();
 			
@@ -304,6 +440,11 @@ export default {
 				// console.log(response.data.supplytasks);
 				for (const item of response.data.result) {
 					item.task = 0;
+					item.computed = {
+						suggestion: 0,
+						goalNDays: 0,
+						mainAndPacked: 0,
+					};
 					this.tasks.push(item);
 				}
 				for (const item of response.data.supplytasks) {
