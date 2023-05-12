@@ -187,7 +187,8 @@ a {
 
 	tr:hover, td:active {
 		td {
-			background: rgba(193, 255, 66, 0.05);
+			/*background: rgba(193, 255, 66, 0.05);*/
+			background: #e5ffef;
 		}
 	}
 }
