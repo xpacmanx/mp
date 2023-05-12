@@ -96,6 +96,13 @@ a {
   color: $main-color;
 }
 
+.container-table {
+	overflow: scroll;
+	position: relative;
+	height: 100%;
+	max-height: calc(100vh - 110px);
+}
+
 .table {
   width: 100%;
 	overflow: scroll;
@@ -120,7 +127,7 @@ a {
   tr, th, td {
     margin: 0;
     padding: 3px;
-    border: rgba($dark-color, 0.1) solid 1px;
+    border: rgba($dark-color, .1) solid 1px;
     border-collapse: collapse;
     background: rgba($dark-color, .02);
 
@@ -145,6 +152,14 @@ a {
 		line-height: 1.2em;
 	}
 
+	td:nth-child(3) {
+		position: -webkit-sticky;
+	  position: sticky;
+	  left: 0;
+		z-index: 1;
+		background: $light-color;
+	}
+
   td.editable {
     background: $super-light-color;
   }
@@ -154,7 +169,21 @@ a {
     text-align: center;
     font-size: 0.6em;
     padding: 9px 5px;
+		background: $light-color;
   }
+
+	thead th {
+	  position: -webkit-sticky;
+	  position: sticky;
+	  top: 0;
+		z-index: 2;
+	}
+	
+	tbody th {
+	  position: -webkit-sticky;
+	  position: sticky;
+	  left: 0;
+	}
 
 	tr:hover, td:active {
 		td {

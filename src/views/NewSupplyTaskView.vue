@@ -51,77 +51,79 @@
 					</div>
 				</div>
 				<p v-if="!loaded">Загрузка контента...</p>
-        <table class="table" v-if="loaded && process_status">
-					<thead>
-							<th>#</th>
-							<th class="table__title">Название товара</th>
-							<th class="table__code">Код</th>
-							<th>Подготовить</th>
-							<th>
-								Программа предлагает Переместить в Подготовить 
-								<Sorting :filters="filters" :sorting="sorting" name="computed.suggestion" @onSort="onSort"/>
-							</th>
-							<th>
-								Основной склад + Упакованное (расчет)
-								<Sorting :filters="filters" :sorting="sorting" name="computed.mainAndPacked" @onSort="onSort"/>
-							</th>
-							<th>Находится на складе</th>
-							<th>Находится в регионе</th>
-							<th>Срок подготовки товара к отгрузке, дней (подгружается из МС)</th>
-							<th>На сколько дней находится в городе выбранного склада сейчас</th>
-							<th>Расчетное наличие на день приемки
-	[сегодняшняя дата + срок поставки]
-	без текущей поставки
-	в городе выбранного склада</th>
-							<th>На сколько дней будет
-	на день приемки
-	[сегодняшняя дата + срок поставки]
-	без текущей поставки
-	в городе выбранного склада</th>
-							<th>Наличие на какое кол-во дней должно быть
-	(N)</th>
-							<th>Кол-во
-	продаж
-	за N дней
-	в городе выбранного склада
-	
-	Рассчетно от факта за 30 дней</th>
-							<th>
-								Кол-во продаж за N дней в городе выбранного склада Цель
-								<Sorting :filters="filters" :sorting="sorting" name="computed.goalNDays" @onSort="onSort"/>
-							</th>
-							<th>Статус переключателя Цель/Факт</th>
-							<th>Приоритет склада</th>
-							<th>
-								Планируем ли дальше продавать на этом складе
-								<Sorting :filters="filters" :sorting="sorting" name="goal_active" @onSort="onSort"/>
-							</th>
-							<th>В транзите в город выбранного склада</th>
-							<th>Готово по факту в город выбранного склада</th>
-							<th>Подготовить в город выбранного склада</th>
-							<th>Останется после перемещения</th>
-							<th>{{current_warehouse.type.toUpperCase()}} Текущая доходность</th>
-							<th>Осталось товара (наш склад + транзит + МП)</th>
-							<th>Осталось товара (наш склад + транзит {{current_warehouse.type.toUpperCase()}} + FBW + FBS {{current_warehouse.type.toUpperCase()}})</th>
-							<th>Мастер</th>
-							<th>{{current_warehouse.type.toUpperCase()}} Планируем ли и дальше продавать</th>
-							<th>{{current_warehouse.type.toUpperCase()}} Кол-во продаж за 7 дней</th>
-							<th>{{current_warehouse.type.toUpperCase()}} Кол-во продаж за 30 дней</th>
-							<th>{{current_warehouse.type.toUpperCase()}} Целевое кол-во продаж в месяц</th>
-							<th>{{current_warehouse.type.toUpperCase()}} На скольки складах есть товар</th>
-							<th>{{current_warehouse.type.toUpperCase()}} Осталось товара складах маркетплейса</th>
-							<th>{{current_warehouse.type.toUpperCase()}} Товар в офисе, распределенный для МП</th>
-							<th>Товар в транзите МП</th>
-							<th>Ожидание товара 1я неделя</th>
-							<th>Ожидание товара 2я неделя</th>
-							<th>Ожидание товара 3я неделя</th>
-							<th>Ожидание товара 4я неделя</th>
-							<th>Ожидание товара 5я неделя</th>
-					</thead>
-					<tbody>
-						<SupplyTaskRow v-for="(task,i) in sortedData" :key="task.product_id" :task="task" :whtype="current_warehouse.type" :whname="current_warehouse.slug_name" :region="current_warehouse.region" :estimateDate="estimateDate" :fromDate="fromDate" :supplytasks="filteredSupplytasks" :regionWarehouses="regionWarehouses" :warehouses="warehouses" @onEdit="onEdit"/>
-					</tbody>
-				</table>
+				<div class="container-table">
+	        <table class="table" v-if="loaded && process_status">
+						<thead>
+								<th>#</th>
+								<th class="table__title">Название товара</th>
+								<th class="table__code">Код</th>
+								<th>Подготовить</th>
+								<th>
+									Программа предлагает Переместить в Подготовить 
+									<Sorting :filters="filters" :sorting="sorting" name="computed.suggestion" @onSort="onSort"/>
+								</th>
+								<th>
+									Основной склад + Упакованное (расчет)
+									<Sorting :filters="filters" :sorting="sorting" name="computed.mainAndPacked" @onSort="onSort"/>
+								</th>
+								<th>Находится на складе</th>
+								<th>Находится в регионе</th>
+								<th>Срок подготовки товара к отгрузке, дней (подгружается из МС)</th>
+								<th>На сколько дней находится в городе выбранного склада сейчас</th>
+								<th>Расчетное наличие на день приемки
+		[сегодняшняя дата + срок поставки]
+		без текущей поставки
+		в городе выбранного склада</th>
+								<th>На сколько дней будет
+		на день приемки
+		[сегодняшняя дата + срок поставки]
+		без текущей поставки
+		в городе выбранного склада</th>
+								<th>Наличие на какое кол-во дней должно быть
+		(N)</th>
+								<th>Кол-во
+		продаж
+		за N дней
+		в городе выбранного склада
+		
+		Рассчетно от факта за 30 дней</th>
+								<th>
+									Кол-во продаж за N дней в городе выбранного склада Цель
+									<Sorting :filters="filters" :sorting="sorting" name="computed.goalNDays" @onSort="onSort"/>
+								</th>
+								<th>Статус переключателя Цель/Факт</th>
+								<th>Приоритет склада</th>
+								<th>
+									Планируем ли дальше продавать на этом складе
+									<Sorting :filters="filters" :sorting="sorting" name="goal_active" @onSort="onSort"/>
+								</th>
+								<th>В транзите в город выбранного склада</th>
+								<th>Готово по факту в город выбранного склада</th>
+								<th>Подготовить в город выбранного склада</th>
+								<th>Останется после перемещения</th>
+								<th>{{current_warehouse.type.toUpperCase()}} Текущая доходность</th>
+								<th>Осталось товара (наш склад + транзит + МП)</th>
+								<th>Осталось товара (наш склад + транзит {{current_warehouse.type.toUpperCase()}} + FBW + FBS {{current_warehouse.type.toUpperCase()}})</th>
+								<th>Мастер</th>
+								<th>{{current_warehouse.type.toUpperCase()}} Планируем ли и дальше продавать</th>
+								<th>{{current_warehouse.type.toUpperCase()}} Кол-во продаж за 7 дней</th>
+								<th>{{current_warehouse.type.toUpperCase()}} Кол-во продаж за 30 дней</th>
+								<th>{{current_warehouse.type.toUpperCase()}} Целевое кол-во продаж в месяц</th>
+								<th>{{current_warehouse.type.toUpperCase()}} На скольки складах есть товар</th>
+								<th>{{current_warehouse.type.toUpperCase()}} Осталось товара складах маркетплейса</th>
+								<th>{{current_warehouse.type.toUpperCase()}} Товар в офисе, распределенный для МП</th>
+								<th>Товар в транзите МП</th>
+								<th>Ожидание товара 1я неделя</th>
+								<th>Ожидание товара 2я неделя</th>
+								<th>Ожидание товара 3я неделя</th>
+								<th>Ожидание товара 4я неделя</th>
+								<th>Ожидание товара 5я неделя</th>
+						</thead>
+						<tbody>
+							<SupplyTaskRow v-for="(task,i) in sortedData" :key="task.product_id" :task="task" :whtype="current_warehouse.type" :whname="current_warehouse.slug_name" :region="current_warehouse.region" :estimateDate="estimateDate" :fromDate="fromDate" :supplytasks="filteredSupplytasks" :regionWarehouses="regionWarehouses" :warehouses="warehouses" @onEdit="onEdit"/>
+						</tbody>
+					</table>
+				</div>
       </div>
     </div>
   </div>
