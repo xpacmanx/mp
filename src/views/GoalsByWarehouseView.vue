@@ -5,7 +5,7 @@
 		<form @submit.prevent="onSubmit">
     <div class="content-with-menu">
       <div class="top-menu">
-        <h2>3. Goals by warehouse</h2>
+        <h2>3. Цели для выбранного склада</h2>
 				<span v-if="!warehouses_loaded">Загрузка складов...</span>
         <select v-if="warehouses_loaded" @change="wChange($event)">
           <option v-for="warehouse in warehouses" :key="warehouse.id" :value="warehouse.id" :selected="warehouse.id == current_warehouse.id">{{warehouse.id}}. {{warehouse.slug_name}}</option>
@@ -64,7 +64,7 @@
 								<td><input type="number" v-model.number="goal.goal_sale_toggle" @input="handleUpdateGoal(goal)" min="0" max="1" /></td>
 								<td><input type="number" v-model.number="goal.sales" @input="handleUpdateGoal(goal)" min="0" max="9999999999" /></td>
 								<td>{{niceDate(goal.last_updated)}}</td>
-								<td>{{goal[current_warehouse.type + '_profitability']}}</td>
+								<td>{{getPercent(goal[current_warehouse.type + '_profitability'])}}</td>
 								<td>{{goal.master}}</td>
 								<td>{{goal[current_warehouse.type + '_active_for_sell']}}</td>
 								<td>{{goal[current_warehouse.type + '_sales7']}}</td>
@@ -127,6 +127,9 @@ export default {
 			}).catch((error) => {
 		     console.log('/warehouses/all error', error);
 		  });
+		},
+		getPercent(n){
+			return (parseFloat(n)*100).toFixed(2)+'%';
 		},
 		niceDate(date){
 			const momentDate = moment(date).format('DD.MM.YYYY')
