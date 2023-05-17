@@ -57,7 +57,7 @@
 								<td>{{goal.days_to_ready}}</td>
 								<td>{{Number(goal.days_to_ready) + Number(current_warehouse.ship_days)}}</td>
 								<td><input type="number" v-model.number="goal.goal_days" @input="handleUpdateGoal(goal)" min="1" max="60" /></td>
-								<td><input type="number" v-model.number="goal.active_for_sell" @input="handleUpdateGoal(goal)" min="0" max="1" /></td>
+								<td><input type="number" v-model.number="goal.active_for_sell" @input="handleUpdateGoal(goal)" min="0" max="3" /></td>
 								<td><input type="number" v-model.number="goal.sales_goal" @input="handleUpdateGoal(goal)" min="0" /></td>
 								<td><input type="number" v-model.number="goal.season_koef" @input="handleUpdateGoal(goal)" min="0" /></td>
 								<td>{{goal.season_koef > 0 ? goal.sales_goal * goal.season_koef : goal.sales_goal}}</td>

@@ -86,8 +86,9 @@ function filter() {
 		position: absolute;
 		display: none;
 		list-style: none;
-		z-index: 2;
-		margin-left: -100px;
+		z-index: 3;
+		margin-left: -180px;
+		margin-top: -17px;
 
 		li {
 			background: #fff;

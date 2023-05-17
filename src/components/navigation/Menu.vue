@@ -45,7 +45,7 @@
   position: fixed;
   list-style: none;
   background: $light-color;
-  z-index: 1;
+  z-index: 3;
   height: 100%;
   bottom: 0;
   top: 0;
@@ -91,7 +91,7 @@
         background: $light-color;
         position: absolute;
         width: 200px;
-        left: 80px;
+        left: 70px;
         line-height: 1.2em;
         padding: 10px;
         display: none;
