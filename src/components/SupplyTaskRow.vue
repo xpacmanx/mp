@@ -314,7 +314,7 @@ const suggestion = computed(() => {
 	// Step 0
 	if (goal == 0) {
 		onEdit('suggestion', 0);
-		return 0 + '(п0)';
+		return 0;// + '(п0)';
 	}
 
 	// Step 1
@@ -329,7 +329,7 @@ const suggestion = computed(() => {
 
 		if (amount1 <= 0) {
 			onEdit('suggestion', 0);
-			return 0 + ' (п1)';
+			return 0; //+ ' (п1)';
 		}
 	}
 
@@ -364,13 +364,13 @@ const suggestion = computed(() => {
 			const condition2 = (amount1 / amount2) * Number(mainAndPacked.value);
 			if (condition2 <= 0) {
 				onEdit('suggestion', 0);
-				return 0 + ' п3.1';
+				return 0;// + ' п3.1';
 			}
 			onEdit('suggestion', condition2);
-			return condition2 + ' п3.1';
+			return condition2;// + ' п3.1';
 		} else {
 			onEdit('suggestion', amount1);
-			return amount1 + ' п3.2'; 
+			return amount1;// + ' п3.2'; 
 		}
 		
 	}
