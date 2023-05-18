@@ -120,7 +120,7 @@
 								<th>Ожидание товара 5я неделя</th>
 						</thead>
 						<tbody>
-							<SupplyTaskRow v-for="(task,i) in sortedData" :key="task.product_id" :task="task" :whtype="current_warehouse.type" :whname="current_warehouse.slug_name" :region="current_warehouse.region" :estimateDate="estimateDate" :fromDate="fromDate" :supplytasks="filteredSupplytasks" :regionWarehouses="regionWarehouses" :warehouses="warehouses" @onEdit="onEdit"/>
+							<SupplyTaskRow v-for="(task,i) in sortedData" :key="task.product_id" :task="task" :whtype="current_warehouse.type" :whname="current_warehouse.slug_name" :region="current_warehouse.region" :estimateDate="estimateDate" :fromDate="fromDate" :supplytasks="filteredSupplytasks" :regionWarehouses="regionWarehouses" :warehouses="warehouses" @onEdit="onEdit" @makeEdit="makeEdit"/>
 						</tbody>
 					</table>
 				</div>
@@ -275,11 +275,14 @@ export default {
 	methods: {
 		onEdit(prop, value, id) {
 			const task = this.tasks.find(task => task.product_id == id);
-			// console.log('onEdit',id, prop, value);
 			if (task !== undefined) {
 				task.computed[prop] = value;
-				// console.log(task);
 			}
+		},
+
+		makeEdit(prop, value, id) {
+			const task = this.tasks.find(task => task.product_id == id);
+			if (task !== undefined) task[prop] = value;
 		},
 
 		onSort(type, name, value) {

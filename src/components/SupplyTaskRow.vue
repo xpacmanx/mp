@@ -2,7 +2,7 @@
 import moment from 'moment'
 import { computed, defineEmits } from 'vue'
 
-const emit = defineEmits(['onEdit'])
+const emit = defineEmits(['onEdit','makeEdit'])
 	
 const props = defineProps({
   task: {
@@ -46,6 +46,11 @@ const props = defineProps({
 function onEdit(prop, value) {
 	// console.log(props.task);
   emit('onEdit', prop, value, props.task.product_id);
+}
+
+function makeEdit(prop, value) {
+	// console.log(props.task);
+  emit('makeEdit', prop, value, props.task.product_id);
 }
 
 const percent = computed(() => {
@@ -306,6 +311,10 @@ const countSupplyTaskByDateDays = computed(() => {
 	return Math.floor(days);
 });
 
+function suggest(n) {
+	makeEdit('task', n)
+}
+
 const suggestion = computed(() => {
 
 	let qty = 0;
@@ -403,7 +412,7 @@ const suggestion = computed(() => {
 		<td>{{task.name}}</td>
 		<td class="table__code">{{task.code}}</td>
 		<td><input type="number" v-model.number="task.task" @focus="checkZero" @blur="makeZero" min="1" max="999" /></td>
-		<td>{{suggestion}}</td>
+		<td><a href="javascript://" @click="suggest(suggestion);">⬅️</a> {{suggestion}}</td>
 		<td>{{mainAndPacked}}</td>
 		<td>{{currentWhQty}}</td>
 		<td>{{ countRegionStocks }}</td>
