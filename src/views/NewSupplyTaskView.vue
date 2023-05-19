@@ -66,9 +66,9 @@
 									Основной склад + Упакованное (расчет)
 									<Sorting :filters="filters" :sorting="sorting" name="computed.mainAndPacked" @onSort="onSort"/>
 								</th>
+							  <th>Останется после перемещения</th>
 								<th>Находится на складе</th>
 								<th>Находится в регионе</th>
-								<th>Срок подготовки товара к отгрузке, дней (подгружается из МС)</th>
 								<th>На сколько дней находится в городе выбранного склада сейчас</th>
 								<th>Расчетное наличие на день приемки
 		[сегодняшняя дата + срок поставки]
@@ -79,8 +79,6 @@
 		[сегодняшняя дата + срок поставки]
 		без текущей поставки
 		в городе выбранного склада</th>
-								<th>Наличие на какое кол-во дней должно быть
-		(N)</th>
 								<th>Кол-во
 		продаж
 		за N дней
@@ -91,6 +89,11 @@
 									Кол-во продаж за N дней в городе выбранного склада Цель
 									<Sorting :filters="filters" :sorting="sorting" name="computed.goalNDays" @onSort="onSort"/>
 								</th>
+							<th>{{current_warehouse.type.toUpperCase()}} Текущая доходность</th>
+							<th>{{current_warehouse.type.toUpperCase()}} Планируем ли и дальше продавать</th>
+								<th>{{current_warehouse.type.toUpperCase()}} Кол-во продаж за 7 дней</th>
+								<th>{{current_warehouse.type.toUpperCase()}} Кол-во продаж за 30 дней</th>
+															<th>{{current_warehouse.type.toUpperCase()}} Целевое кол-во продаж в месяц</th>
 								<th>Статус переключателя Цель/Факт</th>
 								<th>Приоритет склада</th>
 								<th>
@@ -100,15 +103,13 @@
 								<th>В транзите в город выбранного склада</th>
 								<th>Готово по факту в город выбранного склада</th>
 								<th>Подготовить в город выбранного склада</th>
-								<th>Останется после перемещения</th>
-								<th>{{current_warehouse.type.toUpperCase()}} Текущая доходность</th>
+								
 								<th>Осталось товара (наш склад + транзит + МП)</th>
 								<th>Осталось товара (наш склад + транзит {{current_warehouse.type.toUpperCase()}} + FBW + FBS {{current_warehouse.type.toUpperCase()}})</th>
 								<th>Мастер</th>
-								<th>{{current_warehouse.type.toUpperCase()}} Планируем ли и дальше продавать</th>
-								<th>{{current_warehouse.type.toUpperCase()}} Кол-во продаж за 7 дней</th>
-								<th>{{current_warehouse.type.toUpperCase()}} Кол-во продаж за 30 дней</th>
-								<th>{{current_warehouse.type.toUpperCase()}} Целевое кол-во продаж в месяц</th>
+								<th>Наличие на какое кол-во дней должно быть
+		(N)</th>
+								<th>Срок подготовки товара к отгрузке, дней (подгружается из МС)</th>
 								<th>{{current_warehouse.type.toUpperCase()}} На скольки складах есть товар</th>
 								<th>{{current_warehouse.type.toUpperCase()}} Осталось товара складах маркетплейса</th>
 								<th>{{current_warehouse.type.toUpperCase()}} Товар в офисе, распределенный для МП</th>

@@ -414,9 +414,9 @@ const suggestion = computed(() => {
 		<td><input type="number" v-model.number="task.task" @focus="checkZero" @blur="makeZero" min="1" max="999" /></td>
 		<td><a v-if="suggestion > 0" href="javascript://" @click="suggest(suggestion);">⬅️</a> {{suggestion}}</td>
 		<td>{{mainAndPacked}}</td>
+		<td>{{ lost }}</td>
 		<td>{{currentWhQty}}</td>
 		<td>{{ countRegionStocks }}</td>
-		<td>{{task.days_to_ready}}</td>
 		<td>{{ countRegionDays }}</td>
 		<td>
 			{{ countSupplyTaskByDate.qty }} 
@@ -431,24 +431,29 @@ const suggestion = computed(() => {
 			</div>
 		</td>
 		<td>{{ countSupplyTaskByDateDays }}</td>
-		<td>{{task.goal_days}}</td>
 		<td>{{ task.goal_sales }}</td>
 		<td>{{ goalNDays }}</td>
+		
+		<td>{{ percent }}</td>
+		<td>{{task[whtype + '_active_for_sell']}}</td>
+		<td>{{task[whtype + '_sales7']}}</td>
+		<td>{{task[whtype + '_sales30']}}</td>
+		<td>{{task[whtype + '_sales_goal']}}</td>
+		
+
 		<td>{{task.goal_toggle}}</td>
 		<td>{{task.goal_priority}}</td>
 		<td>{{task.goal_active}}</td>
 		<td>{{getStocks('8 - В транзит на ')}}</td>
 		<td>{{getStocks('7 - Готово по факту для ')}}</td>
 		<td>{{getStocks('6 - Подготовить для ')}}</td>
-		<td>{{ lost }}</td>
-		<td>{{ percent }}</td>
+
 		<td>{{ ourStockAndMp }}</td>
 		<td>{{ ourStockAndMpFbs}}</td>
 		<td>{{task.master}}</td>
-		<td>{{task[whtype + '_active_for_sell']}}</td>
-		<td>{{task[whtype + '_sales7']}}</td>
-		<td>{{task[whtype + '_sales30']}}</td>
-		<td>{{task[whtype + '_sales_goal']}}</td>
+		
+		<td>{{task.goal_days}}</td>
+		<td>{{task.days_to_ready}}</td>
 		<td>{{countStocks}}</td>
 		<td>{{countStocksQty}}</td>
 		<td>{{allPrepared}}</td>
