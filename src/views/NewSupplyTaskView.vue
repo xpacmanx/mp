@@ -61,6 +61,7 @@
 								<th>
 									Программа предлагает Переместить в Подготовить 
 									<Sorting :filters="filters" :sorting="sorting" name="computed.suggestion" @onSort="onSort"/>
+									<a href="javascript://" @click="applySuggestions()">Переместить все</a>
 								</th>
 								<th>
 									Основной склад + Упакованное (расчет)
@@ -281,6 +282,11 @@ export default {
 			}
 		},
 
+		applySuggestions() {
+			this.tasks.forEach(item => item.task = Math.round(item.computed.suggestion + 1 -1));
+			return false;
+		},
+		
 		makeEdit(prop, value, id) {
 			const task = this.tasks.find(task => task.product_id == id);
 			if (task !== undefined) task[prop] = value;
