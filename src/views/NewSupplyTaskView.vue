@@ -258,8 +258,8 @@ export default {
 		    estimated_date: moment(this.estimateDate, 'DD.MM.YYYY').format('YYYY-MM-DD'),
 		    finish_date: moment(this.estimateDate, 'DD.MM.YYYY').format('YYYY-MM-DD'),
 		    warehouse_id: this.current_warehouse.id,
-		    qty_amount: this.calcQty(),
-		    weight_amount: this.calcWeight(),
+		    qty: this.calcQty(),
+		    weight: this.calcWeight(),
 		    status_id: 1,
 				positions: this.positions
 			}
