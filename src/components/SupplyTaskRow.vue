@@ -375,10 +375,10 @@ const suggestion = computed(() => {
 				return 0;// + ' п3.1';
 			}
 			onEdit('suggestion', condition2);
-			return Math.round(condition2) ' п3.1';
+			return Math.round(condition)+ ' п3.1';
 		} else {
 			onEdit('suggestion', amount1);
-			return Math.round(amount1); ' п3.2'; 
+			return Math.round(amount1)+ ' п3.2'; 
 		}
 		
 	}
