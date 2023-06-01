@@ -329,10 +329,12 @@ const suggestion = computed(() => {
 	const regionalWarehousesIds = props.regionWarehouses.map(w => w.id);
 
 	let amount1 = 0;
+	let calc = '';
 	if (props.task.goals.length > 0) {
 
 		for (const id of regionalWarehousesIds) {
 			amount1 += getGoalNdays(id) - countSupplyTaskForWhId(id);
+			calc += getGoalNdays(id) + '-' + countSupplyTaskForWhId(id);
 		}
 
 		if (amount1 <= 0) {
@@ -378,7 +380,7 @@ const suggestion = computed(() => {
 			return Math.round(condition2)+ ' п3.1';
 		} else {
 			onEdit('suggestion', amount1);
-			return Math.round(amount1)+ ' п3.2'; 
+			return Math.round(amount1)+ ' п3.2' + calc; 
 		}
 		
 	}

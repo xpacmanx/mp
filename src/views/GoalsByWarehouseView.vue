@@ -163,6 +163,7 @@ export default {
 				if (goal[name] == '' || !(goal[name] > 0)) continue;
 				newGoal[name] = goal[name];
 			}
+			delete newGoal.goal_id;
 			delete newGoal.name;
 			delete newGoal.code;
 			delete newGoal.last_updated;
