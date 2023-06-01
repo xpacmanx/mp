@@ -111,10 +111,6 @@ const stocks = props.task.stocks.filter(stock => stock.name.includes(name + whty
 
 function getStocksById(id) {
 	let qty = 0;
-	let whtype = props.whtype;
-	if (whtype == 'wb') whtype = 'WB';
-	if (whtype == 'ozon') whtype = 'Ozon';
-	
 const stocks = props.task.stocks.filter(stock => stock.wid == id);
 	qty = stocks.reduce((sum, s) => sum + s.qty, 0);
 	return qty;
@@ -212,9 +208,14 @@ const salesPerDay = computed(() => {
 });
 
 function getGoalById(id) {
-	// console.log('getGoalById');
 	const goal = props.task.goals.find(goal => goal.warehouse_id == id);
-	if (goal !== undefined) return goal.sales_per_day;
+	if (goal !== undefined) {
+		if (goal.goal_sale_toggle > 0) {
+			return goal.sales_per_day > 0 ? goal.sales_per_day : 0;
+		} else {
+			return goal.goal_sales_per_day > 0 ? goal.goal_sales_per_day : 0;
+		}
+	}
 	return 0;
 }
 
@@ -257,7 +258,7 @@ const countSupplyTaskByDate = computed(() => {
 					qty: task.qty,
 				}))
 			}
-			const incomeQty = supplytasks.reduce((sum, task) => task.qty, 0);
+			const incomeQty = supplytasks.reduce((sum, task) =>sum + task.qty, 0);
 			result.qty += incomeQty;
 			result.qty -= sales_Per_Day;
 			if (result.qty < 0) result.qty = 0;
@@ -273,19 +274,21 @@ function countSupplyTaskForWhId(id){
 	const from = moment(props.fromDate, 'DD.MM.YYYY');
 	const to = moment(props.estimateDate, 'DD.MM.YYYY');
 	const days = to.diff(from, 'days');
-	const result = {qty: 0};
+	const result = {qty: currentQty, current: currentQty, tasks: []};
 	if (days > 0) {
 		for (let i = 0; i <= days; i++) {
 			const current = moment(from).add(i, 'days');
 			const supplytasks = props.supplytasks.filter(task => moment(task.finish_date).isSame(current, 'day') && task.product_id == props.task.product_id && task.warehouse_id == id);
 
-			const incomeQty = supplytasks.reduce((sum, task) => task.qty, 0);
+			const incomeQty = supplytasks.reduce((sum, task) => sum + task.qty, 0);
 			result.qty += incomeQty;
 			result.qty -= sales_Per_Day;
+			result.tasks.push({incomeQty, sales_Per_Day});
 			if (result.qty < 0) result.qty = 0;
 		}
 	}
 	result.qty = Math.floor(result.qty);
+	// return JSON.stringify(result);
 	return result.qty;
 }
 
@@ -322,7 +325,7 @@ const suggestion = computed(() => {
 	// Step 0
 	if (goal == 0) {
 		onEdit('suggestion', 0);
-		return 0 + '(п0)';
+		return 0// + '(п0)';
 	}
 
 	// Step 1
@@ -334,12 +337,13 @@ const suggestion = computed(() => {
 
 		for (const id of regionalWarehousesIds) {
 			amount1 += getGoalNdays(id) - countSupplyTaskForWhId(id);
-			calc += getGoalNdays(id) + '-' + countSupplyTaskForWhId(id);
+
+			calc += '++++++++'+ id + ':stocks:'+getStocksById(id)+'goals:'+getGoalById(id)+'-' + getGoalNdays(id) + '-' + countSupplyTaskForWhId(id) + '+++++++;';
 		}
 
 		if (amount1 <= 0) {
 			onEdit('suggestion', 0);
-			return 0 + ' (п1)';
+			return 0// + ' (п1)';
 		}
 	}
 
@@ -377,10 +381,10 @@ const suggestion = computed(() => {
 				return 0;// + ' п3.1';
 			}
 			onEdit('suggestion', condition2);
-			return Math.round(condition2)+ ' п3.1';
+			return Math.round(condition2)//+ ' п3.1';
 		} else {
 			onEdit('suggestion', amount1);
-			return Math.round(amount1)+ ' п3.2' + calc; 
+			return Math.round(amount1)//+ ' п3.2' + calc; 
 		}
 		
 	}
@@ -420,7 +424,7 @@ const suggestion = computed(() => {
 		<td>{{ countRegionStocks }}</td>
 		<td>{{ countRegionDays }}</td>
 		<td>
-			{{ countSupplyTaskByDate.qty }} 
+			{{ countSupplyTaskByDate.qty }}
 			<div class="messages" v-if="countSupplyTaskByDate.messages.length > 0">
 				<span>📋
 					<ul class="messages__list">
