@@ -227,6 +227,18 @@ const countRegionDays = computed(() => {
 	return Math.floor(days);
 });
 
+const groupByType = computed(() => {
+	const result = {
+		wb: {},
+		ozon: {},
+	};
+	for (const w of props.warehouses) {
+		if (result[w.type][w.region] == undefined) result[w.type][w.region] = [];
+			result[w.type][w.region].push(w);
+	}
+	return result;
+})
+
 const countSupplyTaskByDate = computed(() => {
 	const currentQty = Number(countRegionStocks.value);
 	const sales_Per_Day = Number(salesPerDay.value);
@@ -255,22 +267,9 @@ const countSupplyTaskByDate = computed(() => {
 	return result;
 });
 
-const groupByType = computed(() => {
-	const result = {
-		wb: {},
-		ozon: {},
-	};
-	for (const w of props.warehouses) {
-		if (result[w.type][w.region] == undefined) result[w.type][w.region] = [];
-			result[w.type][w.region].push(w);
-	}
-	return result;
-})
-
 function countSupplyTaskForWhId(id){
 	const currentQty = getStocksById(id);
 	const sales_Per_Day = getGoalById(id);
-	// const sales_Per_Day = Number(salesPerDay.value);
 	const from = moment(props.fromDate, 'DD.MM.YYYY');
 	const to = moment(props.estimateDate, 'DD.MM.YYYY');
 	const days = to.diff(from, 'days');
@@ -323,7 +322,7 @@ const suggestion = computed(() => {
 	// Step 0
 	if (goal == 0) {
 		onEdit('suggestion', 0);
-		return 0;// + '(п0)';
+		return 0 + '(п0)';
 	}
 
 	// Step 1
@@ -338,7 +337,7 @@ const suggestion = computed(() => {
 
 		if (amount1 <= 0) {
 			onEdit('suggestion', 0);
-			return 0; //+ ' (п1)';
+			return 0 + ' (п1)';
 		}
 	}
 
@@ -376,10 +375,10 @@ const suggestion = computed(() => {
 				return 0;// + ' п3.1';
 			}
 			onEdit('suggestion', condition2);
-			return Math.round(condition2);// + ' п3.1';
+			return Math.round(condition2) ' п3.1';
 		} else {
 			onEdit('suggestion', amount1);
-			return Math.round(amount1);// + ' п3.2'; 
+			return Math.round(amount1); ' п3.2'; 
 		}
 		
 	}

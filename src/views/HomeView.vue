@@ -136,29 +136,30 @@ export default {
 			}).then(res => {
 				if (res.data.dashboard !== undefined) {
 					for (const item of res.data.dashboard) {
+						let date = item.last_updated.split('z').length > 1 ? item.last_updated.slice(0,-5) : item.last_updated
 						switch (item.name) {
 							case 'warehouses': 
 								this.warehouses.total = {
 									qty: item.qty,
-									date: moment(item.last_updated.slice(0, -5)).format('DD.MM.YYYY в hh:mm'),
+									date: moment(date).format('DD.MM.YYYY в hh:mm'),
 								}
 							break;
 							case 'ozon': 
 								this.warehouses.ozon = {
 									qty: item.qty,
-									date: moment(item.last_updated.slice(0, -5)).format('DD.MM.YYYY в hh:mm'),
+									date: moment(date).format('DD.MM.YYYY в hh:mm'),
 								}
 							break;
 							case 'wb': 
 								this.warehouses.wb = {
 									qty: item.qty,
-									date: moment(item.last_updated.slice(0, -5)).format('DD.MM.YYYY в hh:mm'),
+									date: moment(date).format('DD.MM.YYYY в hh:mm'),
 								}
 							break;
 							default:
 								this[item.name] = {
 									qty: item.qty,
-									date: moment(item.last_updated.slice(0, -5)).format('DD.MM.YYYY в hh:mm'),
+									date: moment(date).format('DD.MM.YYYY в hh:mm'),
 								}
 							break
 						}

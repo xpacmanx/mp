@@ -4,7 +4,8 @@ function createRequest(config) {
 	let { method, data, url, query, params, headers } = config;
 	if (method == undefined) method = 'get';
 	let API_SERVER = import.meta.env.VITE_API_SERVER;
-	if (import.meta.env.DEV) API_SERVER += '/test';
+	console.log(import.meta.env.VITE_DEBUG);
+	if (import.meta.env.VITE_DEBUG == 'false') API_SERVER = import.meta.env.VITE_DEV_API_SERVER;
 	url = API_SERVER + url;
 
 	if (headers == undefined) headers = {};
@@ -19,7 +20,7 @@ function createRequest(config) {
 		data['client-id'] = import.meta.env.VITE_API_CLIENT
 		data['secret'] = import.meta.env.VITE_API_SECRET
 	}
-	
+
 	return axios({
 		method: method,
 		url: url,

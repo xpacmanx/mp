@@ -111,7 +111,7 @@ export default {
 			// console.log('ID', id, );
 			
 			mpr({
-				url: '/warehouses/all',
+				url: '/warehouses/list',
 			}).then(response => {
 				for (const item of response.data.result) {
 					item.add = 0;
@@ -125,7 +125,7 @@ export default {
 					this.choose(this.warehouses[0].id);	
 				}
 			}).catch((error) => {
-		     console.log('/warehouses/all error', error);
+		     console.log('/warehouses/list error', error);
 		  });
 		},
 		getPercent(n){
@@ -197,6 +197,7 @@ export default {
 			this.saving = false;
 		},
 		async saveCurrentWarehouse(){
+			if (!(this.current_warehouse.ship_days > 0)) return alert('Заполните ожидаемый срок!');
 			let result = await mpr({
 				url: '/warehouse/edit',
 				method: 'post',
