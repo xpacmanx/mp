@@ -179,6 +179,15 @@ export default {
 		}
 	},
 	computed: {
+		masters() {
+			const arr = [];
+			for (const product of this.tasks) {
+				if (!arr.includes(product.master)) {
+					arr.push(product.master);
+				}
+			}
+			return arr;
+		},
 		estimateDate() {
 			let estimated = moment(this.fromDate, "DD.MM.YYYY");
 			if (this.current_warehouse.ship_days == undefined) return "Загрузка..";
@@ -389,7 +398,7 @@ export default {
 					} else if (step.id == 2) {
 						const id = response.data.result[0].supplytask_id;
 						response = await mpr({
-							method: 'get',
+							method: 'post',
 							url: step.url,
 							params: {
 								id: id,

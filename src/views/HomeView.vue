@@ -38,6 +38,10 @@
 						<p>Дата последнего изменения:<br />{{ozonstocks.date}}</p>
 					</div>
 				</div>
+				<h2>Supply Tasks</h2>
+				<div>
+					<!--router-link>Список тасков</router-link-->
+				</div>
       </div>
     </div>
   </div>

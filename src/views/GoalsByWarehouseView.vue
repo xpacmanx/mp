@@ -23,6 +23,13 @@
       </div>
       <div class="content">
 				<p v-if="!loaded">Загрузка контента...</p>
+				<p>
+					Фильтр по мастерам: 
+					<select @change="choose_master($event)">
+						<option value="off" selected="selected">Выкл</option>
+						<option v-for="master of masters">{{master}}</option>
+					</select>
+				</p>
 	        <table v-if="loaded" class="table">
 						<thead>
 							<tr>
@@ -49,7 +56,7 @@
 							</tr>
 						</thead>
 						<tbody>
-							<tr v-for="(goal,i) in goals" :key="goal.product_id">
+							<tr v-for="(goal,i) in sortedData" :key="goal.product_id">
 								<td>{{goal.product_id}}</td>
 								<td>{{goal.name}}</td>
 								<td>{{goal.code}}</td>
@@ -99,9 +106,71 @@ export default {
 			warehouses: [],
 			goals_updates: [],
 			goals: [],
+			filters: [],
+			sorting: [],
+			current_master: '',
 		}
 	},
+	computed: {
+		masters() {
+			const arr = [];
+			for (const product of this.goals) {
+				if (!arr.includes(product.master)) {
+					if (typeof product.master == 'string') arr.push(product.master);
+				}
+			}
+			return arr;
+		},
+		sortedData() {
+			let arr = [];
+			for (const goal of this.goals) {
+				arr.push(goal);
+			}
+			
+			//filters
+			if (this.filters.length > 0) {
+				for (let filter of this.filters) {
+					let name = filter.name + '';
+					let value = filter.value;
+					
+					const computed = filter.name.includes('computed');
+					if (computed) name = filter.name.split('.')[1];
+				
+					arr = arr.filter(task => {
+						let target = computed ? task.computed[name] : task[name];
+						if (value == undefined) {
+							return target != 0 && target != null;
+						} else {
+							return target == value
+						}
+					});
+				}
+			}
+			//sorting
+			if (this.sorting.length > 0) {
+				for (const sort of this.sorting) {
+					let name = sort.name + '';
+					let computed = sort.name.includes('computed');
+					if (computed) name = sort.name.split('.')[1];
+					let versa = 1;
+					if (sort.direction == 'desc') versa = -1;
+					arr = arr.sort((a,b) => 
+						computed ? 
+						(a.computed[name])*versa - (b.computed[name])*versa :
+						(a[name])*versa - (b[name])*versa
+					);
+				}
+			}
+			// console.log('Длина массива:', arr.length);
+			return arr;
+		},
+	},
 	methods: {
+		choose_master(event){
+			this.filters = this.filters.filter(filter => filter.name != 'master');
+			if (event.target.value == 'off') return false;
+			this.filters.push({name: 'master', value: event.target.value})
+		},
 		wChange(event){
 			this.choose(event.target.value);
 		},
