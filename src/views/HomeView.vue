@@ -127,7 +127,7 @@ export default {
 				url: '/supplytask/'+id,
 				method: 'delete',
 			}).then(res => {
-				console.log(res.data);
+				// console.log(res.data);
 				this.getSupplytasks();
 			});
 		},
