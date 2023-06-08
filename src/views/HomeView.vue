@@ -40,6 +40,29 @@
 				</div>
 				<h2>Supply Tasks</h2>
 				<div>
+					<table class="table">
+						<thead>
+							<th>#</th>
+							<th>Склад</th>
+							<th>Товара штук</th>
+							<th>Дата создания</th>
+							<th>Дата приемки</th>
+							<th>Действия</th>
+						</thead>
+						<tbody>
+							<tr v-for="task in supplytasks">
+								<td>{{task.id}}</td>
+								<td>{{task.warehouse_name}}</td>
+								<td>{{task.qty_amount}}</td>
+								<td>{{task.start_date}}</td>
+								<td>{{task.finish_date}}</td>
+								<td>
+									<!--a href="javascript://">Изменить</a-->
+									<a href="javascript://" @click="deleteTask(task.id)">Удалить</a>		
+								</td>
+							</tr>
+						</tbody>
+					</table>
 					<!--router-link>Список тасков</router-link-->
 				</div>
       </div>
@@ -95,9 +118,19 @@ export default {
 				date: '',
 				sync: false,
 			},
+			supplytasks: [],
 		}
 	},
 	methods: {
+		deleteTask(id) {
+			mpr({
+				url: '/supplytask/'+id,
+				method: 'delete',
+			}).then(res => {
+				console.log(res.data);
+				this.getSupplytasks();
+			});
+		},
 		syncProducts() {
 			this.products.sync = true;
 			mpr({
@@ -134,7 +167,15 @@ export default {
 				alert('Синхронизация затянулась, сообщу о завершение в телеграме');
 			});
 		},
+		getSupplytasks() {
+			mpr({
+				url: '/supplytasks/all'
+			}).then(res => {
+				this.supplytasks = res.data;
+			})
+		},
 		updateDashboard() {
+			this.getSupplytasks();
 			mpr({
 				url: '/dashboard/'
 			}).then(res => {
