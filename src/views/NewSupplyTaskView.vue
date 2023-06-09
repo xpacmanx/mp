@@ -432,7 +432,7 @@ export default {
 					this.warehouses.push(item);
 				}
 				this.warehouses_loaded = true;
-				if (id !== undefined) {
+				if (id !== undefined && id > 0) {
 					// console.log('choose ID', id);
 					this.choose(Number(id));
 				} else {
@@ -446,8 +446,8 @@ export default {
 			this.loaded = false;
 			this.filters = [];
 			this.sorting = [];
-			
-			// this.$route.params.wid = id;
+			this.$router.push({path: '/newsupplytask/'+id})
+			this.current_warehouse = this.warehouses.find(w => w.id == id);
 			this.reset();
 			
 			mpr({
@@ -483,8 +483,18 @@ export default {
 	},
 	mounted() {
 		this.fromDate = moment(new Date()).format('DD.MM.YYYY')
-		this.loadWarehouses();
-	}
+		this.loadWarehouses(this.$route.params.wid);
+	},
+	created() {
+    this.$watch(
+      () => this.$route.params,
+      (toParams, previousParams) => {
+				if (this.$route.params.wid > 0) {
+					this.choose(this.$route.params.wid);
+				}
+      }
+    )
+  }
 }
 </script>
 

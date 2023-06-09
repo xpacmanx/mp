@@ -104,7 +104,9 @@ function getStocks(name) {
 	if (whtype == 'wb') whtype = 'WB';
 	if (whtype == 'ozon') whtype = 'Ozon';
 	
-const stocks = props.task.stocks.filter(stock => stock.name.includes(name + whtype) && stock.region == props.region);
+const stocks = props.task.stocks.filter(stock => {
+	stock.name.indexOf(name + whtype) > -1 && stock.region == props.region
+});
 	qty = stocks.reduce((sum, s) => sum + s.qty, 0);
 	return qty;
 }

@@ -21,7 +21,15 @@ const routes = [
 		name: 'newsupplytask',
 		component: NewSupplyTaskView,
 		meta: {
-			title: 'Home Dashboard 2'
+			title: 'Создать задание к подсорту'
+		}
+	},
+	{
+		path: '/newsupplytask/:wid',
+		name: 'newsupplytaskid',
+		component: NewSupplyTaskView,
+		meta: {
+			title: 'Создать создание к подсорту для склада'
 		}
 	},
 	{
