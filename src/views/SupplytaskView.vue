@@ -4,67 +4,61 @@
     <Header />
     <div class="content-with-menu">
       <div class="top-menu">
-        <h2>Начальная страница</h2>
+        <h2>Задание к поставкам #{{supplytask.id}}</h2>
       </div>
       <div class="content">
-        <h1>Dashboard </h1>
-				<div class="panels">
-					<div class="panel">
-						<h2>Товаров</h2>
-						<div class="panel__number">{{products.qty}}</div>
-						<button v-if="!products.sync" class="btn" @click="syncProducts()">Синхронизировать</button>
-						<p v-else>Синхронизация..</p>
-						<p>Дата последнего изменения:<br />{{products.date}}</p>
-					</div>
-					<div class="panel">
-						<h2>Склады</h2>
-						<div class="panel__number">{{warehouses.total.qty}}</div>
-						<button v-if="!warehouses.total.sync" class="btn" @click="syncWarehouses()">Синхронизировать</button>
-						<p v-else>Синхронизация..</p>
-						<p>Дата последнего изменения:<br />{{warehouses.total.date}}</p>
-					</div>
-					<div class="panel">
-						<h2>WB остатки</h2>
-						<div class="panel__number">{{wbstocks.qty}}</div>
-						<button v-if="!stocks.sync" class="btn" @click="syncStocks()">Синхронизировать</button>
-						<p v-else>Синхронизация..</p>
-						<p>Дата последнего изменения:<br />{{wbstocks.date}}</p>
-					</div>
-					<div class="panel">
-						<h2>Ozon остатки</h2>
-						<div class="panel__number">{{ozonstocks.qty}}</div>
-						<button v-if="!stocks.sync" class="btn" @click="syncStocks()">Синхронизировать</button>
-						<p v-else>Синхронизация..</p>
-						<p>Дата последнего изменения:<br />{{ozonstocks.date}}</p>
-					</div>
-				</div>
-				<h2>Supply Tasks</h2>
-				<div>
-					<table class="table">
-						<thead>
-							<th>#</th>
-							<th>Склад</th>
-							<th>Товара штук</th>
-							<th>Дата создания</th>
-							<th>Дата приемки</th>
-							<th>Действия</th>
-						</thead>
-						<tbody>
-							<tr v-for="task in supplytasks">
-								<td>{{task.id}}</td>
-								<td>{{task.warehouse_name}}</td>
-								<td>{{task.qty_amount}}</td>
-								<td>{{task.start_date}}</td>
-								<td>{{task.finish_date}}</td>
-								<td>
-									<!--a href="javascript://">Изменить</a-->
-									<a href="javascript://" @click="deleteTask(task.id)">Удалить</a>		
-								</td>
-							</tr>
-						</tbody>
-					</table>
-					<!--router-link>Список тасков</router-link-->
-				</div>
+        <h1></h1>
+				<table class="table">
+					<thead>
+						<th>#</th>
+						<th>Склад</th>
+						<th>Товара штук</th>
+						<th>Вес</th>
+						<th>Дата создания</th>
+						<th>Прогноз приемки</th>
+						<th>Финальная дата приемки</th>
+						<th>Действия</th>
+					</thead>
+					<tbody>
+						<tr>
+							<td>{{supplytask.id}}</td>
+							<td>{{supplytask.warehouse_name}}</td>
+							<td>{{supplytask.qty_amount}}</td>
+							<td>{{supplytask.weight_amount}}</td>
+							<td>{{supplytask.start_date}}</td>
+							<td>{{supplytask.estimated_date}}</td>
+							<td>{{supplytask.finish_date}}</td>
+							<td>
+								
+								<a href="javascript://">Удалить</a>		
+							</td>
+						</tr>
+					</tbody>
+				</table>
+				<br/>
+
+				<h2>Позиции</h2>
+				<table class="table">
+					<thead>
+						<th>id</th>
+						<th>Название</th>
+						<th>Код</th>
+						<th>Количество</th>
+						<th>Действия</th>
+					</thead>
+					<tbody>
+						<tr v-for="task in supplytask.positions">
+							<td>{{task.product_id}}</td>
+							<td>{{task.code}}</td>
+							<td>{{task.name}}</td>
+							<td>{{task.qty}}</td>
+							<td>
+								
+								<a href="javascript://" @click="deleteTask(task.id)">Удалить</a>		
+							</td>
+						</tr>
+					</tbody>
+				</table>
       </div>
     </div>
   </div>
@@ -83,42 +77,9 @@ export default {
   },
 	data() {
 		return {
-			products: {
-				qty: '...',
-				date: '',
-				sync: false,
+			supplytask: {
+				
 			},
-			warehouses: {
-				wb: {
-					qty: '...',
-					date: '',
-				},
-				ozon: {
-					qty: '...',
-					date: '',
-				},
-				total: {
-					qty: '...',
-					date: '',
-					sync: false,
-				},
-			},
-			stocks: {
-				qty: '...',
-				date: '',
-				sync: false,
-			},
-			wbstocks: {
-				qty: '...',
-				date: '',
-				sync: false,
-			},
-			ozonstocks: {
-				qty: '...',
-				date: '',
-				sync: false,
-			},
-			supplytasks: [],
 		}
 	},
 	methods: {
@@ -131,17 +92,29 @@ export default {
 				this.getSupplytasks();
 			});
 		},
-		getSupplytasks() {
+		getSupplytask(id) {
 			mpr({
 				url: '/supplytask/'+id,
 			}).then(res => {
-				this.supplytasks = res.data;
+				if (res.data.length > 0) {
+					this.supplytask = res.data[0];
+				}
 			})
 		},
 	},
 	mounted() {
-		this.updateDashboard();
-	}
+		this.getSupplytask(this.$route.params.id);
+	},
+	created() {
+    this.$watch(
+      () => this.$route.params,
+      (toParams, previousParams) => {
+				if (this.$route.params.id > 0) {
+					this.choose(this.$route.params.id);
+				}
+      }
+    )
+  }
 }
 </script>
 

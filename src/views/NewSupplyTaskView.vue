@@ -280,7 +280,7 @@ export default {
 			return tasks;
 		},
 		regionWarehouses() {
-			return this.warehouses.filter(w => w.region == this.current_warehouse.region);
+			return this.warehouses.filter(w => w.region == this.current_warehouse.region && w.type == this.current_warehouse.type );
 		},
 	},
 	methods: {

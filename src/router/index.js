@@ -5,6 +5,7 @@ import GoalsByWarehouseView from '../views/GoalsByWarehouseView.vue'
 import NewSupplyTaskView from '../views/NewSupplyTaskView.vue'
 import ConnectionsView from '../views/ConnectionsView.vue'
 import WarehousesView from '../views/WarehousesView.vue'
+import SupplytaskView from '../views/SupplytaskView.vue'
 
 
 const routes = [
@@ -21,7 +22,7 @@ const routes = [
 		name: 'newsupplytask',
 		component: NewSupplyTaskView,
 		meta: {
-			title: 'Создать задание к подсорту'
+			title: 'Создать задание к поставкам'
 		}
 	},
 	{
@@ -29,7 +30,15 @@ const routes = [
 		name: 'newsupplytaskid',
 		component: NewSupplyTaskView,
 		meta: {
-			title: 'Создать создание к подсорту для склада'
+			title: 'Создать создание к поставкам для склада'
+		}
+	},
+	{
+		path: '/supplytask/:id',
+		name: 'supplytaskid',
+		component: SupplytaskView,
+		meta: {
+			title: 'Задание к поставкам для склада'
 		}
 	},
 	{

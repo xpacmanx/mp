@@ -24,11 +24,23 @@
       <div class="content">
 				<p v-if="!loaded">Загрузка контента...</p>
 				<p>
-					Фильтр по мастерам: 
-					<select @change="choose_master($event)">
-						<option value="off" selected="selected">Выкл</option>
-						<option v-for="master of masters">{{master}}</option>
-					</select>
+					<ul>
+						<li>
+							Стоимость доставки:
+							<input type="number" v-model="current_warehouse.delivery_price" />
+						</li>
+						<li>
+							Скорость доставки до клиента:
+							<input type="number" v-model="current_warehouse.delivery_time" />
+						</li>
+						<li>
+							Фильтр по мастерам: 
+							<select @change="choose_master($event)">
+								<option value="off" selected="selected">Выкл</option>
+								<option v-for="master of masters">{{master}}</option>
+							</select>
+						</li>
+					</ul>
 				</p>
 	        <table v-if="loaded" class="table">
 						<thead>

@@ -179,7 +179,7 @@ const goalNDays = computed(() => {
 	qty = Math.round(Number(props.task.goal_sales_goal) / 30 * Number(props.task.goal_days));
 	}
 	onEdit('goalNDays', qty);
-	return qty;
+	return qty + '(' + props.task.goal_sales_goal + ')';
 });
 
 const ourStockAndMp = computed(() => {
@@ -203,8 +203,7 @@ const salesPerDay = computed(() => {
 	let qty = 0;
 	const goals = props.task.goals.filter(goal => goal.region == props.region && goal.type == props.whtype)
 	if (goals.length > 0) {
-		// console.log(goals);
-		qty = goals.reduce((sum, item) => sum + Number(item.sales_per_day), 0);
+		qty = goals.reduce((sum, item) => sum + (item.goal_sale_toggle > 0 ? Number(item.sales_per_day) : Number(item.goal_sales_per_day)), 0);
 	}
 	return qty;
 });
@@ -308,11 +307,13 @@ function getGoalNdays(id) {
 
 const countSupplyTaskByDateDays = computed(() => {
 	let days = 0;
-	if (salesPerDay.value == 0 || salesPerDay.value == null) return "Infinity";
+	if (salesPerDay.value == null) salesPerDay.value = 0;
+	if (salesPerDay.value == 0 && countSupplyTaskByDate.value.qty == 0) return 0;
+	if (salesPerDay.value == 0) return 'Infinity';
 	if (countSupplyTaskByDate.value.qty > 0) {
 		days = countSupplyTaskByDate.value.qty / salesPerDay.value;
 	}
-	return Math.floor(days);
+	return Math.floor(days) + ' (' +salesPerDay.value + ')';
 });
 
 function suggest(n) {
@@ -340,7 +341,7 @@ const suggestion = computed(() => {
 		for (const id of regionalWarehousesIds) {
 			amount1 += getGoalNdays(id) - countSupplyTaskForWhId(id);
 
-			calc += '++++++++'+ id + ':stocks:'+getStocksById(id)+'goals:'+getGoalById(id)+'-' + getGoalNdays(id) + '-' + countSupplyTaskForWhId(id) + '+++++++;';
+			calc += '++++++++'+ id + ':stocks:'+getStocksById(id)+'goals:'+getGoalById(id)+'-' + getGoalNdays(id) + '-' + countSupplyTaskForWhId(id) + '+++++++;'+JSON.stringify(regionalWarehousesIds);
 		}
 
 		if (amount1 <= 0) {
@@ -383,10 +384,10 @@ const suggestion = computed(() => {
 				return 0;// + ' п3.1';
 			}
 			onEdit('suggestion', condition2);
-			return Math.round(condition2)//+ ' п3.1';
+			return Math.round(condition2)// + ' п3.1';
 		} else {
 			onEdit('suggestion', amount1);
-			return Math.round(amount1)//+ ' п3.2' + calc; 
+			return Math.round(amount1)// + ' п3.2' + calc; 
 		}
 		
 	}

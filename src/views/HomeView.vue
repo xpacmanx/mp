@@ -57,7 +57,7 @@
 								<td>{{task.start_date}}</td>
 								<td>{{task.finish_date}}</td>
 								<td>
-									<!--a href="javascript://">Изменить</a-->
+									<router-link :to="'/supplytask/'+task.id">Изменить</router-link> | 
 									<a href="javascript://" @click="deleteTask(task.id)">Удалить</a>		
 								</td>
 							</tr>
