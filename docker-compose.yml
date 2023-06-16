@@ -8,8 +8,8 @@ services:
     build: .
     ports:
       - "${PORT}:${PORT}"
-		networks:
-			- caddy
+    networks:
+    - caddy
 networks:
   caddy:
     external: true
