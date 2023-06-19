@@ -5,14 +5,19 @@ import vue from '@vitejs/plugin-vue'
 
 // https://vitejs.dev/config/
 export default defineConfig({
-  server: {
-    host: true,
+	server: {
+		host: true,
 		port: process.env.PORT || 3000,
-  },
-  plugins: [vue()],
-  resolve: {
-    alias: {
-      '@': fileURLToPath(new URL('./src', import.meta.url))
-    }
-  }
+		hmr: {
+			host: 'mp-beta.teslalasers.com',
+			port: 443,
+			protocol: 'wss',
+		},
+	},
+	plugins: [vue()],
+	resolve: {
+		alias: {
+			'@': fileURLToPath(new URL('./src', import.meta.url))
+		}
+	}
 })
