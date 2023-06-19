@@ -4,8 +4,8 @@ WORKDIR /app
 
 COPY package*.json ./
 COPY . .
-RUN npm install --ignore-scripts
+RUN npm install
 
 EXPOSE ${PORT}
 
-CMD ["sh", "-c", "npm run dev --PORT=${PORT}"]
+CMD ["sh", "-c", "npm run start --PORT=${PORT}"]

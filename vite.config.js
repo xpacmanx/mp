@@ -9,10 +9,7 @@ export default defineConfig({
 		host: '0.0.0.0',
 		port: process.env.PORT || 3000,
 		hmr: {
-			host: '0.0.0.0',
-			port: 443,
 			clientPort: 443,
-			protocol: 'wss',
 		},
 	},
 	plugins: [vue()],
