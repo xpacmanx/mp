@@ -9,7 +9,7 @@ export default defineConfig({
 		host: true,
 		port: process.env.PORT || 3000,
 		hmr: {
-			host: 'mp-beta.teslalasers.com',
+			host: '0.0.0.0',
 			port: 443,
 			protocol: 'wss',
 		},
