@@ -3,6 +3,7 @@ import HomeView from '../views/HomeView.vue'
 import GoalsByProductView from '../views/GoalsByProductView.vue'
 import GoalsByWarehouseView from '../views/GoalsByWarehouseView.vue'
 import NewSupplyTaskView from '../views/NewSupplyTaskView.vue'
+import NewSupplyTaskView2 from '../views/NewSupplyTaskView2.vue'
 import ConnectionsView from '../views/ConnectionsView.vue'
 import WarehousesView from '../views/WarehousesView.vue'
 import SupplytaskView from '../views/SupplytaskView.vue'
@@ -29,6 +30,22 @@ const routes = [
 		path: '/newsupplytask/:wid',
 		name: 'newsupplytaskid',
 		component: NewSupplyTaskView,
+		meta: {
+			title: 'Создать создание к поставкам для склада'
+		}
+	},
+	{
+		path: '/newsupplytask2',
+		name: 'newsupplytask2',
+		component: NewSupplyTaskView2,
+		meta: {
+			title: 'Создать задание к поставкам'
+		}
+	},
+	{
+		path: '/newsupplytask2/:wid',
+		name: 'newsupplytask2id',
+		component: NewSupplyTaskView2,
 		meta: {
 			title: 'Создать создание к поставкам для склада'
 		}

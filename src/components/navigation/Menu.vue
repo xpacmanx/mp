@@ -23,6 +23,12 @@
         <span>Подсорт для выбранного склада</span>
       </router-link>
     </li>
+		<!--li>
+      <router-link to="/newsupplytask2">
+        <i>2.1</i>
+        <span>Подсорт для выбранного склада 2</span>
+      </router-link>
+    </li-->
     <li>
       <router-link to="/goalsbywarehouse">
         <i>3</i>

@@ -23,7 +23,7 @@
       </div>
       <div class="content">
 				<p v-if="!loaded">Загрузка контента...</p>
-				<p>
+				<!--p>
 					<ul>
 						<li>
 							Стоимость доставки:
@@ -41,7 +41,7 @@
 							</select>
 						</li>
 					</ul>
-				</p>
+				</p-->
 	        <table v-if="loaded" class="table">
 						<thead>
 							<tr>

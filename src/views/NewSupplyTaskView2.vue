@@ -37,12 +37,8 @@
 			</div>
       <div class="content">
 				<div class="process error" v-if="loaded && estimateDate == 'Загрузка..'">
-					<h3>Ошибка, продолжать нельзя</h3>
-					<p>
-						Нужно заполнить дату ожидания для этого склада в разделе 3.<br />
-						Сейчас она не заполнена.
-					</p>
-				</div>
+				<h3>Ошибка, продолжать нельзя</h3>
+				Нужно заполнить дату ожидания для склада этого склада. Сейчас она не заполнена.</div>
 				<div class="process" v-if="!process_status">
 					<h3>Создания задания к подсорту..</h3>
 					<div v-if="process_success">
@@ -147,7 +143,7 @@ import mpr from './../tools/mpr'
 import moment from 'moment'
 	
 export default {
-  name: 'NewSupplyTaskView',
+  name: 'NewSupplyTaskView2',
 	components: {
     Menu, Header, SupplyTaskRow, Sorting
   },
@@ -200,8 +196,6 @@ export default {
 			if (this.current_warehouse.ship_days == undefined) return "Загрузка..";
 			estimated.add(this.current_warehouse.ship_days, 'days');
 			estimated.add(this.longestDate, 'days');
-
-			// console.log(this.longestDate);
 			return estimated.format('DD.MM.YYYY');
 		},
 		longestDate(){

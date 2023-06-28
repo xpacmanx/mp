@@ -439,7 +439,7 @@ const suggestion = computed(() => {
 			</div>
 		</td>
 		<td>{{ countSupplyTaskByDateDays }}</td>
-		<td>{{ task.goal_sales }}</td>
+		<td>{{ Math.round(Number(task.goal_sales)/30*15) }}</td>
 		<td>{{ goalNDays }}</td>
 		
 		<td>{{ percent }}</td>
