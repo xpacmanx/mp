@@ -4,7 +4,7 @@
     <Header />
     <div class="content-with-menu">
       <div class="top-menu">
-        <h2>2. Подсорт для выбранного склада</h2>
+        <h2>2.1. Подсорт для выбранного склада</h2>
 				<span v-if="!warehouses_loaded">Загрузка складов...</span>
         <select v-if="warehouses_loaded" @change="wChange($event)">
           <option v-for="warehouse in warehouses" :key="warehouse.id" :value="warehouse.id" :selected="warehouse.id == current_warehouse.id">{{warehouse.id}}. {{warehouse.slug_name}}</option>
@@ -125,7 +125,34 @@
 								<th>Ожидание товара 5я неделя</th>
 						</thead>
 						<tbody>
-							<SupplyTaskRow v-for="(task,i) in sortedData" :key="task.product_id" :task="task" :whtype="current_warehouse.type" :whname="current_warehouse.slug_name" :region="current_warehouse.region" :estimateDate="estimateDate" :fromDate="fromDate" :supplytasks="filteredSupplytasks" :regionWarehouses="regionWarehouses" :warehouses="warehouses" @onEdit="onEdit" @makeEdit="makeEdit"/>
+							<tr v-for="position in sortedData">
+								<td>{{position.product_id}}</td>
+								<td>{{position.name}}</td>
+								<td>{{position.code}}</td>
+								<td><input type="text" /></td>
+								<td>{{position.suggestion}}</td>
+								<td>{{position.main_and_already_packed}}</td>
+								<td>{{position.lost}}</td>
+								<td>{{position.qty_in_wh}}</td>
+								<td>{{position.qty_in_region}}</td>
+								<td>{{position.days_in_city}}</td>
+								<td>{{position.estimated_avl}}</td>
+								<td>{{position.qty_on_day_acceptance}}</td>
+								<td>{{position.qty_sales_fact}}</td>
+								<td>{{position.qty_sales_goal}}</td>
+								<td>{{position[current_warehouse.type+'_profitability']}}</td>
+								<td>{{position[current_warehouse.type+'_active_for_sell']}}</td>
+								<td>{{position[current_warehouse.type+'_sales7']}}</td>
+								<td>{{position[current_warehouse.type+'_sales30']}}</td>
+								<td>{{position[current_warehouse.type+'_sales_goal']}}</td>
+								<td>{{position.goal_toggle}}</td>
+								<td>{{position.goal_priority}}</td>
+								<td>{{position.goal_active}}</td>
+								<td>{{position.transit_qty}}</td>
+								<td>{{position.ready_qty}}</td>
+								<td>{{position.prepare_qty}}</td>
+								
+							</tr>
 						</tbody>
 					</table>
 				</div>
@@ -448,12 +475,12 @@ export default {
 			this.loaded = false;
 			this.filters = [];
 			this.sorting = [];
-			this.$router.push({path: '/newsupplytask/'+id})
+			this.$router.push({path: '/newsupplytask2/'+id})
 			this.current_warehouse = this.warehouses.find(w => w.id == id);
 			this.reset();
 			
 			mpr({
-				url: '/supplytask/new',
+				url: '/supplytask/new2',
 				params: {
 					id: id,
 				}
