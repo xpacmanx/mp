@@ -7,7 +7,9 @@
         <h2>Начальная страница</h2>
       </div>
       <div class="content">
-        <h1>Dashboard </h1>
+				<Notifications />
+        
+				<h1>Cинхронизации</h1>
 				<div class="panels">
 					<div class="panel">
 						<h2>Товаров</h2>
@@ -57,7 +59,7 @@
 								<td>{{task.start_date}}</td>
 								<td>{{task.finish_date}}</td>
 								<td>
-									<router-link :to="'/supplytask/'+task.id">Изменить</router-link> | 
+									<router-link :to="'/supplytask/'+task.id">Открыть</router-link> | 
 									<a href="javascript://" @click="deleteTask(task.id)">Удалить</a>		
 								</td>
 							</tr>
@@ -73,13 +75,14 @@
 <script>
 import Menu from '@/components/navigation/Menu.vue'
 import Header from '@/components/navigation/Header.vue'
+import Notifications from '@/components/Notifications.vue'
 import mpr from './../tools/mpr'
 import moment from 'moment'
 	
 export default {
   name: 'HomeView',
   components: {
-  	Menu, Header
+  	Menu, Header, Notifications
   },
 	data() {
 		return {
@@ -122,14 +125,19 @@ export default {
 		}
 	},
 	methods: {
+		addNotification(type, text) {
+			this.$store.dispatch('add', {type: type, text: text});
+		},
 		deleteTask(id) {
-			mpr({
-				url: '/supplytask/'+id,
-				method: 'delete',
-			}).then(res => {
-				// console.log(res.data);
-				this.getSupplytasks();
-			});
+			if (confirm("Точно хотите удалить это задание к перемещению?")) {
+				mpr({
+					url: '/supplytask/'+id,
+					method: 'delete',
+				}).then(res => {
+					this.getSupplytasks();
+					this.addNotification('success', 'Задание успешно удалено');
+				});
+			}
 		},
 		syncProducts() {
 			this.products.sync = true;
@@ -140,7 +148,8 @@ export default {
 				this.products.sync = false;
 			}).catch(error => {
 				this.products.sync = false;
-				alert('Синхронизация затянулась, сообщу о завершение в телеграме');
+				this.addNotification('error', 'Синхронизация затянулась, сообщу о завершение в телеграме' + JSON.stringify(error));
+				// alert('Синхронизация затянулась, сообщу о завершение в телеграме');
 			});
 		},
 		syncWarehouses() {
@@ -152,7 +161,8 @@ export default {
 				this.warehouses.total.sync = false;
 			}).catch(error => {
 				this.warehouses.total.sync = false;
-				alert('Синхронизация затянулась, сообщу о завершение в телеграме');
+				this.addNotification('error', 'Синхронизация затянулась, сообщу о завершение в телеграме' + JSON.stringify(error));
+				// alert('Синхронизация затянулась, сообщу о завершение в телеграме');
 			});
 		},
 		syncStocks() {
@@ -164,12 +174,13 @@ export default {
 				this.stocks.sync = false;
 			}).catch(error => {
 				this.stocks.sync = false;
-				alert('Синхронизация затянулась, сообщу о завершение в телеграме');
+				this.addNotification('error', 'Синхронизация затянулась, сообщу о завершение в телеграме' + JSON.stringify(error));
+				// alert('Синхронизация затянулась, сообщу о завершение в телеграме');
 			});
 		},
 		getSupplytasks() {
 			mpr({
-				url: '/supplytasks/all'
+				url: '/supplytasks/list'
 			}).then(res => {
 				this.supplytasks = res.data;
 			})

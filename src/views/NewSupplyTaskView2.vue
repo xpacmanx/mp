@@ -2,16 +2,29 @@
   <div class="home">
     <Menu />
     <Header />
+		<Notifications />
     <div class="content-with-menu">
       <div class="top-menu">
         <h2>2.1. Подсорт для выбранного склада</h2>
-				<span v-if="!warehouses_loaded">Загрузка складов...</span>
-        <select v-if="warehouses_loaded" @change="wChange($event)">
-          <option v-for="warehouse in warehouses" :key="warehouse.id" :value="warehouse.id" :selected="warehouse.id == current_warehouse.id">{{warehouse.id}}. {{warehouse.slug_name}}</option>
-        </select>
-				<div>
-					<input type="text" placeholder="Дата задания" v-model="fromDate" disabled /><br/>
-					<input type="text" placeholder="Дата оприходования" v-model="estimateDate" disabled />
+				<div class="warehouse">
+					<span v-if="!warehouses_loaded">Загрузка складов...</span>
+					<ul>
+						<li>
+			        <select v-if="warehouses_loaded" @change="wChange($event)">
+			          <option v-for="warehouse in warehouses" :key="warehouse.id" :value="warehouse.id" :selected="warehouse.id == current_warehouse.id">{{warehouse.id}}. {{warehouse.slug_name}}</option>
+			        </select>
+						</li>
+						<li>
+							<span><label>Регион:</label> {{current_warehouse.region}}</span>
+							<span><label>Приоритет склада:</label> {{current_warehouse.priority}}</span>
+						</li>
+					</ul>
+				</div>
+				<div class="dates">
+					<ul>
+						<li><label>Дата создания:</label><input type="text" placeholder="Дата задания" v-model="fromDate" disabled /></li>
+						<li><label><span>Предполагаемая</span>Дата приемки:</label><input type="text" placeholder="Дата оприходования" v-model="estimateDate" disabled /></li>
+					</ul>
 				</div>
 				<div>
 					Вес: {{calcWeight()}}кг
@@ -23,6 +36,17 @@
       </div>
 			<div class="sorting" v-if="loaded && process_status">
 				<div>
+					<span>
+						Количество дней на подготовку
+						<select v-model="days_to_ready" @change="update();">
+							<option v-for="i in 10">{{i}}</option>
+						</select>
+					</span>
+					<span>
+						<label>Показывать причины предложения:
+						<input type="checkbox" v-model="showReason" /></label><br />
+						<button class="btn btn-transparent" @click="loadDebug();">Загрузить дебаг инфу для suggestions</button>
+					</span>
 					<span>Сортировка:</span>
 					<ul>
 						<li v-for="(item,i) in sorting" @click="removeSort('sorting', i)">{{item.name.includes('computed') ? item.name.split('.')[1] : item.name}} <span>{{item.direction == 'asc' ? '↑' : '↓'}}</span> | 🅧</li>
@@ -63,12 +87,12 @@
 								<th>Подготовить</th>
 								<th>
 									Программа предлагает Переместить в Подготовить 
-									<Sorting :filters="filters" :sorting="sorting" name="computed.suggestion" @onSort="onSort"/>
+									<Sorting :filters="filters" :sorting="sorting" name="suggest" @onSort="onSort"/>
 									<a href="javascript://" @click="applySuggestions()">Переместить все</a>
 								</th>
 								<th>
 									Основной склад + Упакованное (расчет)
-									<Sorting :filters="filters" :sorting="sorting" name="computed.mainAndPacked" @onSort="onSort"/>
+									<Sorting :filters="filters" :sorting="sorting" name="main_and_already_packed" @onSort="onSort"/>
 								</th>
 							  <th>Останется после перемещения</th>
 								<th>Находится на складе</th>
@@ -91,7 +115,7 @@
 		Рассчетно от факта за 30 дней</th>
 								<th>
 									Кол-во продаж за N дней в городе выбранного склада Цель
-									<Sorting :filters="filters" :sorting="sorting" name="computed.goalNDays" @onSort="onSort"/>
+									<Sorting :filters="filters" :sorting="sorting" name="qty_sales_goal" @onSort="onSort"/>
 								</th>
 							<th>{{current_warehouse.type.toUpperCase()}} Текущая доходность</th>
 							<th>{{current_warehouse.type.toUpperCase()}} Планируем ли и дальше продавать</th>
@@ -126,13 +150,19 @@
 						</thead>
 						<tbody>
 							<tr v-for="position in sortedData">
-								<td>{{position.product_id}}</td>
+								<td>{{position.pid}}</td>
 								<td>{{position.name}}</td>
 								<td>{{position.code}}</td>
-								<td><input type="text" /></td>
-								<td>{{position.suggestion}}</td>
+								<td><input type="text" v-model.number="position.task" /></td>
+								<td class="suggestion" :class="position.suggestion.color">
+									<p v-if="showReason">
+										{{position.suggestion.reason}}
+										{{position.debug}}
+									</p>
+									<a v-if="position.suggestion.result > 0" href="javascript://" @click="suggest(position);">⬅️</a>
+									{{Math.floor(position.suggest)}}</td>
 								<td>{{position.main_and_already_packed}}</td>
-								<td>{{position.lost}}</td>
+								<td :class="position.main_and_already_packed-position.task < 0 ? 'red' : ''">{{position.main_and_already_packed-position.task}}</td>
 								<td>{{position.qty_in_wh}}</td>
 								<td>{{position.qty_in_region}}</td>
 								<td>{{position.days_in_city}}</td>
@@ -140,7 +170,7 @@
 								<td>{{position.qty_on_day_acceptance}}</td>
 								<td>{{position.qty_sales_fact}}</td>
 								<td>{{position.qty_sales_goal}}</td>
-								<td>{{position[current_warehouse.type+'_profitability']}}</td>
+								<td>{{percent(position[current_warehouse.type+'_profitability'])}}</td>
 								<td>{{position[current_warehouse.type+'_active_for_sell']}}</td>
 								<td>{{position[current_warehouse.type+'_sales7']}}</td>
 								<td>{{position[current_warehouse.type+'_sales30']}}</td>
@@ -151,7 +181,20 @@
 								<td>{{position.transit_qty}}</td>
 								<td>{{position.ready_qty}}</td>
 								<td>{{position.prepare_qty}}</td>
-								
+								<td>{{position.avl_product}}</td>
+								<td>{{position.avl_product_and_fwb}}</td>
+								<td>{{position.master}}</td>
+								<td>{{position.goal_days}}</td>
+								<td>{{position.days_to_ready}}</td>
+								<td>{{position.avl_wh}}</td>
+								<td>{{position.avl_stk}}</td>
+								<td>{{position.mp_product_office}}</td>
+								<td>{{position.mp_transit_product}}</td>
+								<td>{{position.arrived1}}</td>
+								<td>{{position.arrived2}}</td>
+								<td>{{position.arrived3}}</td>
+								<td>{{position.arrived4}}</td>
+								<td>{{position.arrived5}}</td>						
 							</tr>
 						</tbody>
 					</table>
@@ -162,17 +205,36 @@
 </template>
 
 <script>
+import { mapActions } from 'vuex'
+	
 import Menu from '@/components/navigation/Menu.vue'
 import Header from '@/components/navigation/Header.vue'
 import SupplyTaskRow from '@/components/SupplyTaskRow.vue'
 import Sorting from '@/components/SortingComponent.vue'
+import Notifications from '@/components/Notifications.vue'
 import mpr from './../tools/mpr'
 import moment from 'moment'
+
+function getValue(obj, key) {
+  const keys = key.split('.');
+  let result = obj;
+
+  for (const k of keys) {
+    if (result.hasOwnProperty(k)) {
+      result = result[k];
+    } else {
+      result = undefined;
+      break;
+    }
+  }
+
+  return result;
+}
 	
 export default {
   name: 'NewSupplyTaskView2',
 	components: {
-    Menu, Header, SupplyTaskRow, Sorting
+    Menu, Header, SupplyTaskRow, Sorting, Notifications
   },
 	data(){
 		return {
@@ -185,6 +247,9 @@ export default {
 			tasks: [],
 			filters: [],
 			sorting: [],
+			messages: [],
+			showReason: false,
+			days_to_ready: 2,
 			process: [
 				{
 					id: 1,
@@ -206,6 +271,7 @@ export default {
 				},
 			],
 			fromDate: '',
+			suggestionsDate: 0,
 		}
 	},
 	computed: {
@@ -221,8 +287,14 @@ export default {
 		estimateDate() {
 			let estimated = moment(this.fromDate, "DD.MM.YYYY");
 			if (this.current_warehouse.ship_days == undefined) return "Загрузка..";
-			estimated.add(this.current_warehouse.ship_days, 'days');
-			estimated.add(this.longestDate, 'days');
+			let days = this.current_warehouse.ship_days + this.longestDate;
+			if (days > this.suggestionsDate) {
+				estimated.add(this.current_warehouse.ship_days, 'days');
+				estimated.add(this.longestDate, 'days');
+			} else {
+				estimated.add(this.suggestionsDate, 'days');
+			}
+			
 			return estimated.format('DD.MM.YYYY');
 		},
 		longestDate(){
@@ -245,7 +317,7 @@ export default {
 				let qty = Number(task.task);
 				let weight = task.weight;
 				arr.push({
-					id: task.product_id,
+					id: task.pid,
 					qty: qty,
 					weight: (weight*qty).toFixed(2),
 				})
@@ -313,6 +385,10 @@ export default {
 		},
 	},
 	methods: {
+		percent(n){
+			return (n * 100).toFixed() + '%';
+		},
+		
 		onEdit(prop, value, id) {
 			const task = this.tasks.find(task => task.product_id == id);
 			if (task !== undefined) {
@@ -320,9 +396,15 @@ export default {
 			}
 		},
 
+		suggest(position) {
+			position.task = Math.floor(position.suggestion.result);
+		},
+
 		applySuggestions() {
-			this.tasks.forEach(item => item.task = Math.round(item.computed.suggestion + 1 -1));
-			return false;
+			this.tasks.forEach(item => {
+				if(item.suggestion.result > 0) 
+					item.task = Math.floor(item.suggestion.result);
+			})
 		},
 		
 		makeEdit(prop, value, id) {
@@ -443,7 +525,7 @@ export default {
 					step.status = 'Готово';
 				}
 			} catch(err) {
-				console.log(err);
+				this.addNotification('error', JSON.stringify(error));
 				// alert(err);
 			}
 		},
@@ -468,13 +550,15 @@ export default {
 					this.choose(this.warehouses[0].id);	
 				}
 			}).catch((error) => {
-		     console.log('/warehouses/list error', error);
+		     // console.log('/warehouses/list error', error);
+				 this.addNotification('error', JSON.stringify(error));
 		  });
 		},
 		choose(id) {
 			this.loaded = false;
 			this.filters = [];
 			this.sorting = [];
+			this.messages = [];
 			this.$router.push({path: '/newsupplytask2/'+id})
 			this.current_warehouse = this.warehouses.find(w => w.id == id);
 			this.reset();
@@ -483,27 +567,110 @@ export default {
 				url: '/supplytask/new2',
 				params: {
 					id: id,
+					days_to_ready: this.days_to_ready,
 				}
 			}).then(response => {
+				if (response.data.error != undefined) {
+					this.messages.push({
+						type: 'error',
+						text: response.data.error,
+					})
+				}
 				this.current_warehouse = this.warehouses.find(w => w.id == id);
+				this.current_warehouse.priority = response.data.wh_priority;
 				this.tasks = [];
 				// console.log(response.data.supplytasks);
 				for (const item of response.data.result) {
 					item.task = 0;
-					item.computed = {
-						suggestion: 0,
-						goalNDays: 0,
-						mainAndPacked: 0,
-					};
+					item.suggest = item.suggestion.result;
 					this.tasks.push(item);
 				}
-				for (const item of response.data.supplytasks) {
-					this.supply_tasks.push(item);
-				}
+				if (response.data.estimateDate != undefined)
+					this.suggestionsDate = response.data.estimateDate;
+				// for (const item of response.data.supplytasks) {
+				// 	this.supply_tasks.push(item);
+				// }
 				this.loaded = true;
 			}).catch((error) => {
+				this.addNotification('error', 'getGoalsByWarehouse' + JSON.stringify(error));
+		    console.log('getGoalsByWarehouse Error', error);
+		  });
+		},
+
+		loadDebug(){
+			this.addNotification('notice', 'Загрузка началась, надо немного подождать');
+			mpr({
+				url: '/supplytask/new2test',
+				params: {
+					id: this.current_warehouse.id,
+					days_to_ready: this.days_to_ready,
+				}
+			}).then(response => {
+				if (response.data.error != undefined) {
+					this.addNotification('error', 'Ошибка загрузки' + JSON.stringify(response.data.error));
+				}
+
+				for (const item of response.data.products) {
+					for (const n in item) {
+						this.updateDebug(n, item);
+						break;	
+					}
+				}
+
+				this.addNotification('success', 'Дебаг инфа загрузилась');
+			}).catch((error) => {
+				 this.addNotification('error', JSON.stringify(error));
+		     console.log('getGoalsByWarehouse Error', error);
+		  });	
+		},
+
+		addNotification(type, text) {
+			this.$store.dispatch('add', {type: type, text: text});
+		},
+
+		addMessage(message, type, sec) {
+			this.addNotification(type, message);
+		},
+		
+		update() {
+			this.loaded = false;
+			mpr({
+				url: '/supplytask/new2',
+				params: {
+					id: this.current_warehouse.id,
+					days_to_ready: this.days_to_ready,
+				}
+			}).then(response => {
+				for (const item of response.data.result) {
+					item.suggest = item.suggestion.result;
+					this.updateTask(item.pid, item);
+				}
+				if (response.data.estimateDate != undefined)
+					this.suggestionsDate = response.data.estimateDate;
+				this.loaded = true;
+			}).catch((error) => {
+					this.addNotification('error', JSON.stringify(error));
 		     console.log('getGoalsByWarehouse Error', error);
 		  });
+		},
+		updateTask(id, data){
+			for (const i in this.tasks) {
+				if (this.tasks[i].pid == id) {
+					for (const v in this.tasks[i]) {
+						if (v == 'task') continue;
+						this.tasks[i][v] = data[v];
+					}
+					break;
+				}
+			}
+		},
+		updateDebug(id, data){
+			for (const i in this.tasks) {
+				if (this.tasks[i].pid == id) {
+					this.tasks[i].debug = data;
+					break;
+				}
+			}
 		},
 		niceDate(date){
 			const momentDate = moment(date).format('DD.MM.YYYY')
@@ -513,6 +680,7 @@ export default {
 	mounted() {
 		this.fromDate = moment(new Date()).format('DD.MM.YYYY')
 		this.loadWarehouses(this.$route.params.wid);
+		// this.addNotification('error', 'text');
 	},
 	created() {
     this.$watch(
@@ -527,3 +695,102 @@ export default {
 }
 </script>
 
+<style lang="scss" scoped>
+	.suggestion.orange {
+		background: #ffd56e;
+		color: #e15613;
+	}
+	
+	.suggestion p {
+		display: none;
+    position: absolute;
+    padding: 20px;
+    background: #fff;
+    border-radius: 10px;
+    z-index: 2;
+    bottom: 20px;
+    width: 350px;
+		margin-left: -120px;
+		max-height: 200px;
+		overflow: scroll;
+	}
+	.suggestion:hover p {
+		display: block;
+	}
+
+	.red {
+		background: #ef225f !important;
+		font-weight: bold;
+	}
+
+	.warehouse {
+		border-left: #ddd solid 1px;
+		padding: 0 20px;
+	
+		ul {
+			list-style: none;
+			margin: 0;
+			padding: 0;
+
+			li {
+				margin: 0;
+				padding: 0;
+
+				span {
+					font-size: 12px;
+					font-weight: bold;
+					padding-right: 20px;
+					margin-right: 20px;
+					border-right: #ddd solid 1px;
+
+					&:last-child {
+						border: none;
+					}
+					
+					label {
+						font-weight: normal;
+					}
+				}
+			}
+		}
+	}
+
+	.dates {
+		border-left: #ddd solid 1px;
+		padding: 0 20px;
+		border-right: #ddd solid 1px;
+	
+		ul {
+			list-style: none;
+			margin: 0;
+			padding: 0;
+		}
+		li {
+			margin: 0;
+			padding: 0;
+			margin-top: 5px;
+			display: flex;
+		}
+		label {
+			width: 100px;
+			font-size: 12px;
+			font-weight: bold;
+			position: relative;
+			
+			span {
+				position: absolute;
+				top: 15px;
+				font-size: 10px;
+				color: #aaa;
+				text-transform: uppercase;
+				z-index: 1;
+				display: none;
+			}
+		}
+
+		input {
+			width: 80px;
+			text-align: center;
+		}
+	}
+</style>

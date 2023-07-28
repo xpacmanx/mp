@@ -420,7 +420,7 @@ const suggestion = computed(() => {
 		<td>{{task.name}}</td>
 		<td class="table__code">{{task.code}}</td>
 		<td><input type="number" v-model.number="task.task" @focus="checkZero" @blur="makeZero" min="1" max="999" /></td>
-		<td><a v-if="suggestion > 0" href="javascript://" @click="suggest(suggestion);">⬅️</a> {{suggestion}}</td>
+		<td><a v-if="suggestion > 0" href="javascript://" @click="suggest(suggestion);">⬅️</a> {{suggesti}}</td>
 		<td>{{mainAndPacked}}</td>
 		<td>{{ lost }}</td>
 		<td>{{currentWhQty}}</td>
