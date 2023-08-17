@@ -45,7 +45,7 @@
 					<span>
 						<label>Показывать причины предложения:
 						<input type="checkbox" v-model="showReason" /></label><br />
-						<button class="btn btn-transparent" @click="loadDebug();">Загрузить дебаг инфу для suggestions</button>
+						<!--button class="btn btn-transparent" @click="loadDebug();">Загрузить дебаг инфу для suggestions</button-->
 					</span>
 					<span>Сортировка:</span>
 					<ul>

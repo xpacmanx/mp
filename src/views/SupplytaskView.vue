@@ -30,7 +30,7 @@
 							<td>{{supplytask.finish_date}}</td>
 							<td>
 								
-								<a href="javascript://">Удалить</a>		
+								<!--a href="javascript://">Удалить</a-->		
 							</td>
 						</tr>
 					</tbody>
@@ -54,7 +54,7 @@
 							<td>{{task.qty}}</td>
 							<td>
 								
-								<a href="javascript://" @click="deleteTask(task.id)">Удалить</a>		
+								<!--a href="javascript://" @click="deleteTask(task.id)">Удалить</a-->		
 							</td>
 						</tr>
 					</tbody>
