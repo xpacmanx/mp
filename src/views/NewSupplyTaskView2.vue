@@ -76,6 +76,28 @@
 							<li v-for="p in process">{{p.title}} - <span>{{p.status}}</span></li>
 						</ol>
 					</div>
+					<div class="positions-list" style="margin-top: 20px;">
+						<p style="position: absolute;right: 0;z-index:2;">
+							<button class="btn" @click="makeTask()">Повторить запрос</button>
+						</p>
+						<h3>Позиции для отправки:</h3>
+						<table class="table" style="text-align: center;">
+							<thead>
+								<th>#</th>
+								<th>Код</th>
+								<th>Кол-во</th>
+								<th>Вес</th>
+							</thead>
+							<tbody>
+								<tr v-for="item in positions">
+									<td>{{item.id}}</td>
+									<td>{{item.code}}</td>
+									<td>{{item.qty}}</td>
+									<td>{{item.weight}}</td>
+								</tr>
+							</tbody>
+						</table>
+					</div>
 				</div>
 				<p v-if="!loaded">Загрузка контента...</p>
 				<div class="container-table">
@@ -153,7 +175,7 @@
 								<td>{{position.pid}}</td>
 								<td>{{position.name}}</td>
 								<td>{{position.code}}</td>
-								<td><input type="text" v-model.number="position.task" /></td>
+								<td><input type="number" v-model.number="position.task" /></td>
 								<td class="suggestion" :class="position.suggestion.color">
 									<p v-if="showReason">
 										{{position.suggestion.reason}}
@@ -318,6 +340,7 @@ export default {
 				let weight = task.weight;
 				arr.push({
 					id: task.pid,
+					code: task.code,
 					qty: qty,
 					weight: (weight*qty).toFixed(2),
 				})
@@ -327,6 +350,7 @@ export default {
 		sortedData() {
 			let arr = [];
 			for (const task of this.tasks) {
+				task.task = parseInt(task.task);
 				arr.push(task);
 			}
 			
@@ -497,6 +521,9 @@ export default {
 
 		async makeTask() {
 			try {
+				const check = confirm('Вы уверены, что хотите продолжить?');
+				if (check == false) return false;
+				
 				let response = {};
 				for (const step of this.process) {
 					step.status = 'Выполняется..';
