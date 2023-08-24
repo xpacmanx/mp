@@ -7,6 +7,8 @@
         <h2>Задание к поставкам #{{supplytask.id}}</h2>
       </div>
       <div class="content">
+				<Notifications />
+				
         <h1></h1>
 				<table class="table">
 					<thead>
@@ -17,6 +19,7 @@
 						<th>Дата создания</th>
 						<th>Прогноз приемки</th>
 						<th>Финальная дата приемки</th>
+						<th>Мой склад</th>
 						<th>Действия</th>
 					</thead>
 					<tbody>
@@ -28,14 +31,24 @@
 							<td>{{supplytask.start_date}}</td>
 							<td>{{supplytask.estimated_date}}</td>
 							<td>{{supplytask.finish_date}}</td>
+							<td><a v-if="supplytask.remote_id" :href="'https://online.moysklad.ru/app/#move/edit?id='+supplytask.remote_id">Перейти в мой склад</a></td>
 							<td>
-								
 								<!--a href="javascript://">Удалить</a-->		
 							</td>
 						</tr>
 					</tbody>
 				</table>
 				<br/>
+				<h2>Действия</h2>
+				<ul style="text-align:left;">
+				<li>
+					<button class="btn" @click="syncMs()">Синхронизировать</button><br />
+					<i>Загрузить позиции из моего склада в систему</i>
+				</li>
+				<!--li>
+					<button class="btn">Удалить</button>
+				</li-->
+				</ul>
 
 				<h2>Позиции</h2>
 				<table class="table">
@@ -67,22 +80,27 @@
 <script>
 import Menu from '@/components/navigation/Menu.vue'
 import Header from '@/components/navigation/Header.vue'
+import Notifications from '@/components/Notifications.vue'
 import mpr from './../tools/mpr'
 import moment from 'moment'
 	
 export default {
   name: 'HomeView',
   components: {
-  	Menu, Header
+  	Menu, Header, Notifications
   },
 	data() {
 		return {
+			id: 0,
 			supplytask: {
 				
 			},
 		}
 	},
 	methods: {
+		addNotification(type, text) {
+			this.$store.dispatch('add', {type: type, text: text});
+		},
 		deleteTask(id) {
 			mpr({
 				url: '/supplytask/'+id,
@@ -101,8 +119,23 @@ export default {
 				}
 			})
 		},
+		syncMs() {
+			const id = this.id;
+			mpr({
+				url: '/automation/ms/sync',
+				params: {
+					id: id
+				},
+			}).then(res => {
+				this.getSupplytask(id);
+			}).catch(error => {
+				this.addNotification('error', 'Что-то пошло не так - вот ошибка' + JSON.stringify(error));
+				// alert('Синхронизация затянулась, сообщу о завершение в телеграме');
+			});
+		},
 	},
 	mounted() {
+		this.id = this.$route.params.id;
 		this.getSupplytask(this.$route.params.id);
 	},
 	created() {

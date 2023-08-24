@@ -34,7 +34,7 @@
         <i>3</i>
         <span>Цели факты для выбранного склада</span>
       </router-link>
-	</li-->
+		</li-->
 <!--    <li>
       <router-link to="/goalsbyproduct">
         <i>4</i>
