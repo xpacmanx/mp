@@ -120,6 +120,7 @@ export default {
 			})
 		},
 		syncMs() {
+			this.addNotification('default', 'Синхронизация началась, подожди чуток');
 			const id = this.id;
 			mpr({
 				url: '/automation/ms/sync',
