@@ -127,6 +127,7 @@ export default {
 					id: id
 				},
 			}).then(res => {
+				this.addNotification('success', 'Синхронизация прошла успешно, обновил сапплайтаск');
 				this.getSupplytask(id);
 			}).catch(error => {
 				this.addNotification('error', 'Что-то пошло не так - вот ошибка' + JSON.stringify(error));
