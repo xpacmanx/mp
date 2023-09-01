@@ -137,7 +137,7 @@ export default {
 				url: '/supplytasks/'+this.supplytask.id,
 				method: 'put',
 				data: {
-					finishDate: this.dateInput,
+					finish_date: this.dateInput,
 				},
 			}).then(res => {
 				if (res.status === 200) {  // Assuming 200 is the success status code
