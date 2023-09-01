@@ -137,6 +137,7 @@ export default {
 				url: '/supplytasks/'+this.supplytask.id,
 				method: 'put',
 				data: {
+					id: this.supplytask.id,
 					finish_date: this.dateInput,
 				},
 			}).then(res => {
