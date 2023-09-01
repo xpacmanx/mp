@@ -134,17 +134,21 @@ export default {
 		changeDate(){
 			this.addNotification('Пошло', 'Сейчас все поменяем');
 			mpr({
-				url: '/supplytask/',
+				url: '/supplytasks/'+this.supplytask.id,
 				method: 'put',
 				data: {
-					id: this.supplytask.id,
 					finishDate: this.dateInput,
 				},
 			}).then(res => {
-				if (res.data != undefined) {
-					this.addNotification('Success', 'Все прошло хорошо');
-				}
+				if (res.status === 200) {  // Assuming 200 is the success status code
+		        this.addNotification('Success', 'Все прошло хорошо');
+		    } else {
+		        this.addNotification('Error', 'Something went wrong');
+		    }
 			})
+			.catch(error => {
+					this.addNotification('Error', 'Failed to update the supply task');
+			});
 		},
 		syncMs() {
 			this.addNotification('default', 'Синхронизация началась, подожди чуток');
