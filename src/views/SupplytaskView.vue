@@ -28,11 +28,10 @@
 							<td>{{supplytask.qty_amount}}</td>
 							<td>{{supplytask.start_date}}</td>
 							<td>{{supplytask.estimated_date}}</td>
-							<td>{{supplytask.finish_date}}
-								<form @submit.prevent="submitForm">
-									<input v-model="dateInput" type="text" pattern="^(202[3-9]|2030)-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])$" placeholder="YYYY-MM-DD" @input="validateDate" required />
-									<button type="submit">Check</button>
-								</form>
+							<td>
+								<button class="btn btn-transparent" @click="minus()">-1</button> {{dateInput}} <button class="btn btn-transparent" @click="plus()">+1</button>
+								<br/>
+								<button class="btn" type="submit" v-if="dateInput != supplytask.finish_date" @click="changeDate()">Сохранить</button>
 							</td>
 							<td><a v-if="supplytask.remote_id" :href="'https://online.moysklad.ru/app/#move/edit?id='+supplytask.remote_id">Перейти в мой склад</a></td>
 							<td>
@@ -120,6 +119,30 @@ export default {
 			}).then(res => {
 				if (res.data.length > 0) {
 					this.supplytask = res.data[0];
+					this.dateInput = this.supplytask.finish_date
+				}
+			})
+		},
+		plus(){
+			let start = moment(this.dateInput);
+			this.dateInput = start.add({days: 1}).format('YYYY-MM-DD'); 
+		},
+		minus(){
+			let start = moment(this.dateInput);
+			this.dateInput = start.add({days: -1}).format('YYYY-MM-DD'); 
+		},
+		changeDate(){
+			this.addNotification('Пошло', 'Сейчас все поменяем');
+			mpr({
+				url: '/supplytask/'+this.supplytask.id,
+				method: 'put',
+				data: {
+					id: this.supplytask.id,
+					finishDate: this.dateInput,
+				},
+			}).then(res => {
+				if (res.data != undefined) {
+					this.addNotification('Success', 'Все прошло хорошо');
 				}
 			})
 		},
@@ -139,21 +162,6 @@ export default {
 				// alert('Синхронизация затянулась, сообщу о завершение в телеграме');
 			});
 		},
-	 validateDate() {
-      const pattern = /^(202[3-9]|2030)-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])$/;
-      
-      if (!pattern.test(this.dateInput)) {
-        this.$refs.dateInput.setCustomValidity('Please use the format YYYY-MM-DD and a year between 2023 and 2030.');
-      } else {
-        this.$refs.dateInput.setCustomValidity(''); // Reset the message to allow submission
-      }
-    },
-    submitForm() {
-      if (this.$refs.dateInput.checkValidity()) {
-        // Handle the form submission
-        console.log("Form submitted with date:", this.dateInput);
-      }
-    }
 	},
 	mounted() {
 		this.id = this.$route.params.id;
