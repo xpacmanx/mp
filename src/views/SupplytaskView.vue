@@ -15,7 +15,6 @@
 						<th>#</th>
 						<th>Склад</th>
 						<th>Товара штук</th>
-						<th>Вес</th>
 						<th>Дата создания</th>
 						<th>Прогноз приемки</th>
 						<th>Финальная дата приемки</th>
@@ -27,10 +26,14 @@
 							<td>{{supplytask.id}}</td>
 							<td>{{supplytask.warehouse_name}}</td>
 							<td>{{supplytask.qty_amount}}</td>
-							<td>{{supplytask.weight_amount}}</td>
 							<td>{{supplytask.start_date}}</td>
 							<td>{{supplytask.estimated_date}}</td>
-							<td>{{supplytask.finish_date}}</td>
+							<td>{{supplytask.finish_date}}
+								<form @submit.prevent="submitForm">
+									<input v-model="dateInput" type="text" pattern="^(202[3-9]|2030)-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])$" placeholder="YYYY-MM-DD" @input="validateDate" required />
+									<button type="submit">Check</button>
+								</form>
+							</td>
 							<td><a v-if="supplytask.remote_id" :href="'https://online.moysklad.ru/app/#move/edit?id='+supplytask.remote_id">Перейти в мой склад</a></td>
 							<td>
 								<!--a href="javascript://">Удалить</a-->		
@@ -92,6 +95,7 @@ export default {
 	data() {
 		return {
 			id: 0,
+			dateInput: '',
 			supplytask: {
 				
 			},
@@ -135,6 +139,21 @@ export default {
 				// alert('Синхронизация затянулась, сообщу о завершение в телеграме');
 			});
 		},
+	 validateDate() {
+      const pattern = /^(202[3-9]|2030)-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])$/;
+      
+      if (!pattern.test(this.dateInput)) {
+        this.$refs.dateInput.setCustomValidity('Please use the format YYYY-MM-DD and a year between 2023 and 2030.');
+      } else {
+        this.$refs.dateInput.setCustomValidity(''); // Reset the message to allow submission
+      }
+    },
+    submitForm() {
+      if (this.$refs.dateInput.checkValidity()) {
+        // Handle the form submission
+        console.log("Form submitted with date:", this.dateInput);
+      }
+    }
 	},
 	mounted() {
 		this.id = this.$route.params.id;
