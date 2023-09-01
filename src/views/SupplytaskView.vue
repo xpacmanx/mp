@@ -141,13 +141,14 @@ export default {
 				},
 			}).then(res => {
 				if (res.status === 200) {  // Assuming 200 is the success status code
-		        this.addNotification('Success', 'Все прошло хорошо');
+						this.getSupplytask(supplytask.id);
+		        this.addNotification('success', 'Все прошло хорошо');
 		    } else {
-		        this.addNotification('Error', 'Something went wrong');
+		        this.addNotification('error', 'Something went wrong');
 		    }
 			})
 			.catch(error => {
-					this.addNotification('Error', 'Failed to update the supply task');
+					this.addNotification('error', 'Failed to update the supply task');
 			});
 		},
 		syncMs() {
