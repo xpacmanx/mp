@@ -140,8 +140,8 @@ export default {
 					finish_date: this.dateInput,
 				},
 			}).then(res => {
-				if (res.status === 200) {  // Assuming 200 is the success status code
-						this.getSupplytask(supplytask.id);
+				if (res.status == 200) {  // Assuming 200 is the success status code
+						this.getSupplytask(this.supplytask.id);
 		        this.addNotification('success', 'Все прошло хорошо');
 		    } else {
 		        this.addNotification('error', 'Something went wrong');
