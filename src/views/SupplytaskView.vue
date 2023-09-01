@@ -134,7 +134,7 @@ export default {
 		changeDate(){
 			this.addNotification('Пошло', 'Сейчас все поменяем');
 			mpr({
-				url: '/supplytask/'+this.supplytask.id,
+				url: '/supplytask/',
 				method: 'put',
 				data: {
 					id: this.supplytask.id,
