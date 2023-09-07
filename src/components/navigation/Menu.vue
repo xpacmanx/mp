@@ -10,13 +10,13 @@
     </li>
 <!--     <li>
       <router-link to="/">Home</router-link>
-    </li>
+	</li-->
 		<li>
-      <router-link to="/">
+      <router-link to="/supplytasks/dashboard">
         <i>1</i>
-        <span>-</span>
+        <span>Панель управления сервисом поставок</span>
       </router-link>
-    </li>-->
+    </li>
     <!--li>
       <router-link to="/newsupplytask">
         <i>2</i>

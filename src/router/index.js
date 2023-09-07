@@ -7,6 +7,7 @@ import NewSupplyTaskView2 from '../views/NewSupplyTaskView2.vue'
 import ConnectionsView from '../views/ConnectionsView.vue'
 import WarehousesView from '../views/WarehousesView.vue'
 import SupplytaskView from '../views/SupplytaskView.vue'
+import SupplytasksDashboardView from '../views/SupplytasksDashboardView.vue'
 
 
 const routes = [
@@ -56,6 +57,14 @@ const routes = [
 		component: SupplytaskView,
 		meta: {
 			title: 'Задание к поставкам для склада'
+		}
+	},
+	{
+		path: '/supplytasks/dashboard',
+		name: 'supplytaskdashboard',
+		component: SupplytasksDashboardView,
+		meta: {
+			title: 'Панель управления Сервисом поставок'
 		}
 	},
 	{

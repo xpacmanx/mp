@@ -87,7 +87,7 @@ import mpr from './../tools/mpr'
 import moment from 'moment'
 	
 export default {
-  name: 'HomeView',
+  name: 'SupplytasksDashboardView',
   components: {
   	Menu, Header, Notifications
   },
