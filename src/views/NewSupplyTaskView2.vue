@@ -27,7 +27,8 @@
 					</ul>
 				</div>
 				<div>
-					Вес: {{calcWeight()}}кг
+					Вес: {{calcWeight()}}кг<br/>
+					Всего: {{calcQty()}}шт
 				</div>
         <div v-if="positions.length > 0 && process_status">
           <button class="btn" @click="makeTask()">Создать подсорт</button>

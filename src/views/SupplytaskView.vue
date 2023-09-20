@@ -19,6 +19,7 @@
 						<th>Прогноз приемки</th>
 						<th>Финальная дата приемки</th>
 						<th>Мой склад</th>
+						<th>Статус</th>
 						<th>Действия</th>
 					</thead>
 					<tbody>
@@ -35,7 +36,11 @@
 							</td>
 							<td><a v-if="supplytask.remote_id" :href="'https://online.moysklad.ru/app/#move/edit?id='+supplytask.remote_id">Перейти в мой склад</a></td>
 							<td>
-								<!--a href="javascript://">Удалить</a-->		
+								<span v-if="supplytask.status_id == 10">Принято</span>
+								<span v-else>Не принято</span>
+							</td>
+							<td>
+								<button v-if="supplytask.status_id !== 10" class="btn btn-transparent" @click="changeStatus();">Принять</button>
 							</td>
 						</tr>
 					</tbody>
@@ -67,10 +72,7 @@
 							<td>{{task.code}}</td>
 							<td>{{task.name}}</td>
 							<td>{{task.qty}}</td>
-							<td>
-								
-								<!--a href="javascript://" @click="deleteTask(task.id)">Удалить</a-->		
-							</td>
+							<td><button @click="removePosition(task.id)">Удалить позицию {{task.id}}</button></td>
 						</tr>
 					</tbody>
 				</table>
@@ -138,6 +140,29 @@ export default {
 				method: 'put',
 				data: {
 					finish_date: this.dateInput,
+				},
+			}).then(res => {
+				if (res.status == 200) {  // Assuming 200 is the success status code
+						this.getSupplytask(this.supplytask.id);
+		        this.addNotification('success', 'Все прошло хорошо');
+		    } else {
+		        this.addNotification('error', 'Something went wrong');
+		    }
+			})
+			.catch(error => {
+					this.addNotification('error', 'Failed to update the supply task');
+			});
+		},
+		changeStatus(){
+			let result = confirm('Проверьте, что принимаете правильное задание к поставкам. Подтверждаете?');
+			if (result == false) return false;
+			
+			this.addNotification('Пошло', 'Сейчас все примем');
+			mpr({
+				url: '/supplytasks/'+this.supplytask.id,
+				method: 'put',
+				data: {
+					status_id: 10,
 				},
 			}).then(res => {
 				if (res.status == 200) {  // Assuming 200 is the success status code

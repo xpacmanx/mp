@@ -40,7 +40,7 @@
 						<p>Дата последнего изменения:<br />{{ozonstocks.date}}</p>
 					</div>
 				</div>
-				<h2>Supply Tasks</h2>
+				<h2>Непринятые задания:</h2>
 				<div>
 					<table class="table">
 						<thead>
@@ -238,11 +238,19 @@ h1 {
 	font-weight: bold;
 }
 
+h2 {
+	font-size: 1.5em;
+	margin-top: 30px;
+	font-weight: bold;
+	text-align: left;
+	margin-bottom: 10px;
+}
+
 .panels {
 	display: flex;	
 	flex-direction: row;
 	flex-wrap: nowrap;
-	justify-content: space-around;
+	justify-content: space-between !important;
 }
 	
 .panel {
@@ -254,6 +262,8 @@ h1 {
 	h2 {
 		font-size: 16px;
 		font-weight: bold;
+    margin: inherit;
+    text-align: center;
 	}
 
 	&__number {
