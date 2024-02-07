@@ -189,7 +189,7 @@
 									<a v-if="position.suggestion.result > 0" href="javascript://" @click="suggest(position);">⬅️</a>
 									{{Math.floor(position.suggest)}}</td>
 								<td>{{position.main_and_already_packed}}</td>
-								<td :class="position.notice_flag == 1 ? 'red' : ''">{{position.notice_flag}}</td>
+								<td :class="position.notice_flag == 1 ? 'red' : ''">{{position.notice_flag == 1 ? 'Да' : ''}}</td>
 								<td :class="position.main_and_already_packed-position.task < 0 ? 'red' : ''">{{position.main_and_already_packed-position.task}}</td>
 								<td>{{position.qty_in_wh}}</td>
 								<td>{{position.qty_in_region}}</td>
