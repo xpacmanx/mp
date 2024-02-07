@@ -118,7 +118,7 @@
 									<Sorting :filters="filters" :sorting="sorting" name="main_and_already_packed" @onSort="onSort"/>
 								</th>
 								<th>
-									Осталось меньше, чем на неделю
+									Осталось меньше, чем на неделю (суммарно по складам)
 									<Sorting :filters="filters" :sorting="sorting" name="notice_flag" @onSort="onSort"/>
 								</th>
 							  <th>Останется после перемещения</th>
@@ -752,8 +752,9 @@ export default {
 	}
 
 	.red {
-		background: #ef225f !important;
-		font-weight: bold;
+		background: #f6b2ba!important;
+		font-weight: 700;
+		color: #fff;
 	}
 
 	.warehouse {
