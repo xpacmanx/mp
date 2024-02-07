@@ -25,6 +25,8 @@
 						<th>Регион</th>
 						<th>Приоритет</th>
 						<th>Склад маркетплейса</th>
+						<!--th>Нехватка в регионе, на сегодня, %</th>
+						<th>Излишки в регионе, на сегодня, %</th-->
 						<th>Кол-во наименований предлагаемых сервисом к возможной поставке сейчас</th>
 						<th>Общее кол-во штук предлагаемых сервисом к возможной поставке сейчас</th>
 						<th>Действия</th>
@@ -35,6 +37,8 @@
 							<td>{{item.region}}</td>
 							<td>{{item.priority}}</td>
 							<td>{{item.name}}</td>
+							<!--td>{{toPercent(item.deficit)}}</td>
+							<td>{{toPercent(item.proficit)}}</td-->
 							<td>{{item.suggestions_products}}</td>
 							<td>{{item.suggestions}}</td>
 							<td>
@@ -72,6 +76,10 @@ export default {
 	methods: {
 		addNotification(type, text) {
 			this.$store.dispatch('add', {type: type, text: text});
+		},
+
+		toPercent(num){
+			return (num*10).toFixed(2) + '%'
 		},
 		
 		getData() {

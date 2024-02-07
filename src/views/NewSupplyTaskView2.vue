@@ -117,6 +117,10 @@
 									Основной склад + Упакованное (расчет)
 									<Sorting :filters="filters" :sorting="sorting" name="main_and_already_packed" @onSort="onSort"/>
 								</th>
+								<th>
+									Notice Flag
+									<Sorting :filters="filters" :sorting="sorting" name="notice_flag" @onSort="onSort"/>
+								</th>
 							  <th>Останется после перемещения</th>
 								<th>Находится на складе</th>
 								<th>Находится в регионе</th>
@@ -146,7 +150,7 @@
 								<th>{{current_warehouse.type.toUpperCase()}} Кол-во продаж за 30 дней</th>
 															<th>{{current_warehouse.type.toUpperCase()}} Целевое кол-во продаж в месяц</th>
 								<th>Статус переключателя Цель/Факт</th>
-								<th>Приоритет склада</th>
+								<th>Цена</th>
 								<th>
 									Планируем ли дальше продавать на этом складе
 									<Sorting :filters="filters" :sorting="sorting" name="goal_active" @onSort="onSort"/>
@@ -184,6 +188,7 @@
 									</p>
 									<a v-if="position.suggestion.result > 0" href="javascript://" @click="suggest(position);">⬅️</a>
 									{{Math.floor(position.suggest)}}</td>
+								<td>{{position.notice_flag}}</td>
 								<td>{{position.main_and_already_packed}}</td>
 								<td :class="position.main_and_already_packed-position.task < 0 ? 'red' : ''">{{position.main_and_already_packed-position.task}}</td>
 								<td>{{position.qty_in_wh}}</td>
@@ -199,7 +204,7 @@
 								<td>{{position[current_warehouse.type+'_sales30']}}</td>
 								<td>{{position[current_warehouse.type+'_sales_goal']}}</td>
 								<td>{{position.goal_toggle}}</td>
-								<td>{{position.goal_priority}}</td>
+								<td>{{position[current_warehouse.type+'_price']}}&nbsp;руб</td>
 								<td>{{position.goal_active}}</td>
 								<td>{{position.transit_qty}}</td>
 								<td>{{position.ready_qty}}</td>
