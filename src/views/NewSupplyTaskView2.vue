@@ -118,7 +118,7 @@
 									<Sorting :filters="filters" :sorting="sorting" name="main_and_already_packed" @onSort="onSort"/>
 								</th>
 								<th>
-									Notice Flag
+									Осталось меньше, чем на неделю
 									<Sorting :filters="filters" :sorting="sorting" name="notice_flag" @onSort="onSort"/>
 								</th>
 							  <th>Останется после перемещения</th>
