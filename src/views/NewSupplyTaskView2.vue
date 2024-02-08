@@ -145,7 +145,7 @@
 									<Sorting :filters="filters" :sorting="sorting" name="qty_sales_goal" @onSort="onSort"/>
 								</th>
 								<th>{{current_warehouse.type.toUpperCase()}} Новый товар
-									<Sorting :filters="filters" :sorting="sorting" :name="current_warehouse + '_new'" @onSort="onSort"/>
+									<Sorting :filters="filters" :sorting="sorting" :name="current_warehouse.type + '_new'" @onSort="onSort"/>
 								</th>
 								<th>{{current_warehouse.type.toUpperCase()}} Текущая доходность</th>
 								<th>{{current_warehouse.type.toUpperCase()}} Планируем ли и дальше продавать</th>
