@@ -144,8 +144,9 @@
 									Кол-во продаж за N дней в городе выбранного склада Цель
 									<Sorting :filters="filters" :sorting="sorting" name="qty_sales_goal" @onSort="onSort"/>
 								</th>
-							<th>{{current_warehouse.type.toUpperCase()}} Текущая доходность</th>
-							<th>{{current_warehouse.type.toUpperCase()}} Планируем ли и дальше продавать</th>
+								<th>{{current_warehouse.type.toUpperCase()}} Новый товар</th>
+								<th>{{current_warehouse.type.toUpperCase()}} Текущая доходность</th>
+								<th>{{current_warehouse.type.toUpperCase()}} Планируем ли и дальше продавать</th>
 								<th>{{current_warehouse.type.toUpperCase()}} Кол-во продаж за 7 дней</th>
 								<th>{{current_warehouse.type.toUpperCase()}} Кол-во продаж за 30 дней</th>
 															<th>{{current_warehouse.type.toUpperCase()}} Целевое кол-во продаж в месяц</th>
@@ -198,6 +199,7 @@
 								<td>{{position.qty_on_day_acceptance}}</td>
 								<td>{{position.qty_sales_fact}}</td>
 								<td>{{position.qty_sales_goal}}</td>
+								<td>{{position[current_warehouse.type+'_new'] == 1 ? 'Да': ''}}</td>
 								<td>{{percent(position[current_warehouse.type+'_profitability'])}}</td>
 								<td>{{position[current_warehouse.type+'_active_for_sell']}}</td>
 								<td>{{position[current_warehouse.type+'_sales7']}}</td>
