@@ -144,7 +144,9 @@
 									Кол-во продаж за N дней в городе выбранного склада Цель
 									<Sorting :filters="filters" :sorting="sorting" name="qty_sales_goal" @onSort="onSort"/>
 								</th>
-								<th>{{current_warehouse.type.toUpperCase()}} Новый товар</th>
+								<th>{{current_warehouse.type.toUpperCase()}} Новый товар
+									<Sorting :filters="filters" :sorting="sorting" :name="current_warehouse + '_new'" @onSort="onSort"/>
+								</th>
 								<th>{{current_warehouse.type.toUpperCase()}} Текущая доходность</th>
 								<th>{{current_warehouse.type.toUpperCase()}} Планируем ли и дальше продавать</th>
 								<th>{{current_warehouse.type.toUpperCase()}} Кол-во продаж за 7 дней</th>
