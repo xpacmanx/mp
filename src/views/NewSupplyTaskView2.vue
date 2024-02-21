@@ -37,10 +37,8 @@
       </div>
 			<div class="sorting" v-if="loaded && process_status">
 				<div>
-					Товаров из Китая: {{positions_groups.is_chinese}}шт
-					Товаров собственного производства: {{positions_groups.produced}}шт
-				</div>
-				<div>
+					<span>Товаров из Китая: {{positions_groups.is_chinese}}шт</span>
+					<span>Товаров собственного производства: {{positions_groups.produced}}шт</span>
 					<span>
 						Количество дней на подготовку
 						<select v-model="days_to_ready" @change="update();">
