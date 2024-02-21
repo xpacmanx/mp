@@ -125,6 +125,10 @@
 								<th>Находится на складе</th>
 								<th>Находится в регионе</th>
 								<th>На сколько дней находится в городе выбранного склада сейчас</th>
+								<th>
+									Товар собственного производства
+									<Sorting :filters="filters" :sorting="sorting" name="produced" @onSort="onSort"/>
+								</th>
 								<th>Расчетное наличие на день приемки
 		[сегодняшняя дата + срок поставки]
 		без текущей поставки
@@ -197,6 +201,7 @@
 								<td>{{position.qty_in_wh}}</td>
 								<td>{{position.qty_in_region}}</td>
 								<td>{{position.days_in_city}}</td>
+								<td>{{position.produced == 1 ? 'Да' : ''}}</td>
 								<td>{{position.estimated_avl}}</td>
 								<td>{{position.qty_on_day_acceptance}}</td>
 								<td>{{position.qty_sales_fact}}</td>
