@@ -37,6 +37,10 @@
       </div>
 			<div class="sorting" v-if="loaded && process_status">
 				<div>
+					Товаров из Китая: {{positions_groups.is_chinese}}шт
+					Товаров собственного производства: {{positions_groups.produced}}шт
+				</div>
+				<div>
 					<span>
 						Количество дней на подготовку
 						<select v-model="days_to_ready" @change="update();">
@@ -361,6 +365,19 @@ export default {
 				})
 			}
 			return arr;
+		},
+		positions_groups() {
+			const result = {
+				produced: 0,
+				is_chinese: 0,
+			};
+			const tasks = this.tasks.filter(task => task.task > 0);
+			for (const task of tasks) {
+				let qty = Number(task.task);
+				if (task.produced) result.produced += qty;
+				if (task.is_chinese) result.is_chinese += qty;
+			}
+			return result;
 		},
 		sortedData() {
 			let arr = [];
