@@ -183,6 +183,7 @@
 								<th>Ожидание товара 3я неделя</th>
 								<th>Ожидание товара 4я неделя</th>
 								<th>Ожидание товара 5я неделя</th>
+								<th>Аккаунт</th>
 						</thead>
 						<tbody>
 							<tr v-for="position in sortedData">
@@ -234,6 +235,7 @@
 								<td>{{position.arrived3}}</td>
 								<td>{{position.arrived4}}</td>
 								<td>{{position.arrived5}}</td>						
+								<td>{{position.account}}</td>						
 							</tr>
 						</tbody>
 					</table>
