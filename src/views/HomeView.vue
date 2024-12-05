@@ -60,6 +60,7 @@
 								<td>{{task.finish_date}}</td>
 								<td>
 									<router-link :to="'/supplytask/'+task.id">Открыть</router-link> | 
+									<router-link :to="'/newsupplytask2/'+task.warehouse_id+'/'+task.id">Сделать добавку</router-link> | 
 									<a href="javascript://" @click="deleteTask(task.id)">Удалить</a>		
 								</td>
 							</tr>

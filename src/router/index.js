@@ -44,7 +44,7 @@ const routes = [
 		}
 	},
 	{
-		path: '/newsupplytask2/:wid',
+		path: '/newsupplytask2/:wid/:taskId?',
 		name: 'newsupplytask2id',
 		component: NewSupplyTaskView2,
 		meta: {

@@ -5,12 +5,13 @@
 		<Notifications />
     <div class="content-with-menu">
       <div class="top-menu">
-        <h2>2.1. Подсорт для выбранного склада</h2>
+        <h2 v-if="taskId">Добавка к поставке #{{taskId}}</h2>
+				<h2 v-else>2.1. Подсорт для выбранного склада</h2>
 				<div class="warehouse">
 					<span v-if="!warehouses_loaded">Загрузка складов...</span>
 					<ul>
 						<li>
-			        <select v-if="warehouses_loaded" @change="wChange($event)">
+			        <select v-if="warehouses_loaded" @change="wChange($event)" :disabled="taskId > 0">
 			          <option v-for="warehouse in warehouses" :key="warehouse.id" :value="warehouse.id" :selected="warehouse.id == current_warehouse.id">{{warehouse.id}}. {{warehouse.slug_name}}</option>
 			        </select>
 						</li>
@@ -31,11 +32,18 @@
 					Всего: {{calcQty()}}шт
 				</div>
         <div v-if="positions.length > 0 && process_status">
-          <button class="btn" @click="makeTask()">Создать подсорт</button>
+          <button v-if="taskId > 0" class="btn" @click="addToTask()">Завершить добавку</button>
+					<button v-else class="btn" @click="makeTask()">Создать подсорт</button>
           <button class="btn btn-transparent" @click="makeSort()">Предпросмотр</button>
         </div>
       </div>
+			
+			<div class="bg-blue-500 text-white p-4 rounded" v-if="taskId > 0">
+				Надо выбрать количество дней на подготовку. Это Изменить дату приемки.
+			</div>
+			
 			<div class="sorting" v-if="loaded && process_status">
+				<div class="clearfix"></div>
 				<div>
 					<span>Товаров из Китая: {{positions_groups.is_chinese}}шт</span>
 					<span>Товаров собственного производства: {{positions_groups.produced}}шт</span>
@@ -291,6 +299,7 @@ export default {
 			messages: [],
 			showReason: false,
 			days_to_ready: 2,
+			taskId: undefined,
 			process: [
 				{
 					id: 1,
@@ -427,7 +436,8 @@ export default {
 		    qty: this.calcQty(),
 		    weight: this.calcWeight(),
 		    status_id: 1,
-				positions: this.positions
+				positions: this.positions,
+				task_id: this.taskId,
 			}
 		},
 		filteredSupplytasks() {
@@ -589,6 +599,29 @@ export default {
 			}
 		},
 
+		async addToTask() {
+			try {
+				const check = confirm('Вы уверены, что хотите продолжить?');
+				if (check == false) return false;
+
+				let response = {};
+				response = await mpr({
+					url: '/supplytask/addto',
+					method: 'post',
+					data: this.requestData,
+				});
+
+				if (response) {
+					alert('Ну все добавилось, соррян, не успел нарисовать интерфейс.');
+					this.$router.push({path: '/'});
+				}
+
+			} catch(err) {
+				this.addNotification('error', JSON.stringify(error));
+				// alert(err);
+			}
+		},
+
 		loadWarehouses(id){
 			this.warehouses = [];
 			this.warehouses_loaded = false;
@@ -739,6 +772,10 @@ export default {
 	mounted() {
 		this.fromDate = moment(new Date()).format('DD.MM.YYYY')
 		this.loadWarehouses(this.$route.params.wid);
+		
+		const { wid, taskId } = this.$route.params;
+		this.taskId = taskId;
+		
 		// this.addNotification('error', 'text');
 	},
 	created() {
@@ -813,6 +850,10 @@ export default {
 				}
 			}
 		}
+	}
+
+	.clearfix {
+		clear: both;
 	}
 
 	.dates {
