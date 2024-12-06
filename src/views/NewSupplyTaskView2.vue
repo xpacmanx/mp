@@ -613,8 +613,8 @@ export default {
 
 				if (response) {
 					alert('Огонь, все добавилось, соррян, не успел нарисовать интерфейс. Сейчас начнется скачивание файла, если потеряешь - потом уже не поулчить такой.');
-					this.exportToCSV(response.data.result)
-					// this.$router.push({path: '/'});
+					this.exportToCSV(response.data.new_positions)
+					this.$router.push({path: '/'});
 				}
 
 			} catch(err) {
