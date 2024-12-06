@@ -612,13 +612,47 @@ export default {
 				});
 
 				if (response) {
-					alert('Ну все добавилось, соррян, не успел нарисовать интерфейс.');
-					this.$router.push({path: '/'});
+					alert('Огонь, все добавилось, соррян, не успел нарисовать интерфейс. Сейчас начнется скачивание файла, если потеряешь - потом уже не поулчить такой.');
+					this.exportToCSV(response.data.result)
+					// this.$router.push({path: '/'});
 				}
 
 			} catch(err) {
-				this.addNotification('error', JSON.stringify(error));
+				this.addNotification('error', JSON.stringify(err));
 				// alert(err);
+			}
+		},
+
+		async exportToCSV(positions) {
+			try {
+				console.log(positions);
+				// Convert positions to CSV format
+				const headers = ['Product', 'Articul', 'Code', 'Barcode', 'Qty'];
+				// const headers = ['msid', 'qty'];
+				const csvContent = [
+					headers.join(','), // Header row
+					...positions.map(pos => [
+						// pos.msid, 
+						// pos.qty
+						pos.name,
+						pos.wbid,
+						pos.code,
+						pos.barcode,
+						pos.qty
+					].join(','))
+				].join('\n');
+
+				// Create and download the file
+				const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+				const url = window.URL.createObjectURL(blob);
+				const link = document.createElement('a');
+				link.href = url;
+				link.download = `${this.taskId}_positions_${new Date().toISOString().split('T')[0]}.csv`;
+				link.click();
+				window.URL.revokeObjectURL(url);
+
+			} catch (error) {
+				console.error('Error exporting CSV:', error);
 			}
 		},
 
