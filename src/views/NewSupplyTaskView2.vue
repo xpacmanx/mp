@@ -1,17 +1,19 @@
 <template>
-  <div class="home">
-    <Menu />
+  <div class="min-h-full dark:bg-gray-900">
     <Header />
 		<Notifications />
-    <div class="content-with-menu">
-      <div class="top-menu">
-        <h2 v-if="taskId">Добавка к поставке #{{taskId}}</h2>
-				<h2 v-else>2.1. Подсорт для выбранного склада</h2>
+		
+    <div class="">
+      <div class="top-menu dark:bg-gray-900 dark:text-gray-200 dark:border-gray-800">
+        
+				<h2 v-if="taskId">Добавка к поставке #{{taskId}}</h2>
+				<h2 v-else>Создание поставки</h2>
+				
 				<div class="warehouse">
 					<span v-if="!warehouses_loaded">Загрузка складов...</span>
 					<ul>
 						<li>
-			        <select v-if="warehouses_loaded" @change="wChange($event)" :disabled="taskId > 0">
+			        <select v-if="warehouses_loaded" @change="wChange($event)" :disabled="taskId > 0" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
 			          <option v-for="warehouse in warehouses" :key="warehouse.id" :value="warehouse.id" :selected="warehouse.id == current_warehouse.id">{{warehouse.id}}. {{warehouse.slug_name}}</option>
 			        </select>
 						</li>
@@ -41,8 +43,32 @@
 			<div class="bg-blue-500 text-white p-4 rounded" v-if="taskId > 0">
 				Надо выбрать количество дней на подготовку. Это Изменить дату приемки.
 			</div>
+
+			<div v-if="task_info" class="dark:text-gray-300 max-w-7xl mx-auto">
+				<h2 class="text-2xl font-bold my-4 text-left">Текущая поставка:</h2>
+				<table class="main-table w-full text-xs text-left rtl:text-right text-gray-500 dark:text-gray-400 border-collapse">
+					<thead class="text-xs text-gray-950 bg-gray-200 dark:bg-gray-700 dark:text-gray-400">
+						<tr>
+							<th scope="col" class="px-5 py-2">#</th>
+							<th scope="col" class="px-5 py-2">Код МС</th>
+							<th scope="col" class="px-5 py-2">Имя</th>
+							<th scope="col" class="px-5 py-2">Количество</th>
+						</tr>
+					</thead>
+					<tbody class="">
+						<tr class="odd:bg-white odd:dark:bg-gray-900 even:bg-gray-100 even:dark:bg-gray-800 border-b dark:border-gray-700" v-for="(item, i) in task_info.positions"  :key="i">
+							<td class="px-5 py-2 text-left">{{i+1}}</td>
+							<td class="px-5 py-2 text-left" style="text-align: left">{{item.code}}</td>
+							<td class="px-5 py-2 text-left" style="text-align: left">{{item.name}}</td>
+							<td class="px-5 py-2 text-center">{{item.qty}}</td>
+						</tr>
+					</tbody>
+				</table>
+
+				<h2 class="text-2xl font-bold my-4 text-left">Дополнительные товары сверх этого:</h2>
+			</div>
 			
-			<div class="sorting" v-if="loaded && process_status">
+			<div class="sorting dark:text-gray-300" v-if="loaded && process_status">
 				<div class="clearfix"></div>
 				<div>
 					<span>Товаров из Китая: {{positions_groups.is_chinese}}шт</span>
@@ -70,7 +96,7 @@
 					</ul>
 				</div>
 			</div>
-      <div class="content">
+      <div class="content dark:text-gray-300">
 				<div class="process error" v-if="loaded && estimateDate == 'Загрузка..'">
 				<h3>Ошибка, продолжать нельзя</h3>
 				Нужно заполнить дату ожидания для склада этого склада. Сейчас она не заполнена.</div>
@@ -112,138 +138,140 @@
 				</div>
 				<p v-if="!loaded">Загрузка контента...</p>
 				<div class="container-table">
-	        <table class="table" v-if="loaded && process_status">
-						<thead>
-								<th>#</th>
-								<th class="table__title">Название товара</th>
-								<th class="table__code">Код</th>
-								<th>Подготовить</th>
-								<th>
+					<table class="main-table w-full text-xs text-left rtl:text-right text-gray-500 dark:text-gray-400 border-collapse" v-if="loaded && process_status">
+						<thead class="text-xs text-gray-950 bg-gray-200 dark:bg-gray-700 dark:text-gray-400 sticky top-0 z-10">
+							<tr class="border border-gray-300 dark:border-gray-800">
+								<th scope="col" class="px-5 py-2 border border-gray-300 dark:border-gray-800">#</th>
+								<th class="table__title px-5 py-2 border border-gray-300 dark:border-gray-800">Название товара</th>
+								<th class="table__code px-5 py-2 border border-gray-300 dark:border-gray-800">Код</th>
+								<th scope="col" class="px-5 py-2 border border-gray-300 dark:border-gray-800">Подготовить</th>
+								<th scope="col" class="px-5 py-2 border border-gray-300 dark:border-gray-800">
 									Программа предлагает Переместить в Подготовить 
 									<Sorting :filters="filters" :sorting="sorting" name="suggest" @onSort="onSort"/>
 									<a href="javascript://" @click="applySuggestions()">Переместить все</a>
 								</th>
-								<th>
+								<th scope="col" class="px-5 py-2 border border-gray-300 dark:border-gray-800">
 									Основной склад + Упакованное (расчет)
 									<Sorting :filters="filters" :sorting="sorting" name="main_and_already_packed" @onSort="onSort"/>
 								</th>
-								<th>
+								<th scope="col" class="px-5 py-2 border border-gray-300 dark:border-gray-800">
 									Осталось меньше, чем на неделю (суммарно по складам)
 									<Sorting :filters="filters" :sorting="sorting" name="notice_flag" @onSort="onSort"/>
 								</th>
-							  <th>Останется после перемещения</th>
-								<th>Находится на складе</th>
-								<th>Находится в регионе</th>
-								<th>На сколько дней находится в городе выбранного склада сейчас</th>
-								<th>
+							  <th scope="col" class="px-5 py-2 border border-gray-300 dark:border-gray-800">Останется после перемещения</th>
+								<th scope="col" class="px-5 py-2 border border-gray-300 dark:border-gray-800">Находится на складе</th>
+								<th scope="col" class="px-5 py-2 border border-gray-300 dark:border-gray-800">Находится в регионе</th>
+								<th scope="col" class="px-5 py-2 border border-gray-300 dark:border-gray-800">На сколько дней находится в городе выбранного склада сейчас</th>
+								<th scope="col" class="px-5 py-2 border border-gray-300 dark:border-gray-800">
 									Товар собственного производства
 									<Sorting :filters="filters" :sorting="sorting" name="produced" @onSort="onSort"/>
 								</th>
-								<th>Расчетное наличие на день приемки
+								<th scope="col" class="px-5 py-2 border border-gray-300 dark:border-gray-800">Расчетное наличие на день приемки
 		[сегодняшняя дата + срок поставки]
 		без текущей поставки
 		в городе выбранного склада</th>
-								<th>На сколько дней будет
+								<th scope="col" class="px-5 py-2 border border-gray-300 dark:border-gray-800">На сколько дней будет
 		на день приемки
 		[сегодняшняя дата + срок поставки]
 		без текущей поставки
 		в городе выбранного склада</th>
-								<th>Кол-во
+								<th scope="col" class="px-5 py-2 border border-gray-300 dark:border-gray-800">Кол-во
 		продаж
 		за N дней
 		в городе выбранного склада
 		
 		Рассчетно от факта за 30 дней</th>
-								<th>
+								<th scope="col" class="px-5 py-2 border border-gray-300 dark:border-gray-800">
 									Кол-во продаж за N дней в городе выбранного склада Цель
 									<Sorting :filters="filters" :sorting="sorting" name="qty_sales_goal" @onSort="onSort"/>
 								</th>
-								<th>{{current_warehouse.type.toUpperCase()}} Новый товар
+								<th scope="col" class="px-5 py-2 border border-gray-300 dark:border-gray-800">{{current_warehouse.type.toUpperCase()}} Новый товар
 									<Sorting :filters="filters" :sorting="sorting" :name="current_warehouse.type + '_new'" @onSort="onSort"/>
 								</th>
-								<th>{{current_warehouse.type.toUpperCase()}} Текущая доходность</th>
-								<th>{{current_warehouse.type.toUpperCase()}} Планируем ли и дальше продавать</th>
-								<th>{{current_warehouse.type.toUpperCase()}} Кол-во продаж за 7 дней</th>
-								<th>{{current_warehouse.type.toUpperCase()}} Кол-во продаж за 30 дней</th>
+								<th scope="col" class="px-5 py-2 border border-gray-300 dark:border-gray-800">{{current_warehouse.type.toUpperCase()}} Текущая доходность</th>
+								<th scope="col" class="px-5 py-2 border border-gray-300 dark:border-gray-800">{{current_warehouse.type.toUpperCase()}} Планируем ли и дальше продавать</th>
+								<th scope="col" class="px-5 py-2 border border-gray-300 dark:border-gray-800">{{current_warehouse.type.toUpperCase()}} Кол-во продаж за 7 дней</th>
+								<th scope="col" class="px-5 py-2 border border-gray-300 dark:border-gray-800">{{current_warehouse.type.toUpperCase()}} Кол-во продаж за 30 дней</th>
 															<th>{{current_warehouse.type.toUpperCase()}} Целевое кол-во продаж в месяц</th>
-								<th>Статус переключателя Цель/Факт</th>
-								<th>Цена</th>
-								<th>
+								<th scope="col" class="px-5 py-2 border border-gray-300 dark:border-gray-800">Статус переключателя Цель/Факт</th>
+								<th scope="col" class="px-5 py-2 border border-gray-300 dark:border-gray-800">Цена</th>
+								<th scope="col" class="px-5 py-2 border border-gray-300 dark:border-gray-800">
 									Планируем ли дальше продавать на этом складе
 									<Sorting :filters="filters" :sorting="sorting" name="goal_active" @onSort="onSort"/>
 								</th>
-								<th>В транзите в город выбранного склада</th>
-								<th>Готово по факту в город выбранного склада</th>
-								<th>Подготовить в город выбранного склада</th>
+								<th scope="col" class="px-5 py-2 border border-gray-300 dark:border-gray-800">В транзите в город выбранного склада</th>
+								<th scope="col" class="px-5 py-2 border border-gray-300 dark:border-gray-800">Готово по факту в город выбранного склада</th>
+								<th scope="col" class="px-5 py-2 border border-gray-300 dark:border-gray-800">Подготовить в город выбранного склада</th>
 								
-								<th>Осталось товара (наш склад + транзит + МП)</th>
-								<th>Осталось товара (наш склад + транзит {{current_warehouse.type.toUpperCase()}} + FBW + FBS {{current_warehouse.type.toUpperCase()}})</th>
-								<th>Мастер</th>
-								<th>Наличие на какое кол-во дней должно быть
+								<th scope="col" class="px-5 py-2 border border-gray-300 dark:border-gray-800">Осталось товара (наш склад + транзит + МП)</th>
+								<th scope="col" class="px-5 py-2 border border-gray-300 dark:border-gray-800">Осталось товара (наш склад + транзит {{current_warehouse.type.toUpperCase()}} + FBW + FBS {{current_warehouse.type.toUpperCase()}})</th>
+								<th scope="col" class="px-5 py-2 border border-gray-300 dark:border-gray-800">Мастер</th>
+								<th scope="col" class="px-5 py-2 border border-gray-300 dark:border-gray-800">Наличие на какое кол-во дней должно быть
 		(N)</th>
-								<th>Срок подготовки товара к отгрузке, дней (подгружается из МС)</th>
-								<th>{{current_warehouse.type.toUpperCase()}} На скольки складах есть товар</th>
-								<th>{{current_warehouse.type.toUpperCase()}} Осталось товара складах маркетплейса</th>
-								<th>{{current_warehouse.type.toUpperCase()}} Товар в офисе, распределенный для МП</th>
-								<th>Товар в транзите МП</th>
-								<th>Ожидание товара 1я неделя</th>
-								<th>Ожидание товара 2я неделя</th>
-								<th>Ожидание товара 3я неделя</th>
-								<th>Ожидание товара 4я неделя</th>
-								<th>Ожидание товара 5я неделя</th>
-								<th>Аккаунт</th>
+								<th scope="col" class="px-5 py-2 border border-gray-300 dark:border-gray-800">Срок подготовки товара к отгрузке, дней (подгружается из МС)</th>
+								<th scope="col" class="px-5 py-2 border border-gray-300 dark:border-gray-800">{{current_warehouse.type.toUpperCase()}} На скольки складах есть товар</th>
+								<th scope="col" class="px-5 py-2 border border-gray-300 dark:border-gray-800">{{current_warehouse.type.toUpperCase()}} Осталось товара складах маркетплейса</th>
+								<th scope="col" class="px-5 py-2 border border-gray-300 dark:border-gray-800">{{current_warehouse.type.toUpperCase()}} Товар в офисе, распределенный для МП</th>
+								<th scope="col" class="px-5 py-2 border border-gray-300 dark:border-gray-800">Товар в транзите МП</th>
+								<th scope="col" class="px-5 py-2 border border-gray-300 dark:border-gray-800">Ожидание товара 1я неделя</th>
+								<th scope="col" class="px-5 py-2 border border-gray-300 dark:border-gray-800">Ожидание товара 2я неделя</th>
+								<th scope="col" class="px-5 py-2 border border-gray-300 dark:border-gray-800">Ожидание товара 3я неделя</th>
+								<th scope="col" class="px-5 py-2 border border-gray-300 dark:border-gray-800">Ожидание товара 4я неделя</th>
+								<th scope="col" class="px-5 py-2 border border-gray-300 dark:border-gray-800">Ожидание товара 5я неделя</th>
+								<th scope="col" class="px-5 py-2 border border-gray-300 dark:border-gray-800">Аккаунт</th>
+							</tr>
 						</thead>
 						<tbody>
-							<tr v-for="position in sortedData">
-								<td>{{position.pid}}</td>
-								<td>{{position.name}}</td>
-								<td>{{position.code}}</td>
-								<td><input type="number" v-model.number="position.task" /></td>
-								<td class="suggestion" :class="position.suggestion.color">
+							<tr v-for="position in sortedData" class="odd:bg-white odd:dark:bg-gray-900 even:bg-gray-100 even:dark:bg-gray-800 border-b dark:border-gray-700">
+								<td class="border border-gray-300 dark:border-gray-800">{{position.pid}}</td>
+								<td class="border border-gray-300 dark:border-gray-800">{{position.name}}</td>
+								<td class="border border-gray-300 dark:border-gray-800">{{position.code}}</td>
+								<td class="border border-gray-300 dark:border-gray-800"><input type="number" class="text-center font-bold" v-model.number="position.task" /></td>
+								<td class="border border-gray-300 dark:border-gray-800 suggestion" :class="position.suggestion.color">
 									<p v-if="showReason">
 										{{position.suggestion.reason}}
 										{{position.debug}}
 									</p>
 									<a v-if="position.suggestion.result > 0" href="javascript://" @click="suggest(position);">⬅️</a>
 									{{Math.floor(position.suggest)}}</td>
-								<td>{{position.main_and_already_packed}}</td>
-								<td :class="position.notice_flag == 1 ? 'red' : ''">{{position.notice_flag == 1 ? 'Да' : ''}}</td>
-								<td :class="position.main_and_already_packed-position.task < 0 ? 'red' : ''">{{position.main_and_already_packed-position.task}}</td>
-								<td>{{position.qty_in_wh}}</td>
-								<td>{{position.qty_in_region}}</td>
-								<td>{{position.days_in_city}}</td>
-								<td>{{position.produced == 1 ? 'Да' : ''}}</td>
-								<td>{{position.estimated_avl}}</td>
-								<td>{{position.qty_on_day_acceptance}}</td>
-								<td>{{position.qty_sales_fact}}</td>
-								<td>{{position.qty_sales_goal}}</td>
-								<td>{{position[current_warehouse.type+'_new'] == 1 ? 'Да': ''}}</td>
-								<td>{{percent(position[current_warehouse.type+'_profitability'])}}</td>
-								<td>{{position[current_warehouse.type+'_active_for_sell']}}</td>
-								<td>{{position[current_warehouse.type+'_sales7']}}</td>
-								<td>{{position[current_warehouse.type+'_sales30']}}</td>
-								<td>{{position[current_warehouse.type+'_sales_goal']}}</td>
-								<td>{{position.goal_toggle}}</td>
-								<td>{{position[current_warehouse.type+'_price']}}&nbsp;руб</td>
-								<td>{{position.goal_active}}</td>
-								<td>{{position.transit_qty}}</td>
-								<td>{{position.ready_qty}}</td>
-								<td>{{position.prepare_qty}}</td>
-								<td>{{position.avl_product}}</td>
-								<td>{{position.avl_product_and_fwb}}</td>
-								<td>{{position.master}}</td>
-								<td>{{position.goal_days}}</td>
-								<td>{{position.days_to_ready}}</td>
-								<td>{{position.avl_wh}}</td>
-								<td>{{position.avl_stk}}</td>
-								<td>{{position.mp_product_office}}</td>
-								<td>{{position.mp_transit_product}}</td>
-								<td>{{position.arrived1}}</td>
-								<td>{{position.arrived2}}</td>
-								<td>{{position.arrived3}}</td>
-								<td>{{position.arrived4}}</td>
-								<td>{{position.arrived5}}</td>						
-								<td>{{position.account}}</td>						
+								<td class="border border-gray-300 dark:border-gray-800">{{position.main_and_already_packed}}</td>
+								<td class="border border-gray-300 dark:border-gray-800" :class="position.notice_flag == 1 ? 'red' : ''">{{position.notice_flag == 1 ? 'Да' : ''}}</td>
+								<td class="border border-gray-300 dark:border-gray-800" :class="position.main_and_already_packed-position.task < 0 ? 'red' : ''">{{position.main_and_already_packed-position.task}}</td>
+								<td class="border border-gray-300 dark:border-gray-800">{{position.qty_in_wh}}</td>
+								<td class="border border-gray-300 dark:border-gray-800">{{position.qty_in_region}}</td>
+								<td class="border border-gray-300 dark:border-gray-800">{{position.days_in_city}}</td>
+								<td class="border border-gray-300 dark:border-gray-800">{{position.produced == 1 ? 'Да' : ''}}</td>
+								<td class="border border-gray-300 dark:border-gray-800">{{position.estimated_avl}}</td>
+								<td class="border border-gray-300 dark:border-gray-800">{{position.qty_on_day_acceptance}}</td>
+								<td class="border border-gray-300 dark:border-gray-800">{{position.qty_sales_fact}}</td>
+								<td class="border border-gray-300 dark:border-gray-800">{{position.qty_sales_goal}}</td>
+								<td class="border border-gray-300 dark:border-gray-800">{{position[current_warehouse.type+'_new'] == 1 ? 'Да': ''}}</td>
+								<td class="border border-gray-300 dark:border-gray-800">{{percent(position[current_warehouse.type+'_profitability'])}}</td>
+								<td class="border border-gray-300 dark:border-gray-800">{{position[current_warehouse.type+'_active_for_sell']}}</td>
+								<td class="border border-gray-300 dark:border-gray-800">{{position[current_warehouse.type+'_sales7']}}</td>
+								<td class="border border-gray-300 dark:border-gray-800">{{position[current_warehouse.type+'_sales30']}}</td>
+								<td class="border border-gray-300 dark:border-gray-800">{{position[current_warehouse.type+'_sales_goal']}}</td>
+								<td class="border border-gray-300 dark:border-gray-800">{{position.goal_toggle}}</td>
+								<td class="border border-gray-300 dark:border-gray-800">{{position[current_warehouse.type+'_price']}}&nbsp;руб</td>
+								<td class="border border-gray-300 dark:border-gray-800">{{position.goal_active}}</td>
+								<td class="border border-gray-300 dark:border-gray-800">{{position.transit_qty}}</td>
+								<td class="border border-gray-300 dark:border-gray-800">{{position.ready_qty}}</td>
+								<td class="border border-gray-300 dark:border-gray-800">{{position.prepare_qty}}</td>
+								<td class="border border-gray-300 dark:border-gray-800">{{position.avl_product}}</td>
+								<td class="border border-gray-300 dark:border-gray-800">{{position.avl_product_and_fwb}}</td>
+								<td class="border border-gray-300 dark:border-gray-800">{{position.master}}</td>
+								<td class="border border-gray-300 dark:border-gray-800">{{position.goal_days}}</td>
+								<td class="border border-gray-300 dark:border-gray-800">{{position.days_to_ready}}</td>
+								<td class="border border-gray-300 dark:border-gray-800">{{position.avl_wh}}</td>
+								<td class="border border-gray-300 dark:border-gray-800">{{position.avl_stk}}</td>
+								<td class="border border-gray-300 dark:border-gray-800">{{position.mp_product_office}}</td>
+								<td class="border border-gray-300 dark:border-gray-800">{{position.mp_transit_product}}</td>
+								<td class="border border-gray-300 dark:border-gray-800">{{position.arrived1}}</td>
+								<td class="border border-gray-300 dark:border-gray-800">{{position.arrived2}}</td>
+								<td class="border border-gray-300 dark:border-gray-800">{{position.arrived3}}</td>
+								<td class="border border-gray-300 dark:border-gray-800">{{position.arrived4}}</td>
+								<td class="border border-gray-300 dark:border-gray-800">{{position.arrived5}}</td>						
+								<td class="border border-gray-300 dark:border-gray-800">{{position.account}}</td>						
 							</tr>
 						</tbody>
 					</table>
@@ -300,6 +328,7 @@ export default {
 			showReason: false,
 			days_to_ready: 2,
 			taskId: undefined,
+			task_info: undefined,
 			process: [
 				{
 					id: 1,
@@ -688,6 +717,240 @@ export default {
 			this.$router.push({path: '/newsupplytask2/'+id})
 			this.current_warehouse = this.warehouses.find(w => w.id == id);
 			this.reset();
+
+			// const data = {
+			// 		"today": "2024-12-09",
+			// 		"estimateDateDate": "2024-12-14",
+			// 		"estimateDate": 5,
+			// 		"result": [
+			// 				{
+			// 						"name": "Рюкзак переноска черный",
+			// 						"code": "BACKPACKCAT01",
+			// 						"master": "Нет",
+			// 						"days_to_ready": 0,
+			// 						"produced": false,
+			// 						"is_chinese": true,
+			// 						"wb_price": null,
+			// 						"wb_profitability": 0.0,
+			// 						"wb_active_for_sell": 0,
+			// 						"wb_sales_goal": 0,
+			// 						"wb_sales7": 0,
+			// 						"wb_sales30": 0,
+			// 						"wb_new": null,
+			// 						"ozon_price": null,
+			// 						"ozon_profitability": 0.0,
+			// 						"ozon_active_for_sell": 0,
+			// 						"ozon_sales_goal": 0,
+			// 						"ozon_sales7": 0,
+			// 						"ozon_sales30": 0,
+			// 						"ozon_new": null,
+			// 						"weight": 1.5,
+			// 						"arrived1": 0,
+			// 						"arrived2": 0,
+			// 						"arrived3": 0,
+			// 						"arrived4": 0,
+			// 						"arrived5": 0,
+			// 						"goal_id": null,
+			// 						"goal_priority": null,
+			// 						"goal_active": null,
+			// 						"goal_sales_goal": null,
+			// 						"goal_season_koef": null,
+			// 						"goal_toggle": null,
+			// 						"goal_days": null,
+			// 						"goal_sales": null,
+			// 						"goal_last_updated": null,
+			// 						"account": "v1",
+			// 						"pid": 2,
+			// 						"qty_sales_goal": 0,
+			// 						"qty_sales_fact": 0,
+			// 						"qty_in_wh": 0,
+			// 						"qty_in_region": 0,
+			// 						"main_and_already_packed": 0,
+			// 						"notice_flag": 0,
+			// 						"notice_calc": "0 0 0.0 0",
+			// 						"days_in_city": 0,
+			// 						"region_sales_pd": 0.0,
+			// 						"estimated_avl": 0,
+			// 						"suggestion": {
+			// 								"result": 0,
+			// 								"reason": "Не заполнено поле goal_days на проверяемом складе"
+			// 						},
+			// 						"qty_on_day_acceptance": 0,
+			// 						"avl_product": 0,
+			// 						"avl_product_and_fwb": 0,
+			// 						"prepare_qty": 0,
+			// 						"ready_qty": 0,
+			// 						"transit_qty": 0,
+			// 						"mp_transit_product": 0,
+			// 						"mp_product_office": 0,
+			// 						"avl_stk": 0,
+			// 						"avl_wh": 0,
+			// 						"stocks": [
+			// 								{
+			// 										"wid": 113,
+			// 										"product_id": 2,
+			// 										"name": "9 - Обезличка Wildberries",
+			// 										"ship_days": null,
+			// 										"qty": 1,
+			// 										"type": "ms",
+			// 										"region": null,
+			// 										"priority": null
+			// 								},
+			// 								{
+			// 										"wid": 128,
+			// 										"product_id": 2,
+			// 										"name": "3 - Wildberries FBW",
+			// 										"ship_days": null,
+			// 										"qty": -32,
+			// 										"type": "ms",
+			// 										"region": null,
+			// 										"priority": null
+			// 								},
+			// 								{
+			// 										"wid": 134,
+			// 										"product_id": 2,
+			// 										"name": "3 - OZON FBO",
+			// 										"ship_days": null,
+			// 										"qty": -4,
+			// 										"type": "ms",
+			// 										"region": null,
+			// 										"priority": null
+			// 								},
+			// 								{
+			// 										"wid": 170,
+			// 										"product_id": 2,
+			// 										"name": "9 - Брак товара",
+			// 										"ship_days": null,
+			// 										"qty": 7,
+			// 										"type": "ms",
+			// 										"region": null,
+			// 										"priority": null
+			// 								}
+			// 						]
+			// 				},
+			// 			{
+			// 					"name": "Рюкзак переноска черный",
+			// 					"code": "BACKPACKCAT01",
+			// 					"master": "Нет",
+			// 					"days_to_ready": 0,
+			// 					"produced": false,
+			// 					"is_chinese": true,
+			// 					"wb_price": null,
+			// 					"wb_profitability": 0.0,
+			// 					"wb_active_for_sell": 0,
+			// 					"wb_sales_goal": 0,
+			// 					"wb_sales7": 0,
+			// 					"wb_sales30": 0,
+			// 					"wb_new": null,
+			// 					"ozon_price": null,
+			// 					"ozon_profitability": 0.0,
+			// 					"ozon_active_for_sell": 0,
+			// 					"ozon_sales_goal": 0,
+			// 					"ozon_sales7": 0,
+			// 					"ozon_sales30": 0,
+			// 					"ozon_new": null,
+			// 					"weight": 1.5,
+			// 					"arrived1": 0,
+			// 					"arrived2": 0,
+			// 					"arrived3": 0,
+			// 					"arrived4": 0,
+			// 					"arrived5": 0,
+			// 					"goal_id": null,
+			// 					"goal_priority": null,
+			// 					"goal_active": null,
+			// 					"goal_sales_goal": null,
+			// 					"goal_season_koef": null,
+			// 					"goal_toggle": null,
+			// 					"goal_days": null,
+			// 					"goal_sales": null,
+			// 					"goal_last_updated": null,
+			// 					"account": "v1",
+			// 					"pid": 2,
+			// 					"qty_sales_goal": 0,
+			// 					"qty_sales_fact": 0,
+			// 					"qty_in_wh": 0,
+			// 					"qty_in_region": 0,
+			// 					"main_and_already_packed": 0,
+			// 					"notice_flag": 0,
+			// 					"notice_calc": "0 0 0.0 0",
+			// 					"days_in_city": 0,
+			// 					"region_sales_pd": 0.0,
+			// 					"estimated_avl": 0,
+			// 					"suggestion": {
+			// 							"result": 0,
+			// 							"reason": "Не заполнено поле goal_days на проверяемом складе"
+			// 					},
+			// 					"qty_on_day_acceptance": 0,
+			// 					"avl_product": 0,
+			// 					"avl_product_and_fwb": 0,
+			// 					"prepare_qty": 0,
+			// 					"ready_qty": 0,
+			// 					"transit_qty": 0,
+			// 					"mp_transit_product": 0,
+			// 					"mp_product_office": 0,
+			// 					"avl_stk": 0,
+			// 					"avl_wh": 0,
+			// 					"stocks": [
+			// 							{
+			// 									"wid": 113,
+			// 									"product_id": 2,
+			// 									"name": "9 - Обезличка Wildberries",
+			// 									"ship_days": null,
+			// 									"qty": 1,
+			// 									"type": "ms",
+			// 									"region": null,
+			// 									"priority": null
+			// 							},
+			// 							{
+			// 									"wid": 128,
+			// 									"product_id": 2,
+			// 									"name": "3 - Wildberries FBW",
+			// 									"ship_days": null,
+			// 									"qty": -32,
+			// 									"type": "ms",
+			// 									"region": null,
+			// 									"priority": null
+			// 							},
+			// 							{
+			// 									"wid": 134,
+			// 									"product_id": 2,
+			// 									"name": "3 - OZON FBO",
+			// 									"ship_days": null,
+			// 									"qty": -4,
+			// 									"type": "ms",
+			// 									"region": null,
+			// 									"priority": null
+			// 							},
+			// 							{
+			// 									"wid": 170,
+			// 									"product_id": 2,
+			// 									"name": "9 - Брак товара",
+			// 									"ship_days": null,
+			// 									"qty": 7,
+			// 									"type": "ms",
+			// 									"region": null,
+			// 									"priority": null
+			// 							}
+			// 					]
+			// 			},
+			// 		],
+			// 		"wh_priority": 1
+			// }
+
+			// this.current_warehouse = this.warehouses.find(w => w.id == id);
+			// this.current_warehouse.priority = data.wh_priority;
+			// this.tasks = [];
+			// // console.log(response.data.supplytasks);
+			// for (const item of data.result) {
+			// 	item.task = 0;
+			// 	item.suggest = item.suggestion.result;
+			// 	this.tasks.push(item);
+			// }
+			// if (data.estimateDate != undefined)
+			// 	this.suggestionsDate = data.estimateDate;
+
+			// this.loaded = true;
+			// return true;
 			
 			mpr({
 				url: '/supplytask/new2',
@@ -750,6 +1013,22 @@ export default {
 		  });	
 		},
 
+		loadTask(){
+			// this.addNotification('notice', 'Загрузка началась, надо немного подождать');
+			mpr({
+				url: '/supplytask/'+this.taskId
+			}).then(response => {
+				for (const item of response.data) {
+					this.task_info = item;
+				}
+
+				// this.addNotification('success', 'Дебаг инфа загрузилась');
+			}).catch((error) => {
+				 this.addNotification('error', JSON.stringify(error));
+				 // console.log('getGoalsByWarehouse Error', error);
+			});	
+		},
+
 		addNotification(type, text) {
 			this.$store.dispatch('add', {type: type, text: text});
 		},
@@ -759,7 +1038,8 @@ export default {
 		},
 		
 		update() {
-			this.loaded = false;
+			this.loaded = false;			
+			
 			mpr({
 				url: '/supplytask/new2',
 				params: {
@@ -818,6 +1098,9 @@ export default {
       (toParams, previousParams) => {
 				if (this.$route.params.wid > 0) {
 					this.choose(this.$route.params.wid);
+					if (this.taskId) {
+						this.loadTask();
+					}
 				}
       }
     )
@@ -826,6 +1109,13 @@ export default {
 </script>
 
 <style lang="scss" scoped>
+	.main-table {
+		td {
+			padding: 4px 6px;
+			text-align: center;
+		}
+	}
+	
 	.suggestion.orange {
 		background: #ffd56e;
 		color: #e15613;

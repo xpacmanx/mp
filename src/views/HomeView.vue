@@ -1,16 +1,65 @@
 <template>
-  <div class="home">
-    <Menu />
+  <div class="min-h-full dark:bg-gray-900">
+    <!--Menu /-->
     <Header />
-    <div class="content-with-menu">
-      <div class="top-menu">
-        <h2>Начальная страница</h2>
-      </div>
-      <div class="content">
+    <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+
+			<div class="flex h-16 items-center justify-between">
+				<h2 class="text-2xl font-bold text-left dark:text-lime-300">Сервис поставок</h2>
+				<div class="flex items-center">
+					<router-link to="/supplytasks/dashboard" class="rounded-md mr-2 bg-gray-200 px-3 py-2 text-sm font-medium text-gray-950 hover:text-gray-600 visited:text-gray-950" aria-current="page">Список складов к распределению</router-link>
+					<router-link to="/newsupplytask2/" class="rounded-md bg-lime-300 px-3 py-2 text-sm font-medium text-gray-950 hover:text-gray-600 visited:text-gray-950" aria-current="page">Новая поставка</router-link>
+				</div>
+			</div>
+			
+      <div>
 				<Notifications />
         
-				<h1>Cинхронизации</h1>
-				<div class="panels">
+				<!--h2 class="text-xl font-bold text-left py-8">Cинхронизации</h2-->
+				<div class="flex items-center justify-between space-x-4 dark:text-gray-200">
+					
+					<div class="basis-1/4 flex flex-col bg-gray-200 dark:bg-gray-800 p-4 rounded-md">
+						<div class="flex flex-row items-center justify-between">
+							<div class="text-m text-left">Товаров</div>
+							<ArrowPathIcon class="h-5 w-5 hover:cursor-pointer" v-if="!products.sync" @click="syncProducts()" />
+							<ArrowPathIcon class="h-5 w-5 hover:cursor-progress animate-spin" v-else />
+						</div>
+						<div class="text-4xl font-bold text-left pt-5">{{products.qty}}</div>
+						<p class="text-left text-xs">Дата последнего изменения:<br />{{products.date}}</p>
+					</div>
+
+					<div class="basis-1/4 flex flex-col bg-gray-200 dark:bg-gray-800 p-4 rounded-md">
+						<div class="flex flex-row items-center justify-between">
+							<div class="text-m text-left">Складов</div>
+							<ArrowPathIcon class="h-5 w-5 hover:cursor-pointer" v-if="!warehouses.total.sync" @click="syncWarehouses()" />
+							<ArrowPathIcon class="h-5 w-5 hover:cursor-progress animate-spin" v-else />
+						</div>
+						<div class="text-4xl font-bold text-left pt-5">{{warehouses.total.qty}}</div>
+						<p class="text-left text-xs">Дата последнего изменения:<br />{{warehouses.total.date}}</p>
+					</div>
+
+					<div class="basis-1/4 flex flex-col bg-gray-200 dark:bg-gray-800 p-4 rounded-md">
+						<div class="flex flex-row items-center justify-between">
+							<div class="text-m text-left">Остатки WB</div>
+							<ArrowPathIcon class="h-5 w-5 hover:cursor-pointer" v-if="!stocks.sync" @click="syncStocks()" />
+							<ArrowPathIcon class="h-5 w-5 hover:cursor-progress animate-spin" v-else />
+						</div>
+						<div class="text-4xl font-bold text-left pt-5">{{wbstocks.qty}}</div>
+						<p class="text-left text-xs">Дата последнего изменения:<br />{{wbstocks.date}}</p>
+					</div>
+
+					<div class="basis-1/4 flex flex-col bg-gray-200 dark:bg-gray-800 p-4 rounded-md">
+						<div class="flex flex-row items-center justify-between">
+							<div class="text-m text-left">Остатки Ozon</div>
+							<ArrowPathIcon class="h-5 w-5 hover:cursor-pointer" v-if="!stocks.sync" @click="syncStocks()" />
+							<ArrowPathIcon class="h-5 w-5 hover:cursor-progress animate-spin" v-else />
+						</div>
+						<div class="text-4xl font-bold text-left pt-5">{{ozonstocks.qty}}</div>
+						<p class="text-left text-xs">Дата последнего изменения:<br />{{ozonstocks.date}}</p>
+					</div>
+				</div>
+				
+				<!--div class="panels">
 					<div class="panel">
 						<h2>Товаров</h2>
 						<div class="panel__number">{{products.qty}}</div>
@@ -39,26 +88,33 @@
 						<p v-else>Синхронизация..</p>
 						<p>Дата последнего изменения:<br />{{ozonstocks.date}}</p>
 					</div>
-				</div>
-				<h2>Непринятые задания:</h2>
+				</div-->
+				
+				<h2 class="text-xl font-bold text-left pt-6 py-3 dark:text-lime-300">Непринятые задания:</h2>
+				
 				<div>
-					<table class="table">
-						<thead>
-							<th>#</th>
-							<th>Склад</th>
-							<th>Товара штук</th>
-							<th>Дата создания</th>
-							<th>Дата приемки</th>
-							<th>Действия</th>
+					
+					<table class="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400">
+						<thead class="text-xs text-gray-950 uppercase bg-gray-200 dark:bg-gray-700 dark:text-gray-400">
+							<tr>
+								<th scope="col" class="px-6 py-3">#</th>
+								<th scope="col" class="px-6 py-3">Склад</th>
+								<th scope="col" class="px-6 py-3">Товара штук</th>
+								<th scope="col" class="px-6 py-3">Дата создания</th>
+								<th scope="col" class="px-6 py-3">Дата приемки</th>
+								<th scope="col" class="px-6 py-3">Действия</th>
+							</tr>
 						</thead>
 						<tbody>
-							<tr v-for="task in supplytasks">
-								<td>{{task.id}}</td>
-								<td>{{task.warehouse_name}}</td>
-								<td>{{task.qty_amount}}</td>
-								<td>{{task.start_date}}</td>
-								<td>{{task.finish_date}}</td>
-								<td>
+							<tr class="odd:bg-white odd:dark:bg-gray-900 even:bg-gray-100 even:dark:bg-gray-800 border-b dark:border-gray-700" v-for="task in supplytasks">
+								<td scope="row" class="px-6 py-4">{{task.id}}</td>
+								<td class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">
+									<router-link class="hover:cursor-pointer" :to="'/supplytask/'+task.id">{{task.warehouse_name}}</router-link>
+								</td>
+								<td class="px-6 py-4">{{task.qty_amount}}</td>
+								<td class="px-6 py-4">{{task.start_date}}</td>
+								<td class="px-6 py-4">{{task.finish_date}}</td>
+								<td class="px-6 py-4">
 									<router-link :to="'/supplytask/'+task.id">Открыть</router-link> | 
 									<router-link :to="'/newsupplytask2/'+task.warehouse_id+'/'+task.id">Сделать добавку</router-link> | 
 									<a href="javascript://" @click="deleteTask(task.id)">Удалить</a>		
@@ -77,13 +133,15 @@
 import Menu from '@/components/navigation/Menu.vue'
 import Header from '@/components/navigation/Header.vue'
 import Notifications from '@/components/Notifications.vue'
+import { ArrowPathIcon } from '@heroicons/vue/24/outline'
+	
 import mpr from './../tools/mpr'
 import moment from 'moment'
 	
 export default {
   name: 'HomeView',
   components: {
-  	Menu, Header, Notifications
+  	Menu, Header, Notifications, ArrowPathIcon
   },
 	data() {
 		return {
@@ -234,18 +292,6 @@ export default {
 <style lang="scss">
 @import "./../scss/_variables.scss";
 	
-h1 {
-	font-size: 28px;
-	font-weight: bold;
-}
-
-h2 {
-	font-size: 1.5em;
-	margin-top: 30px;
-	font-weight: bold;
-	text-align: left;
-	margin-bottom: 10px;
-}
 
 .panels {
 	display: flex;	
