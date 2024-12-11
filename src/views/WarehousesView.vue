@@ -12,13 +12,15 @@
       <div class="content">
 				<table class="table">
 					<thead>
-						<th>id</th>
-						<th>Название</th>
-						<th>slug</th>
-						<th>Тип</th>
-						<th>Регион</th>
-						<th>Группа</th>
-						<th>slug_name</th>
+						<tr>
+							<th>id</th>
+							<th>Название</th>
+							<th>slug</th>
+							<th>Тип</th>
+							<th>Регион</th>
+							<th>Группа</th>
+							<th>slug_name</th>
+						</tr>
 					</thead>
 					<tbody>
 						<tr v-for="warehouse in warehouses" :key="warehouse.id">

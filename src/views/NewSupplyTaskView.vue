@@ -61,6 +61,7 @@
 				<div class="container-table">
 	        <table class="table" v-if="loaded && process_status">
 						<thead>
+							<tr>
 								<th>#</th>
 								<th class="table__title">Название товара</th>
 								<th class="table__code">Код</th>
@@ -127,6 +128,7 @@
 								<th>Ожидание товара 3я неделя</th>
 								<th>Ожидание товара 4я неделя</th>
 								<th>Ожидание товара 5я неделя</th>
+								</tr>
 						</thead>
 						<tbody>
 							<SupplyTaskRow v-for="(task,i) in sortedData" :key="task.product_id" :task="task" :whtype="current_warehouse.type" :whname="current_warehouse.slug_name" :region="current_warehouse.region" :estimateDate="estimateDate" :fromDate="fromDate" :supplytasks="filteredSupplytasks" :regionWarehouses="regionWarehouses" :warehouses="warehouses" @onEdit="onEdit" @makeEdit="makeEdit"/>

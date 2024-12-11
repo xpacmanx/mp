@@ -12,13 +12,15 @@
       <div class="content">
 				<table class="table">
 					<thead>
-						<th>id</th>
-						<th>Название</th>
-						<th>Код</th>
-						<th>Артикул WB</th>
-						<th>Ozon ID</th>
-						<th>Ozon FBW SKU</th>
-						<th>Мой Склад ID</th>
+						<tr>
+							<th>id</th>
+							<th>Название</th>
+							<th>Код</th>
+							<th>Артикул WB</th>
+							<th>Ozon ID</th>
+							<th>Ozon FBW SKU</th>
+							<th>Мой Склад ID</th>
+						</tr>
 					</thead>
 					<tbody>
 						<tr v-for="product in products" :key="product.id">

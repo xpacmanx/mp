@@ -2,26 +2,15 @@
   <router-view />
 </template>
 
-<style lang="scss">
-@import "./scss/_variables.scss";
-  
+<style lang="postcss">
 @import url('https://fonts.googleapis.com/css2?family=Rubik:wght@300;400;700&display=swap');
   
 #app {
-  background: $super-light-color;
-  font-family: Rubik, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  text-align: center;
-  color: $dark-color;
+	font-family: Rubik, sans-serif;
 }
 
 a {
-  color: $main-color;
-
-  &:hover {
-    color: $accent-color;
-  }
+  @apply text-lime-500 hover:text-lime-300;
 }
 
 .process {
@@ -48,13 +37,11 @@ a {
 }
 
 .top-menu {
-  background: lighten($light-color, 50%);
   height: 70px;
   padding: 20px 30px;
   display: flex;
   align-items: center;
   text-align: left;
-  border-bottom: rgba($dark-color, 0.1) solid 1px;
   justify-content: space-between;
 
   h2 {
@@ -81,19 +68,15 @@ a {
 
 .btn {
   display: inline-block;
-  background: $main-color;
-  border: $main-color solid 1px;
   border-radius: 3px;
   font-size: .8em;
   font-weight: bold;
   padding: 6px 15px;
-  color: $super-light-color;
   text-transform: uppercase;
 }
 
 .btn-transparent {
   background: transparent;
-  color: $main-color;
 }
 
 .container-table {
@@ -127,9 +110,7 @@ a {
   tr, th, td {
     margin: 0;
     padding: 3px;
-    border: rgba($dark-color, .1) solid 1px;
     border-collapse: collapse;
-    background: rgba($dark-color, .02);
 
 		input {
 			width: 100%;
@@ -157,19 +138,13 @@ a {
 	  position: sticky;
 	  left: 0;
 		z-index: 1;
-		background: $light-color;
 	}
-
-  td.editable {
-    background: $super-light-color;
-  }
   
   th {
     font-weight: bold;
     text-align: center;
     font-size: 0.6em;
     padding: 9px 5px;
-		background: $light-color;
   }
 
 	thead th {
@@ -197,49 +172,8 @@ nav {
 
   a {
     font-weight: bold;
-    color: $main-color;
-
-    &.router-link-exact-active {
-      color: $accent-color;
-    }
   }
 }
 
-.content-with-menu {
-  padding-left: 70px;
-}
 
-.sorting {
-	display: flex;
-	flex-direction: row;
-	margin-top: 10px;
-	margin-bottom: -10px;
-	justify-content: flex-end;
-	font-size: 12px;
-
-	span {
-		margin-top: 5px;
-		margin-left: 15px;
-	}
-	
-	div {
-		display: flex;
-	}
-	
-	ul {
-		display: flex;
-		list-style: none;
-    margin-left: 10px;
-    padding: 0;
-		
-		li {
-			cursor: pointer;
-			background: #eee;
-			border-radius: 10px;
-			padding: 5px;
-			list-style: none;
-			margin-right: 5px;
-		}
-	}
-}
 </style>

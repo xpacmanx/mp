@@ -10,17 +10,19 @@
 				<Notifications />
 				
         <h1></h1>
-				<table class="table">
+				<table>
 					<thead>
-						<th>#</th>
-						<th>Склад</th>
-						<th>Товара штук</th>
-						<th>Дата создания</th>
-						<th>Прогноз приемки</th>
-						<th>Финальная дата приемки</th>
-						<th>Мой склад</th>
-						<th>Статус</th>
-						<th>Действия</th>
+						<tr>
+							<th>#</th>
+							<th>Склад</th>
+							<th>Товара штук</th>
+							<th>Дата создания</th>
+							<th>Прогноз приемки</th>
+							<th>Финальная дата приемки</th>
+							<th>Мой склад</th>
+							<th>Статус</th>
+							<th>Действия</th>
+						</tr>
 					</thead>
 					<tbody>
 						<tr>
@@ -60,11 +62,13 @@
 				<h2>Позиции</h2>
 				<table class="table">
 					<thead>
-						<th>id</th>
-						<th>Название</th>
-						<th>Код</th>
-						<th>Количество</th>
-						<th>Действия</th>
+						<tr>
+							<th>id</th>
+							<th>Название</th>
+							<th>Код</th>
+							<th>Количество</th>
+							<th>Действия</th>
+						</tr>
 					</thead>
 					<tbody>
 						<tr v-for="task in supplytask.positions">
@@ -211,7 +215,6 @@ export default {
 </script>
 
 <style lang="scss">
-@import "./../scss/_variables.scss";
 	
 h1 {
 	font-size: 28px;
@@ -226,7 +229,6 @@ h1 {
 }
 	
 .panel {
-	background: $light-color;
 	border-radius: 8px;
 	padding: 15px;
 	min-width: 20%;
@@ -245,7 +247,6 @@ h1 {
 	p {
 		font-size: 12px;
 		margin-top: 10px;
-		color: rgba($dark-color, .4);
 	
 	}
 }

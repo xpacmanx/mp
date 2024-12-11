@@ -1,5 +1,6 @@
 <script setup>
 import { computed, defineEmits } from 'vue'
+import { ChevronUpDownIcon } from '@heroicons/vue/24/outline'
 const emit = defineEmits(['onSort']);
 	
 const props = defineProps({
@@ -58,9 +59,9 @@ function filter() {
 
 <template>
 <div class="button-sort">
-	<span v-if="checkActiveAny()" class="button-sort__icon">▽</span>
-	<span v-else class="button-sort__icon">▼</span>
-	<ul class="sorting-menu">
+	<span v-if="checkActiveAny()" class="button-sort__icon"><ChevronUpDownIcon class="w-5 h-5"/></span>
+	<span v-else class="button-sort__icon"><ChevronUpDownIcon class="w-5 h-5 stroke-blue-500"/></span>
+	<ul class="sorting-menu z-40">
 		<li :class="checkActive('sorting', 'asc') ? 'active' : ''" @click="sort('asc')">Сортировать A-Z</li>
 		<li :class="checkActive('sorting', 'desc') ? 'active' : ''" @click="sort('desc')">Сортировать Z-A</li>
 		<li :class="checkActive('filters') ? 'active' : ''" @click="filter()">Убрать нулевые значения</li>
@@ -68,10 +69,10 @@ function filter() {
 </div>
 </template>
 
-<style lang="scss">
-@import "./src/scss/_variables.scss";
+<style lang="postcss">
 	
 .button-sort {
+	@apply mb-2;
 
 	&__icon {	
 		font-size: 14px;
@@ -86,24 +87,27 @@ function filter() {
 		position: absolute;
 		display: none;
 		list-style: none;
-		z-index: 3;
-		margin-left: -180px;
-		margin-top: -17px;
+		margin-left: 20px;
+        margin-top: -20px;
+    }
+	ul {
+		@apply bg-gray-50 rounded-md;
 
 		li {
-			background: #fff;
 			padding: 10px;
 			min-width: 200px;
 			font-weight: bold;
 			font-size: 12px;
+			
+			@apply hover:text-gray-600 hover:bg-white;
 
 			&.active {
 				color: #be1616;
 			}
 
 			&:hover {
-				color: $accent-color;
 				cursor: pointer;
+
 			}
 		}
 	}

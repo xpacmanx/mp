@@ -290,40 +290,4 @@ export default {
 </script>
 
 <style lang="scss">
-@import "./../scss/_variables.scss";
-	
-
-.panels {
-	display: flex;	
-	flex-direction: row;
-	flex-wrap: nowrap;
-	justify-content: space-between !important;
-}
-	
-.panel {
-	background: $light-color;
-	border-radius: 8px;
-	padding: 15px;
-	min-width: 20%;
-
-	h2 {
-		font-size: 16px;
-		font-weight: bold;
-    margin: inherit;
-    text-align: center;
-	}
-
-	&__number {
-		margin: 30px 0;
-		font-size: 38px;
-		font-weight: bold;
-	}
-
-	p {
-		font-size: 12px;
-		margin-top: 10px;
-		color: rgba($dark-color, .4);
-	
-	}
-}
 </style>

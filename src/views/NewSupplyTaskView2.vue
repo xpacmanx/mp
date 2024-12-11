@@ -1,21 +1,24 @@
 <template>
-  <div class="min-h-full dark:bg-gray-900">
-    <Header />
+	<div class="min-h-full dark:bg-gray-900">
+		<Header />
 		<Notifications />
-		
-    <div class="">
-      <div class="top-menu dark:bg-gray-900 dark:text-gray-200 dark:border-gray-800">
-        
+
+		<div class="">
+			<div class="top-menu">
+
 				<h2 v-if="taskId">Добавка к поставке #{{taskId}}</h2>
 				<h2 v-else>Создание поставки</h2>
-				
+
 				<div class="warehouse">
 					<span v-if="!warehouses_loaded">Загрузка складов...</span>
 					<ul>
 						<li>
-			        <select v-if="warehouses_loaded" @change="wChange($event)" :disabled="taskId > 0" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
-			          <option v-for="warehouse in warehouses" :key="warehouse.id" :value="warehouse.id" :selected="warehouse.id == current_warehouse.id">{{warehouse.id}}. {{warehouse.slug_name}}</option>
-			        </select>
+							<select v-if="warehouses_loaded" @change="wChange($event)" :disabled="taskId > 0"
+								class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
+								<option v-for="warehouse in warehouses" :key="warehouse.id" :value="warehouse.id"
+									:selected="warehouse.id == current_warehouse.id">{{warehouse.id}}.
+									{{warehouse.slug_name}}</option>
+							</select>
 						</li>
 						<li>
 							<span><label>Регион:</label> {{current_warehouse.region}}</span>
@@ -25,28 +28,31 @@
 				</div>
 				<div class="dates">
 					<ul>
-						<li><label>Дата создания:</label><input type="text" placeholder="Дата задания" v-model="fromDate" disabled /></li>
-						<li><label><span>Предполагаемая</span>Дата приемки:</label><input type="text" placeholder="Дата оприходования" v-model="estimateDate" disabled /></li>
+						<li><label>Дата создания:</label><input type="text" placeholder="Дата задания"
+								v-model="fromDate" disabled /></li>
+						<li><label><span>Предполагаемая</span>Дата приемки:</label><input type="text"
+								placeholder="Дата оприходования" v-model="estimateDate" disabled /></li>
 					</ul>
 				</div>
 				<div>
-					Вес: {{calcWeight()}}кг<br/>
+					Вес: {{calcWeight()}}кг<br />
 					Всего: {{calcQty()}}шт
 				</div>
-        <div v-if="positions.length > 0 && process_status">
-          <button v-if="taskId > 0" class="btn" @click="addToTask()">Завершить добавку</button>
+				<div v-if="positions.length > 0 && process_status">
+					<button v-if="taskId > 0" class="btn" @click="addToTask()">Завершить добавку</button>
 					<button v-else class="btn" @click="makeTask()">Создать подсорт</button>
-          <button class="btn btn-transparent" @click="makeSort()">Предпросмотр</button>
-        </div>
-      </div>
-			
+					<button class="btn btn-transparent" @click="makeSort()">Предпросмотр</button>
+				</div>
+			</div>
+
 			<div class="bg-blue-500 text-white p-4 rounded" v-if="taskId > 0">
-				Надо выбрать количество дней на подготовку. Это Изменить дату приемки.
+				Надо выбрать количество дн��й на подготовку. Это Изменить дату приемки.
 			</div>
 
 			<div v-if="task_info" class="dark:text-gray-300 max-w-7xl mx-auto">
 				<h2 class="text-2xl font-bold my-4 text-left">Текущая поставка:</h2>
-				<table class="main-table w-full text-xs text-left rtl:text-right text-gray-500 dark:text-gray-400 border-collapse">
+				<table
+					class="main-table w-full text-xs text-left rtl:text-right text-gray-500 dark:text-gray-400 border-collapse">
 					<thead class="text-xs text-gray-950 bg-gray-200 dark:bg-gray-700 dark:text-gray-400">
 						<tr>
 							<th scope="col" class="px-5 py-2">#</th>
@@ -56,7 +62,8 @@
 						</tr>
 					</thead>
 					<tbody class="">
-						<tr class="odd:bg-white odd:dark:bg-gray-900 even:bg-gray-100 even:dark:bg-gray-800 border-b dark:border-gray-700" v-for="(item, i) in task_info.positions"  :key="i">
+						<tr class="odd:bg-white odd:dark:bg-gray-900 even:bg-gray-100 even:dark:bg-gray-800 border-b dark:border-gray-700"
+							v-for="(item, i) in task_info.positions" :key="i">
 							<td class="px-5 py-2 text-left">{{i+1}}</td>
 							<td class="px-5 py-2 text-left" style="text-align: left">{{item.code}}</td>
 							<td class="px-5 py-2 text-left" style="text-align: left">{{item.name}}</td>
@@ -67,44 +74,79 @@
 
 				<h2 class="text-2xl font-bold my-4 text-left">Дополнительные товары сверх этого:</h2>
 			</div>
-			
-			<div class="sorting dark:text-gray-300" v-if="loaded && process_status">
-				<div class="clearfix"></div>
-				<div>
-					<span>Товаров из Китая: {{positions_groups.is_chinese}}шт</span>
-					<span>Товаров собственного производства: {{positions_groups.produced}}шт</span>
+
+			<div class="sorting" v-if="loaded && process_status">
+				
+				<div class="sorting-option">
+					<h3>Параметры:</h3>
 					<span>
-						Количество дней на подготовку
+						Количество дней на подготовку:
 						<select v-model="days_to_ready" @change="update();">
 							<option v-for="i in 10">{{i}}</option>
 						</select>
 					</span>
 					<span>
 						<label>Показывать причины предложения:
-						<input type="checkbox" v-model="showReason" /></label><br />
+							<input type="checkbox" v-model="showReason" /></label><br />
 						<!--button class="btn btn-transparent" @click="loadDebug();">Загрузить дебаг инфу для suggestions</button-->
 					</span>
-					<span>Сортировка:</span>
-					<ul>
-						<li v-for="(item,i) in sorting" @click="removeSort('sorting', i)">{{item.name.includes('computed') ? item.name.split('.')[1] : item.name}} <span>{{item.direction == 'asc' ? '↑' : '↓'}}</span> | 🅧</li>
-					</ul>
 				</div>
-				<div>
-					<span>Фильтрация:</span>
-					<ul>
-						<li v-for="(item,i) in filters" @click="removeSort('filters', i)">{{item.name.includes('computed') ? item.name.split('.')[1] : item.name}} | 🅧</li>
-					</ul>
+
+				<div class="sorting-stats">
+					<h3>Статистика:</h3>
+					<div>Товаров из Китая: {{positions_groups.is_chinese}} шт </div>
+					<div>Товаров собственного производства: {{positions_groups.produced}}шт</div>
+				</div>
+
+				<div class="stock-filter">
+					<div class="stock-filter__container">
+						<div class="stock-filter__legend">Показывать:</div>
+						<div class="stock-filter__element" @click="removeFilter('main_and_already_packed')">
+							<input id="push-everything" name="stock" type="radio" :checked="!has_stock" />
+							<label for=" push-everything">Все</label>
+						</div>
+						<div class="stock-filter__element" @click="addFilter('main_and_already_packed')">
+							<input id="push-email" name="stock" type="radio"
+								:checked="has_stock" />
+							<label for="push-email">В наличие на складе</label>
+						</div>
+					</div>
+				</div>
+
+				<div class="main-sorting">
+					<div class="main-sorting__element">
+						<h3>Сортировка:</h3>
+						<ul>
+							<li v-for="(item,i) in sorting" @click="removeSort('sorting', i)">
+								<span>{{item.name.includes('computed') ? item.name.split('.')[1] : item.name}}</span>
+								<span>
+									<ArrowLongUpIcon v-if="item.direction == 'asc'" class="icon h-5 w-5" />
+									<ArrowLongDownIcon v-if="item.direction == 'desc'" class="icon h-5 w-5" />
+								</span>
+								<XCircleIcon class="icon h-5 w-5" />
+							</li>
+						</ul>
+					</div>
+					<div class="main-sorting__element">
+						<h3>Фильтрация:</h3>
+						<ul>
+							<li v-for="(item,i) in filters" @click="removeSort('filters', i)">
+								{{item.name.includes('computed') ? item.name.split('.')[1] : item.name}} <XCircleIcon class="h-5 w-5" /></li>
+						</ul>
+					</div>
 				</div>
 			</div>
-      <div class="content dark:text-gray-300">
+
+			<div class="dark:text-gray-300">
 				<div class="process error" v-if="loaded && estimateDate == 'Загрузка..'">
-				<h3>Ошибка, продолжать нельзя</h3>
-				Нужно заполнить дату ожидания для склада этого склада. Сейчас она не заполнена.</div>
+					<h3>Ошибка, продолжать нельзя</h3>
+					Нужно заполнить дату ожидания для склада этого склада. Сейчас она не заполнена.
+				</div>
 				<div class="process" v-if="!process_status">
 					<h3>Создания задания к подсорту..</h3>
 					<div v-if="process_success">
-						Задание к подсорту создано 🥰<br/>
-						Я сообщу в телеграме, когда обновлю остатки<br/>
+						Задание к подсорту создано 🥰<br />
+						Я сообщу в телеграме, когда обновлю остатки<br />
 						<b>Пока не сообщу, не начинай новый подсорт, а то данные будут неправильные.</b>
 					</div>
 					<div v-if="!process_success">
@@ -120,10 +162,12 @@
 						<h3>Позиции для отправки:</h3>
 						<table class="table" style="text-align: center;">
 							<thead>
-								<th>#</th>
-								<th>Код</th>
-								<th>Кол-во</th>
-								<th>Вес</th>
+								<tr>
+									<th>#</th>
+									<th>Код</th>
+									<th>Кол-во</th>
+									<th>Вес</th>
+								</tr>
 							</thead>
 							<tbody>
 								<tr v-for="item in positions">
@@ -137,148 +181,166 @@
 					</div>
 				</div>
 				<p v-if="!loaded">Загрузка контента...</p>
-				<div class="container-table">
-					<table class="main-table w-full text-xs text-left rtl:text-right text-gray-500 dark:text-gray-400 border-collapse" v-if="loaded && process_status">
-						<thead class="text-xs text-gray-950 bg-gray-200 dark:bg-gray-700 dark:text-gray-400 sticky top-0 z-10">
-							<tr class="border border-gray-300 dark:border-gray-800">
-								<th scope="col" class="px-5 py-2 border border-gray-300 dark:border-gray-800">#</th>
-								<th class="table__title px-5 py-2 border border-gray-300 dark:border-gray-800">Название товара</th>
-								<th class="table__code px-5 py-2 border border-gray-300 dark:border-gray-800">Код</th>
-								<th scope="col" class="px-5 py-2 border border-gray-300 dark:border-gray-800">Подготовить</th>
-								<th scope="col" class="px-5 py-2 border border-gray-300 dark:border-gray-800">
-									Программа предлагает Переместить в Подготовить 
-									<Sorting :filters="filters" :sorting="sorting" name="suggest" @onSort="onSort"/>
+				<div class="h-screen overflow-auto">
+					<table class="main-table" v-if="loaded && process_status">
+						<thead>
+							<tr>
+								<th scope="col">#</th>
+								<th class="table__title">Название товара</th>
+								<th class="table__code">Код</th>
+								<th scope="col">Подготовить</th>
+								<th scope="col">
+									Программа предлагает Переместить в Подготовить
+									<Sorting :filters="filters" :sorting="sorting" name="suggest" @onSort="onSort" />
 									<a href="javascript://" @click="applySuggestions()">Переместить все</a>
 								</th>
-								<th scope="col" class="px-5 py-2 border border-gray-300 dark:border-gray-800">
+								<th scope="col">
 									Основной склад + Упакованное (расчет)
-									<Sorting :filters="filters" :sorting="sorting" name="main_and_already_packed" @onSort="onSort"/>
+									<Sorting :filters="filters" :sorting="sorting" name="main_and_already_packed"
+										@onSort="onSort" />
 								</th>
-								<th scope="col" class="px-5 py-2 border border-gray-300 dark:border-gray-800">
+								<th scope="col">
 									Осталось меньше, чем на неделю (суммарно по складам)
-									<Sorting :filters="filters" :sorting="sorting" name="notice_flag" @onSort="onSort"/>
+									<Sorting :filters="filters" :sorting="sorting" name="notice_flag"
+										@onSort="onSort" />
 								</th>
-							  <th scope="col" class="px-5 py-2 border border-gray-300 dark:border-gray-800">Останется после перемещения</th>
-								<th scope="col" class="px-5 py-2 border border-gray-300 dark:border-gray-800">Находится на складе</th>
-								<th scope="col" class="px-5 py-2 border border-gray-300 dark:border-gray-800">Находится в регионе</th>
-								<th scope="col" class="px-5 py-2 border border-gray-300 dark:border-gray-800">На сколько дней находится в городе выбранного склада сейчас</th>
-								<th scope="col" class="px-5 py-2 border border-gray-300 dark:border-gray-800">
+								<th scope="col">Останется после перемещения</th>
+								<th scope="col">Находится на складе</th>
+								<th scope="col">Находится в регионе</th>
+								<th scope="col">На сколько дней находится в городе выбранного склада сейчас</th>
+								<th scope="col">
 									Товар собственного производства
-									<Sorting :filters="filters" :sorting="sorting" name="produced" @onSort="onSort"/>
+									<Sorting :filters="filters" :sorting="sorting" name="produced" @onSort="onSort" />
 								</th>
-								<th scope="col" class="px-5 py-2 border border-gray-300 dark:border-gray-800">Расчетное наличие на день приемки
-		[сегодняшняя дата + срок поставки]
-		без текущей поставки
-		в городе выбранного склада</th>
-								<th scope="col" class="px-5 py-2 border border-gray-300 dark:border-gray-800">На сколько дней будет
-		на день приемки
-		[сегодняшняя дата + срок поставки]
-		без текущей поставки
-		в городе выбранного склада</th>
-								<th scope="col" class="px-5 py-2 border border-gray-300 dark:border-gray-800">Кол-во
-		продаж
-		за N дней
-		в городе выбранного склада
-		
-		Рассчетно от факта за 30 дней</th>
-								<th scope="col" class="px-5 py-2 border border-gray-300 dark:border-gray-800">
+								<th scope="col">Расчетное наличие на день приемки
+									[сегодняшняя дата + срок поставки]
+									без текущей поставки
+									в городе выбранного склада</th>
+								<th scope="col">На сколько дней будет
+									на день приемки
+									[сегодняшняя дата + срок поставки]
+									без текущей поставки
+									в городе выбранного склада</th>
+								<th scope="col">Кол-во
+									продаж
+									за N дней
+									в городе выбранного склада
+
+									Рассчетно от факта за 30 дней</th>
+								<th scope="col">
 									Кол-во продаж за N дней в городе выбранного склада Цель
-									<Sorting :filters="filters" :sorting="sorting" name="qty_sales_goal" @onSort="onSort"/>
+									<Sorting :filters="filters" :sorting="sorting" name="qty_sales_goal"
+										@onSort="onSort" />
 								</th>
-								<th scope="col" class="px-5 py-2 border border-gray-300 dark:border-gray-800">{{current_warehouse.type.toUpperCase()}} Новый товар
-									<Sorting :filters="filters" :sorting="sorting" :name="current_warehouse.type + '_new'" @onSort="onSort"/>
+								<th scope="col">{{current_warehouse.type.toUpperCase()}} Новый товар
+									<Sorting :filters="filters" :sorting="sorting"
+										:name="current_warehouse.type + '_new'" @onSort="onSort" />
 								</th>
-								<th scope="col" class="px-5 py-2 border border-gray-300 dark:border-gray-800">{{current_warehouse.type.toUpperCase()}} Текущая доходность</th>
-								<th scope="col" class="px-5 py-2 border border-gray-300 dark:border-gray-800">{{current_warehouse.type.toUpperCase()}} Планируем ли и дальше продавать</th>
-								<th scope="col" class="px-5 py-2 border border-gray-300 dark:border-gray-800">{{current_warehouse.type.toUpperCase()}} Кол-во продаж за 7 дней</th>
-								<th scope="col" class="px-5 py-2 border border-gray-300 dark:border-gray-800">{{current_warehouse.type.toUpperCase()}} Кол-во продаж за 30 дней</th>
-															<th>{{current_warehouse.type.toUpperCase()}} Целевое кол-во продаж в месяц</th>
-								<th scope="col" class="px-5 py-2 border border-gray-300 dark:border-gray-800">Статус переключателя Цель/Факт</th>
-								<th scope="col" class="px-5 py-2 border border-gray-300 dark:border-gray-800">Цена</th>
-								<th scope="col" class="px-5 py-2 border border-gray-300 dark:border-gray-800">
+								<th scope="col">{{current_warehouse.type.toUpperCase()}} Текущая доходность</th>
+								<th scope="col">{{current_warehouse.type.toUpperCase()}} Планируем ли и дальше продавать
+								</th>
+								<th scope="col">{{current_warehouse.type.toUpperCase()}} Кол-во продаж за 7 дней</th>
+								<th scope="col">{{current_warehouse.type.toUpperCase()}} Кол-во продаж за 30 дней</th>
+								<th>{{current_warehouse.type.toUpperCase()}} Целевое кол-во продаж в месяц</th>
+								<th scope="col">Статус переключателя Цель/Факт</th>
+								<th scope="col">Цена</th>
+								<th scope="col">
 									Планируем ли дальше продавать на этом складе
-									<Sorting :filters="filters" :sorting="sorting" name="goal_active" @onSort="onSort"/>
+									<Sorting :filters="filters" :sorting="sorting" name="goal_active"
+										@onSort="onSort" />
 								</th>
-								<th scope="col" class="px-5 py-2 border border-gray-300 dark:border-gray-800">В транзите в город выбранного склада</th>
-								<th scope="col" class="px-5 py-2 border border-gray-300 dark:border-gray-800">Готово по факту в город выбранного склада</th>
-								<th scope="col" class="px-5 py-2 border border-gray-300 dark:border-gray-800">Подготовить в город выбранного склада</th>
-								
-								<th scope="col" class="px-5 py-2 border border-gray-300 dark:border-gray-800">Осталось товара (наш склад + транзит + МП)</th>
-								<th scope="col" class="px-5 py-2 border border-gray-300 dark:border-gray-800">Осталось товара (наш склад + транзит {{current_warehouse.type.toUpperCase()}} + FBW + FBS {{current_warehouse.type.toUpperCase()}})</th>
-								<th scope="col" class="px-5 py-2 border border-gray-300 dark:border-gray-800">Мастер</th>
-								<th scope="col" class="px-5 py-2 border border-gray-300 dark:border-gray-800">Наличие на какое кол-во дней должно быть
-		(N)</th>
-								<th scope="col" class="px-5 py-2 border border-gray-300 dark:border-gray-800">Срок подготовки товара к отгрузке, дней (подгружается из МС)</th>
-								<th scope="col" class="px-5 py-2 border border-gray-300 dark:border-gray-800">{{current_warehouse.type.toUpperCase()}} На скольки складах есть товар</th>
-								<th scope="col" class="px-5 py-2 border border-gray-300 dark:border-gray-800">{{current_warehouse.type.toUpperCase()}} Осталось товара складах маркетплейса</th>
-								<th scope="col" class="px-5 py-2 border border-gray-300 dark:border-gray-800">{{current_warehouse.type.toUpperCase()}} Товар в офисе, распределенный для МП</th>
-								<th scope="col" class="px-5 py-2 border border-gray-300 dark:border-gray-800">Товар в транзите МП</th>
-								<th scope="col" class="px-5 py-2 border border-gray-300 dark:border-gray-800">Ожидание товара 1я неделя</th>
-								<th scope="col" class="px-5 py-2 border border-gray-300 dark:border-gray-800">Ожидание товара 2я неделя</th>
-								<th scope="col" class="px-5 py-2 border border-gray-300 dark:border-gray-800">Ожидание товара 3я неделя</th>
-								<th scope="col" class="px-5 py-2 border border-gray-300 dark:border-gray-800">Ожидание товара 4я неделя</th>
-								<th scope="col" class="px-5 py-2 border border-gray-300 dark:border-gray-800">Ожидание товара 5я неделя</th>
-								<th scope="col" class="px-5 py-2 border border-gray-300 dark:border-gray-800">Аккаунт</th>
+								<th scope="col">В транзите в город выбранного склада</th>
+								<th scope="col">Готово по факту в город выбранного склада</th>
+								<th scope="col">Подготовить в город выбранного склада</th>
+
+								<th scope="col">Осталось товара (наш склад + транзит + МП)</th>
+								<th scope="col">Осталось товара (наш склад + транзит
+									{{current_warehouse.type.toUpperCase()}} + FBW + FBS
+									{{current_warehouse.type.toUpperCase()}})</th>
+								<th scope="col">Мастер</th>
+								<th scope="col">Наличие на какое кол-во дней должно быть
+									(N)</th>
+								<th scope="col">Срок подготовки товара к отгрузке, дней (подгружается из МС)</th>
+								<th scope="col">{{current_warehouse.type.toUpperCase()}} На скольки складах есть товар
+								</th>
+								<th scope="col">{{current_warehouse.type.toUpperCase()}} Осталось товара складах
+									маркетплейса</th>
+								<th scope="col">{{current_warehouse.type.toUpperCase()}} Товар в офисе, распределенный
+									для МП</th>
+								<th scope="col">Товар в транзите МП</th>
+								<th scope="col">Ожидание товара 1я неделя</th>
+								<th scope="col">Ожидание товара 2я неделя</th>
+								<th scope="col">Ожидание товара 3я неделя</th>
+								<th scope="col">Ожидание товара 4я неделя</th>
+								<th scope="col">Ожидание товара 5я неделя</th>
+								<th scope="col">Аккаунт</th>
 							</tr>
 						</thead>
 						<tbody>
-							<tr v-for="position in sortedData" class="odd:bg-white odd:dark:bg-gray-900 even:bg-gray-100 even:dark:bg-gray-800 border-b dark:border-gray-700">
-								<td class="border border-gray-300 dark:border-gray-800">{{position.pid}}</td>
-								<td class="border border-gray-300 dark:border-gray-800">{{position.name}}</td>
-								<td class="border border-gray-300 dark:border-gray-800">{{position.code}}</td>
-								<td class="border border-gray-300 dark:border-gray-800"><input type="number" class="text-center font-bold" v-model.number="position.task" /></td>
-								<td class="border border-gray-300 dark:border-gray-800 suggestion" :class="position.suggestion.color">
+							<tr v-for="(position, index) in sortedData" :key="index" :class="{ odd: index % 2 !== 0 }">
+								<td>{{position.pid}}</td>
+								<td>{{position.name}}</td>
+								<td>{{position.code}}</td>
+								<td><input type="number" class="suggestion-input" v-model.number="position.task"
+										@input="position.task = position.task || 0" />
+								</td>
+								<td class="border border-gray-300 dark:border-gray-800 suggestion"
+									:class="position.suggestion.color">
 									<p v-if="showReason">
 										{{position.suggestion.reason}}
 										{{position.debug}}
 									</p>
-									<a v-if="position.suggestion.result > 0" href="javascript://" @click="suggest(position);">⬅️</a>
-									{{Math.floor(position.suggest)}}</td>
-								<td class="border border-gray-300 dark:border-gray-800">{{position.main_and_already_packed}}</td>
-								<td class="border border-gray-300 dark:border-gray-800" :class="position.notice_flag == 1 ? 'red' : ''">{{position.notice_flag == 1 ? 'Да' : ''}}</td>
-								<td class="border border-gray-300 dark:border-gray-800" :class="position.main_and_already_packed-position.task < 0 ? 'red' : ''">{{position.main_and_already_packed-position.task}}</td>
-								<td class="border border-gray-300 dark:border-gray-800">{{position.qty_in_wh}}</td>
-								<td class="border border-gray-300 dark:border-gray-800">{{position.qty_in_region}}</td>
-								<td class="border border-gray-300 dark:border-gray-800">{{position.days_in_city}}</td>
-								<td class="border border-gray-300 dark:border-gray-800">{{position.produced == 1 ? 'Да' : ''}}</td>
-								<td class="border border-gray-300 dark:border-gray-800">{{position.estimated_avl}}</td>
-								<td class="border border-gray-300 dark:border-gray-800">{{position.qty_on_day_acceptance}}</td>
-								<td class="border border-gray-300 dark:border-gray-800">{{position.qty_sales_fact}}</td>
-								<td class="border border-gray-300 dark:border-gray-800">{{position.qty_sales_goal}}</td>
-								<td class="border border-gray-300 dark:border-gray-800">{{position[current_warehouse.type+'_new'] == 1 ? 'Да': ''}}</td>
-								<td class="border border-gray-300 dark:border-gray-800">{{percent(position[current_warehouse.type+'_profitability'])}}</td>
-								<td class="border border-gray-300 dark:border-gray-800">{{position[current_warehouse.type+'_active_for_sell']}}</td>
-								<td class="border border-gray-300 dark:border-gray-800">{{position[current_warehouse.type+'_sales7']}}</td>
-								<td class="border border-gray-300 dark:border-gray-800">{{position[current_warehouse.type+'_sales30']}}</td>
-								<td class="border border-gray-300 dark:border-gray-800">{{position[current_warehouse.type+'_sales_goal']}}</td>
-								<td class="border border-gray-300 dark:border-gray-800">{{position.goal_toggle}}</td>
-								<td class="border border-gray-300 dark:border-gray-800">{{position[current_warehouse.type+'_price']}}&nbsp;руб</td>
-								<td class="border border-gray-300 dark:border-gray-800">{{position.goal_active}}</td>
-								<td class="border border-gray-300 dark:border-gray-800">{{position.transit_qty}}</td>
-								<td class="border border-gray-300 dark:border-gray-800">{{position.ready_qty}}</td>
-								<td class="border border-gray-300 dark:border-gray-800">{{position.prepare_qty}}</td>
-								<td class="border border-gray-300 dark:border-gray-800">{{position.avl_product}}</td>
-								<td class="border border-gray-300 dark:border-gray-800">{{position.avl_product_and_fwb}}</td>
-								<td class="border border-gray-300 dark:border-gray-800">{{position.master}}</td>
-								<td class="border border-gray-300 dark:border-gray-800">{{position.goal_days}}</td>
-								<td class="border border-gray-300 dark:border-gray-800">{{position.days_to_ready}}</td>
-								<td class="border border-gray-300 dark:border-gray-800">{{position.avl_wh}}</td>
-								<td class="border border-gray-300 dark:border-gray-800">{{position.avl_stk}}</td>
-								<td class="border border-gray-300 dark:border-gray-800">{{position.mp_product_office}}</td>
-								<td class="border border-gray-300 dark:border-gray-800">{{position.mp_transit_product}}</td>
-								<td class="border border-gray-300 dark:border-gray-800">{{position.arrived1}}</td>
-								<td class="border border-gray-300 dark:border-gray-800">{{position.arrived2}}</td>
-								<td class="border border-gray-300 dark:border-gray-800">{{position.arrived3}}</td>
-								<td class="border border-gray-300 dark:border-gray-800">{{position.arrived4}}</td>
-								<td class="border border-gray-300 dark:border-gray-800">{{position.arrived5}}</td>						
-								<td class="border border-gray-300 dark:border-gray-800">{{position.account}}</td>						
+									<a v-if="position.suggestion.result > 0" href="javascript://"
+										@click="suggest(position);">⬅️</a>
+									{{Math.floor(position.suggest)}}
+								</td>
+								<td>{{position.main_and_already_packed}}</td>
+								<td :class="position.notice_flag == 1 ? 'red' : ''">{{position.notice_flag == 1 ? 'Да' :
+									''}}</td>
+								<td :class="position.main_and_already_packed-position.task < 0 ? 'red' : ''">
+									{{position.main_and_already_packed-position.task}}</td>
+								<td>{{position.qty_in_wh}}</td>
+								<td>{{position.qty_in_region}}</td>
+								<td>{{position.days_in_city}}</td>
+								<td>{{position.produced == 1 ? 'Да' : ''}}</td>
+								<td>{{position.estimated_avl}}</td>
+								<td>{{position.qty_on_day_acceptance}}</td>
+								<td>{{position.qty_sales_fact}}</td>
+								<td>{{position.qty_sales_goal}}</td>
+								<td>{{position[current_warehouse.type+'_new'] == 1 ? 'Да': ''}}</td>
+								<td>{{percent(position[current_warehouse.type+'_profitability'])}}</td>
+								<td>{{position[current_warehouse.type+'_active_for_sell']}}</td>
+								<td>{{position[current_warehouse.type+'_sales7']}}</td>
+								<td>{{position[current_warehouse.type+'_sales30']}}</td>
+								<td>{{position[current_warehouse.type+'_sales_goal']}}</td>
+								<td>{{position.goal_toggle}}</td>
+								<td>{{position[current_warehouse.type+'_price']}}&nbsp;руб</td>
+								<td>{{position.goal_active}}</td>
+								<td>{{position.transit_qty}}</td>
+								<td>{{position.ready_qty}}</td>
+								<td>{{position.prepare_qty}}</td>
+								<td>{{position.avl_product}}</td>
+								<td>{{position.avl_product_and_fwb}}</td>
+								<td>{{position.master}}</td>
+								<td>{{position.goal_days}}</td>
+								<td>{{position.days_to_ready}}</td>
+								<td>{{position.avl_wh}}</td>
+								<td>{{position.avl_stk}}</td>
+								<td>{{position.mp_product_office}}</td>
+								<td>{{position.mp_transit_product}}</td>
+								<td>{{position.arrived1}}</td>
+								<td>{{position.arrived2}}</td>
+								<td>{{position.arrived3}}</td>
+								<td>{{position.arrived4}}</td>
+								<td>{{position.arrived5}}</td>
+								<td>{{position.account}}</td>
 							</tr>
 						</tbody>
 					</table>
 				</div>
-      </div>
-    </div>
-  </div>
+			</div>
+		</div>
+	</div>
 </template>
 
 <script>
@@ -289,6 +351,8 @@ import Header from '@/components/navigation/Header.vue'
 import SupplyTaskRow from '@/components/SupplyTaskRow.vue'
 import Sorting from '@/components/SortingComponent.vue'
 import Notifications from '@/components/Notifications.vue'
+import { XCircleIcon, ArrowLongDownIcon, ArrowLongUpIcon, BarsArrowDownIcon } from '@heroicons/vue/24/outline'
+
 import mpr from './../tools/mpr'
 import moment from 'moment'
 
@@ -311,7 +375,8 @@ function getValue(obj, key) {
 export default {
   name: 'NewSupplyTaskView2',
 	components: {
-    Menu, Header, SupplyTaskRow, Sorting, Notifications
+    Menu, Header, SupplyTaskRow, Sorting, Notifications, 
+	XCircleIcon, ArrowLongDownIcon, ArrowLongUpIcon, BarsArrowDownIcon
   },
 	data(){
 		return {
@@ -323,6 +388,8 @@ export default {
 			warehouses: [],
 			tasks: [],
 			filters: [],
+			defaultFilters: [{name: 'main_and_already_packed'}],
+			defaultSort: [{ name: 'notice_flag', direction: 'desc' }, { name: 'suggest', direction: 'desc' }],
 			sorting: [],
 			messages: [],
 			showReason: false,
@@ -417,6 +484,9 @@ export default {
 			}
 			return result;
 		},
+		has_stock() {
+			return this.filters.some(f => f.name === 'main_and_already_packed');
+		},
 		sortedData() {
 			let arr = [];
 			for (const task of this.tasks) {
@@ -486,6 +556,7 @@ export default {
 		
 		onEdit(prop, value, id) {
 			const task = this.tasks.find(task => task.product_id == id);
+			console.log(value);
 			if (task !== undefined) {
 				task.computed[prop] = value;
 			}
@@ -544,6 +615,15 @@ export default {
 				}
 			}
 		},
+
+		addFilter(name) {
+			if (!this.filters.some(filter => filter.name === name)) {
+				this.filters.push({ name });
+			}
+		},
+		removeFilter(name) {
+			this.filters = this.filters.filter(f => f.name !== name);
+		},
 		
 		removeSort(type, i) {
 			if (i == -1) this[type] = [];
@@ -579,7 +659,7 @@ export default {
 		
 		makeSort() {
 			this.sorting = [{name:'task', direction: 'desc'}];
-			this.filters = [];
+			this.filters = this.defaultFilters;
 			// this.tasks.sort((a,b) => a.id - b.id);
 			// this.tasks.sort((a,b) => b.task - a.task);
 		},
@@ -711,8 +791,8 @@ export default {
 		},
 		choose(id) {
 			this.loaded = false;
-			this.filters = [];
-			this.sorting = [];
+			this.filters = this.defaultFilters;
+			this.sorting = this.defaultSort;
 			this.messages = [];
 			this.$router.push({path: '/newsupplytask2/'+id})
 			this.current_warehouse = this.warehouses.find(w => w.id == id);
@@ -1108,11 +1188,163 @@ export default {
 }
 </script>
 
-<style lang="scss" scoped>
+<style lang="postcss" scoped>
+	.top-menu {
+		@apply flex justify-between dark:bg-gray-900 dark:text-gray-200 dark:border-gray-800 border-b border-slate-300;
+		
+		h2 {
+			@apply text-xl dark:text-lime-300;
+		}
+	}
+
 	.main-table {
-		td {
-			padding: 4px 6px;
-			text-align: center;
+		@apply w-full text-xs text-left rtl:text-right text-gray-950 dark:text-gray-200 border-separate border-spacing-0;
+
+		thead {
+			@apply text-xs sticky top-0 z-20;
+			
+			tr {
+				/* @apply border border-gray-300 dark:border-gray-800; */
+				th {
+					@apply text-gray-950 bg-gray-200 dark:bg-gray-700 dark:text-gray-400 px-2 py-3 border border-gray-300 dark:border-gray-800 font-bold;
+
+					a {
+						@apply whitespace-nowrap p-2 bg-lime-300 rounded-md font-bold my-5 hover:text-black;
+					}
+				}
+
+				th.table__title {
+					min-width: 400px;
+				}
+
+				th.table__code {
+					@apply sticky left-0 z-20;
+				}
+			}
+		}
+
+		tbody {
+			@apply text-left;
+
+			tr {
+				@apply border-b dark:border-gray-700;
+
+				td {
+					@apply bg-white dark:bg-gray-900 px-2 py-2 border border-gray-300 dark:border-gray-700 text-center;
+				}
+
+				.suggestion-input {
+					@apply py-1 w-16 bg-inherit text-center font-bold
+				}
+
+				td:nth-child(2) {
+					@apply text-left truncate;
+				}
+				
+				td:nth-child(3) {
+					@apply  text-left font-bold sticky left-0 z-10;
+				}
+				
+				&.odd {
+					td {
+						@apply bg-gray-200 dark:bg-gray-800
+					}
+					td:nth-child(3) {
+						@apply bg-gray-200 dark:bg-gray-800
+					}
+				}
+
+				td.red {
+					@apply text-white bg-rose-500 font-bold;
+				}
+
+				&:hover, &.odd:hover {
+					td {
+						@apply bg-lime-300 dark:text-black;
+					}
+				}
+			}
+		}
+	}
+
+	.btn {
+		@apply rounded-md bg-lime-300;
+	}
+
+	.btn-transparent {
+		@apply rounded-md bg-slate-500 text-white;
+	}
+
+	.sorting {
+		@apply flex flex-row flex-wrap justify-between dark:text-gray-300 mb-2;
+
+		.sorting-stats {
+			@apply flex flex-col basis-1/2 p-2 px-3 py-5;
+			
+			h3 {
+				@apply text-sm font-bold;
+			}
+		}
+		.sorting-option {
+			@apply flex flex-col basis-1/2 p-2 px-3 py-5;
+
+			h3 {
+				@apply text-sm font-bold;
+			}
+
+			select {
+				@apply text-black bg-gray-300 hover:bg-gray-400 focus:ring-4 focus:outline-none focus:ring-gray-400 font-medium rounded-lg text-sm px-2 py-1 text-center inline-flex items-center;
+			}
+		}
+		.main-sorting {
+			@apply flex flex-row basis-1/2 px-3 py-2;
+		}
+		.stock-filter {
+			@apply flex flex-row basis-1/2 px-3 py-2;
+		}
+	}
+
+	.stock-filter {
+		@apply flex flex-row justify-between basis-full items-center;
+
+		.stock-filter__container {
+			@apply flex flex-row flex-wrap basis-full items-center;
+		}
+		
+		.stock-filter__legend {
+			@apply basis-full text-sm font-semibold text-gray-900 items-center mb-1;
+		}
+
+		.stock-filter__element {
+			@apply flex items-center gap-x-2 pr-5;
+
+			input {
+				@apply relative size-4 appearance-none rounded-full border border-gray-300 bg-white before:absolute before:inset-1 before:rounded-full before:bg-white checked:border-indigo-600 checked:bg-indigo-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 disabled:border-gray-300 disabled:bg-gray-100 disabled:before:bg-gray-400 forced-colors:appearance-auto forced-colors:before:hidden [&:not(:checked)]:before:hidden;
+			}
+
+			label {
+				@apply block text-sm font-medium text-gray-900;
+			}
+		}
+	}
+
+	.main-sorting {
+		@apply flex justify-between;
+
+		.main-sorting__element {
+			@apply basis-1/2;
+
+			h3 {
+				@apply text-sm font-bold;
+			}
+
+			ul {
+				@apply flex space-x-2;
+
+				li {
+					@apply flex items-center bg-gray-200 px-2 py-1 rounded-md;
+				}
+			}
 		}
 	}
 	
@@ -1123,25 +1355,19 @@ export default {
 	
 	.suggestion p {
 		display: none;
-    position: absolute;
-    padding: 20px;
-    background: #fff;
-    border-radius: 10px;
-    z-index: 2;
-    bottom: 20px;
-    width: 350px;
+		position: absolute;
+		padding: 20px;
+		background: #fff;
+		border-radius: 10px;
+		z-index: 2;
+		bottom: 20px;
+		width: 350px;
 		margin-left: -120px;
 		max-height: 200px;
 		overflow: scroll;
 	}
 	.suggestion:hover p {
 		display: block;
-	}
-
-	.red {
-		background: #f6b2ba!important;
-		font-weight: 700;
-		color: #fff;
 	}
 
 	.warehouse {

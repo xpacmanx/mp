@@ -63,7 +63,6 @@ defineProps({
 </template>
 
 <style lang="scss">
-@import "./src/scss/_variables.scss";
   
 h1 {
   font-weight: 500;

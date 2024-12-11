@@ -45,12 +45,10 @@
 </template>
 
 <style lang="scss" scoped>
-@import "./src/scss/_variables.scss";
   
 .menu {
   position: fixed;
   list-style: none;
-  background: $light-color;
   z-index: 3;
   height: 100%;
   bottom: 0;
@@ -63,7 +61,6 @@
 
     .logo {
       height: 70px;
-      background: $dark-color;
   
       img {
         margin-top: 10px;
@@ -77,8 +74,6 @@
       padding: 0 10px;
       height: 70px;
       text-align: center;
-      color: $dark-color;
-      border-bottom: rgba($dark-color, 0.2) solid 1px;
 
       &:hover {
         span {
@@ -94,7 +89,6 @@
       }
 
       span {
-        background: $light-color;
         position: absolute;
         width: 200px;
         left: 70px;

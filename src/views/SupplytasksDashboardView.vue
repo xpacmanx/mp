@@ -140,7 +140,6 @@ export default {
 </script>
 
 <style lang="scss">
-@import "./../scss/_variables.scss";
 	
 h1 {
 	font-size: 28px;
@@ -155,7 +154,6 @@ h1 {
 }
 	
 .panel {
-	background: $light-color;
 	border-radius: 8px;
 	padding: 15px;
 	min-width: 20%;
@@ -174,8 +172,6 @@ h1 {
 	p {
 		font-size: 12px;
 		margin-top: 10px;
-		color: rgba($dark-color, .4);
-	
 	}
 }
 </style>
