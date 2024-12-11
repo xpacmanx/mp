@@ -46,7 +46,7 @@
 			</div>
 
 			<div class="bg-blue-500 text-white p-4 rounded" v-if="taskId > 0">
-				Надо выбрать количество дн��й на подготовку. Это Изменить дату приемки.
+				Надо выбрать количество дней на подготовку. Это Изменить дату приемки.
 			</div>
 
 			<div v-if="task_info" class="dark:text-gray-300 max-w-7xl mx-auto">
