@@ -723,9 +723,10 @@ export default {
 				if (response) {
 					alert('Огонь, все добавилось, соррян, не успел нарисовать интерфейс. Сейчас начнется скачивание файла, если потеряешь - потом уже не поулчить такой.');
 					this.exportToCSV(response.data.new_positions)
+					
+					alert('Сейчас обновлю остатки, после обновление переброшу на главную.')
 					response = await mpr({url: '/automation/stock/sheet/update'});
 					if (response) {
-						alert('Сейчас обновлю остатки, после обновление переброшу на главную.')
 						this.$router.push({path: '/'});
 					}
 				}
