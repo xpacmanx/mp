@@ -739,7 +739,7 @@ export default {
 				const headers = ['Product', 'Articul', 'Code', 'Barcode', 'Qty'];
 				// const headers = ['msid', 'qty'];
 				const csvContent = [
-					headers.join(','), // Header row
+					headers.join(';'), // Header row
 					...positions.map(pos => [
 						// pos.msid, 
 						// pos.qty
@@ -748,11 +748,13 @@ export default {
 						pos.code,
 						pos.barcode,
 						pos.qty
-					].join(','))
+					].join(';'))
 				].join('\n');
 
 				// Create and download the file
-				const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+				const csvWithBOM = '\uFEFF' + csvContent;
+
+				const blob = new Blob([csvWithBOM], { type: 'text/csv;charset=utf-8;' });
 				const url = window.URL.createObjectURL(blob);
 				const link = document.createElement('a');
 				link.href = url;
