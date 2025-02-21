@@ -7,8 +7,10 @@ import NewSupplyTaskView2 from '../views/NewSupplyTaskView2.vue'
 import ConnectionsView from '../views/ConnectionsView.vue'
 import WarehousesView from '../views/WarehousesView.vue'
 import SupplytaskView from '../views/SupplytaskView.vue'
+import AdvView from '../views/AdvView.vue'
 import SupplytasksDashboardView from '../views/SupplytasksDashboardView.vue'
-
+import { jwtDecode } from "jwt-decode";
+import axios from 'axios';
 
 const routes = [
 	{
@@ -16,7 +18,31 @@ const routes = [
 		name: 'home',
 		component: HomeView,
 		meta: {
-			title: 'Home Dashboard 1'
+			title: 'Home Dashboard 1',
+			requiresAuth: true
+		}
+	},
+	{
+		path: '/login',
+		component: () => import('../views/LoginView.vue'),
+		meta: { title: 'Login' }
+	},
+	{
+		path: '/adv',
+		name: 'adv',
+		component: AdvView,
+		meta: {
+			title: 'Реклама',
+			requiresAuth: true
+		}
+	},
+	{
+		path: '/adv/:id',
+		name: 'adv-details',
+		component: () => import('../views/AdvDetailsView.vue'),
+		meta: {
+			title: 'Детали рекламы',
+			requiresAuth: true
 		}
 	},
 	{
@@ -24,7 +50,8 @@ const routes = [
 		name: 'newsupplytask',
 		component: NewSupplyTaskView,
 		meta: {
-			title: 'Создать задание к поставкам'
+			title: 'Создать задание к поставкам',
+			requiresAuth: true
 		}
 	},
 	{
@@ -32,7 +59,8 @@ const routes = [
 		name: 'newsupplytaskid',
 		component: NewSupplyTaskView,
 		meta: {
-			title: 'Создать создание к поставкам для склада'
+			title: 'Создать создание к поставкам для склада',
+			requiresAuth: true
 		}
 	},
 	{
@@ -40,7 +68,8 @@ const routes = [
 		name: 'newsupplytask2',
 		component: NewSupplyTaskView2,
 		meta: {
-			title: 'Создать задание к поставкам'
+			title: 'Создать задание к поставкам',
+			requiresAuth: true
 		}
 	},
 	{
@@ -48,7 +77,8 @@ const routes = [
 		name: 'newsupplytask2id',
 		component: NewSupplyTaskView2,
 		meta: {
-			title: 'Создать создание к поставкам для склада'
+			title: 'Создать создание к поставкам для склада',
+			requiresAuth: true
 		}
 	},
 	{
@@ -56,7 +86,8 @@ const routes = [
 		name: 'supplytaskid',
 		component: SupplytaskView,
 		meta: {
-			title: 'Задание к поставкам для склада'
+			title: 'Задание к поставкам для склада',
+			requiresAuth: true
 		}
 	},
 	{
@@ -64,7 +95,8 @@ const routes = [
 		name: 'supplytaskdashboard',
 		component: SupplytasksDashboardView,
 		meta: {
-			title: 'Панель управления Сервисом поставок'
+			title: 'Панель управления Сервисом поставок',
+			requiresAuth: true
 		}
 	},
 	{
@@ -72,7 +104,8 @@ const routes = [
 		name: 'goalsbyproduct',
 		component: GoalsByProductView,
 		meta: {
-			title: 'Home Dashboard 3'
+			title: 'Home Dashboard 3',
+			requiresAuth: true
 		}
 	},
 	{
@@ -80,7 +113,8 @@ const routes = [
 		name: 'goalsbywarehousebyid',
 		component: GoalsByWarehouseView,
 		meta: {
-			title: '3. Get Warehouses by ID'
+			title: '3. Get Warehouses by ID',
+			requiresAuth: true
 		}
 	},
 	{
@@ -88,7 +122,8 @@ const routes = [
 		name: 'goalsbywarehouse',
 		component: GoalsByWarehouseView,
 		meta: {
-			title: '3. Get Warehouses by ID'
+			title: '3. Get Warehouses by ID',
+			requiresAuth: true
 		}
 	},
 	{
@@ -96,7 +131,8 @@ const routes = [
 		name: 'connections',
 		component: ConnectionsView,
 		meta: {
-			title: 'Connections'
+			title: 'Connections',
+			requiresAuth: true
 		}
 	},
 	{
@@ -104,7 +140,8 @@ const routes = [
 		name: 'warehouses',
 		component: WarehousesView,
 		meta: {
-			title: 'Warehouses'
+			title: 'Warehouses',
+			requiresAuth: true
 		}
 	},
 	// {
@@ -119,47 +156,79 @@ const router = createRouter({
 	routes,
 });
 
-router.beforeEach((to, from, next) => {
-	// This goes through the matched routes from last to first, finding the closest route with a title.
-	// e.g., if we have `/some/deep/nested/route` and `/some`, `/deep`, and `/nested` have titles,
-	// `/nested`'s will be chosen.
-	const nearestWithTitle = to.matched.slice().reverse().find(r => r.meta && r.meta.title);
+router.beforeEach(async (to, from, next) => {
+	const token = localStorage.getItem('authToken');
+	const refreshToken = localStorage.getItem('refreshToken');
 
-	// Find the nearest route element with meta tags.
-	const nearestWithMeta = to.matched.slice().reverse().find(r => r.meta && r.meta.metaTags);
+	const isTokenExpired = (token) => {
+		if (!token) return true;
+		try {
+			const decoded = jwtDecode(token);
+			const currentTime = Date.now() / 1000;
+			return decoded.exp && decoded.exp < currentTime;
+		} catch {
+			return true;
+		}
+	};
 
-	const previousNearestWithMeta = from.matched.slice().reverse().find(r => r.meta && r.meta.metaTags);
+	try {
+		if (token && isTokenExpired(token) && refreshToken) {
+			// Try to refresh the token
+			try {
+				const API_SERVER = import.meta.env.VITE_API_SERVER;
+				const response = await axios.post(API_SERVER + '/api/token/refresh/', {
+					refresh: refreshToken
+				});
+				const { access } = response.data;
+				localStorage.setItem('authToken', access);
+			} catch (error) {
+				// If refresh fails, clear everything and redirect to login
+				localStorage.clear();
+				if (to.path !== '/login') {
+					return next({
+						path: '/login',
+						query: { backUrl: to.fullPath }
+					});
+				}
+			}
+		}
 
-	// If a route with a title was found, set the document (page) title to that value.
-	if (nearestWithTitle) {
-		document.title = nearestWithTitle.meta.title;
-	} else if (previousNearestWithMeta) {
-		document.title = previousNearestWithMeta.meta.title;
+		// Check if route requires auth
+		if (to.meta.requiresAuth) {
+			if (!token || isTokenExpired(token)) {
+				localStorage.clear();
+				return next({
+					path: '/login',
+					query: { backUrl: to.fullPath }
+				});
+			}
+		}
+
+		// Prevent authenticated users from accessing login page
+		if (token && !isTokenExpired(token) && to.path === '/login') {
+			// If there's a backUrl, use it, otherwise go to home
+			const backUrl = to.query.backUrl || '/';
+			return next(backUrl);
+		}
+
+		// Update page title
+		const nearestWithTitle = to.matched.slice().reverse().find(r => r.meta && r.meta.title);
+		if (nearestWithTitle) {
+			document.title = nearestWithTitle.meta.title;
+		}
+
+		next();
+	} catch (error) {
+		console.error('Navigation guard error:', error);
+		localStorage.clear();
+		if (to.path !== '/login') {
+			return next({
+				path: '/login',
+				query: { backUrl: to.fullPath }
+			});
+		}
+		next();
 	}
-
-	// Remove any stale meta tags from the document using the key attribute we set below.
-	Array.from(document.querySelectorAll('[data-vue-router-controlled]')).map(el => el.parentNode.removeChild(el));
-
-	// Skip rendering meta tags if there are none.
-	if (!nearestWithMeta) return next();
-
-	// Turn the meta tag definitions into actual elements in the head.
-	nearestWithMeta.meta.metaTags.map(tagDef => {
-		const tag = document.createElement('meta');
-
-		Object.keys(tagDef).forEach(key => {
-			tag.setAttribute(key, tagDef[key]);
-		});
-
-		// We use this to track which meta tags we create so we don't interfere with other ones.
-		tag.setAttribute('data-vue-router-controlled', '');
-
-		return tag;
-	})
-		// Add the meta tags to the document head.
-		.forEach(tag => document.head.appendChild(tag));
-
-	next();
 });
 
 export default router

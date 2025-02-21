@@ -16,6 +16,7 @@
     "connect-history-api-fallback": "^2.0.0",
     "express": "latest",
     "express-basic-auth": "^1.2.1",
+    "jwt-decode": "^4.0.0",
     "moment": "^2.29.4",
     "serve-static": "latest",
     "vite": "^4.3.9",
@@ -27,8 +28,6 @@
     "@jridgewell/gen-mapping": "^0.3.0",
     "autoprefixer": "^10.4.20",
     "postcss": "^8.4.49",
-    "sass": "^1.32.7",
-    "sass-loader": "^12.0.0",
-    "tailwindcss": "^3.4.16"
+    "tailwindcss": "^3.4.17"
   }
 }

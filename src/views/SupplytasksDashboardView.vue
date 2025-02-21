@@ -139,7 +139,7 @@ export default {
 }
 </script>
 
-<style lang="scss">
+<style lang="postcss">
 	
 h1 {
 	font-size: 28px;

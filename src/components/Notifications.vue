@@ -18,7 +18,7 @@ const data = computed(() => {
   </div>
 </template>
 
-<style lang="scss">
+<style lang="postcss">
 .notifications {
 	position: fixed;
 	right: 20px;
@@ -33,14 +33,14 @@ const data = computed(() => {
 		margin-top: 20px;
 		text-align: left;
 		line-height: 1.3em;
-    --tile-width: 360px;
+    /* --tile-width: 360px;
     --tile-padding: 4px;
     --tile-edges: 20px;
     --label-margins: calc(var(--tile-edges) - var(--tile-padding));
 		--og-clip-path: polygon(0 0, 0 calc(100% - var(--tile-edges)), var(--tile-edges) 100%, 100% 100%, 100% var(--tile-edges), calc(100% - var(--tile-edges)) 0);
     width: var(--tile-width);
     min-height: 60px;
-    clip-path: var(--og-clip-path);
+    clip-path: var(--og-clip-path); */
 
 		h2 {
 			text-transform: capitalize;

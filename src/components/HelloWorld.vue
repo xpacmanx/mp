@@ -62,7 +62,7 @@ defineProps({
   </table>
 </template>
 
-<style lang="scss">
+<style lang="postcss">
   
 h1 {
   font-weight: 500;
@@ -79,10 +79,4 @@ h3 {
   text-align: center;
 }
 
-@media (min-width: 1024px) {
-  .greetings h1,
-  .greetings h3 {
-    text-align: left;
-  }
-}
 </style>

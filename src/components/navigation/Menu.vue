@@ -44,7 +44,7 @@
   </nav>
 </template>
 
-<style lang="scss" scoped>
+<style lang="postcss" scoped>
   
 .menu {
   position: fixed;

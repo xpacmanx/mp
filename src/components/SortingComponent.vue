@@ -1,5 +1,5 @@
 <script setup>
-import { computed, defineEmits } from 'vue'
+import { computed } from 'vue'
 import { ChevronUpDownIcon } from '@heroicons/vue/24/outline'
 const emit = defineEmits(['onSort']);
 	

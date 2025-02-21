@@ -3,50 +3,32 @@
     <div class="header">
       <div class="header-container">
         <div class="header-menu">
-
           <div class="flex items-center">
             <div class="logo shrink-0">
               <img class="size-8" src="./../../assets/logo2.svg" alt="TLQ The Last Question">
             </div>
+
             <div class="hidden md:block">
-              <div class="menu2-list space-x-4">
-                <!-- Current: "bg-gray-900 text-white", Default: "text-gray-300 hover:bg-gray-700 hover:text-white" -->
-                <a href="/" class="ml-5 bg-lime-300 hover:text-gray-600 visited:text-gray-950" aria-current="page">Сервис
-                  поставок</a>
-                <a href="/ads">Реклама</a>
+              <div class="menu2-list space-x-4" v-if="isAuthenticated">
+                <router-link to="/" class="ml-5" active-class="bg-lime-300 hover:text-gray-600 visited:text-gray-950" exact>Сервис
+                  поставок</router-link>
+                <router-link to="/adv" active-class="bg-lime-300 hover:text-gray-600 visited:text-gray-950" exact>Реклама</router-link>
               </div>
             </div>
           </div>
 
-          <!--div class="hidden md:block">
-            <div class="ml-4 flex items-center md:ml-6">
-              <button type="button" class="relative rounded-full bg-gray-800 p-1 text-gray-400 hover:text-white focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-gray-800">
-                <span class="absolute -inset-1.5"></span>
-                <span class="sr-only">View notifications</span>
-                <svg class="size-6" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true" data-slot="icon">
-                  <path stroke-linecap="round" stroke-linejoin="round" d="M14.857 17.082a23.848 23.848 0 0 0 5.454-1.31A8.967 8.967 0 0 1 18 9.75V9A6 6 0 0 0 6 9v.75a8.967 8.967 0 0 1-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 0 1-5.714 0m5.714 0a3 3 0 1 1-5.714 0" />
-                </svg>
-              </button>
-
-
-              <div class="relative ml-3">
-                <div>
-                  <button type="button" class="relative flex max-w-xs items-center rounded-full bg-gray-800 text-sm focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-gray-800" id="user-menu-button" aria-expanded="false" aria-haspopup="true">
-                    <span class="absolute -inset-1.5"></span>
-                    <span class="sr-only">Open user menu</span>
-                    <img class="size-8 rounded-full" src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80" alt="">
-                  </button>
-                </div>
-
-
-                <div class="absolute right-0 z-10 mt-2 w-48 origin-top-right rounded-md bg-white py-1 shadow-lg ring-1 ring-black/5 focus:outline-none" role="menu" aria-orientation="vertical" aria-labelledby="user-menu-button" tabindex="-1">
-                  <a href="#" class="block px-4 py-2 text-sm text-gray-700" role="menuitem" tabindex="-1" id="user-menu-item-0">Your Profile</a>
-                  <a href="#" class="block px-4 py-2 text-sm text-gray-700" role="menuitem" tabindex="-1" id="user-menu-item-1">Settings</a>
-                  <a href="#" class="block px-4 py-2 text-sm text-gray-700" role="menuitem" tabindex="-1" id="user-menu-item-2">Sign out</a>
-                </div>
-              </div>
+          <div class="flex items-center">
+            <!-- Show username when authenticated -->
+            <div v-if="isAuthenticated" class="text-gray-300 mr-4">
+              {{ username }}
             </div>
-          </div-->
+            
+            <!-- Show logout button only when authenticated -->
+            <div v-if="isAuthenticated">
+              <button class="btn" @click="logout">Выйти</button>
+            </div>
+          </div>
+
           <div class="-mr-2 flex md:hidden">
             <!-- Mobile menu button -->
             <button type="button"
@@ -116,8 +98,28 @@
 </template>
 
 <script>
+import { logoutUser } from './../../tools/auth'
+import { isAuthenticated, username } from './../../tools/userState'
+
 export default {
   name: 'Header',
+  setup() {
+    return {
+      isAuthenticated,
+      username
+    }
+  },
+  methods: {
+    async logout(){
+      await logoutUser(this.$router);
+    }
+  },
+  computed: {
+    module(){
+      if (this.$router.fullPath.includes('supplytasks')) return 'supplytasks'
+      if (this.$router.fullPath.includes('/adv')) return 'adv'
+    }
+  },
 }
 </script>
 
@@ -142,5 +144,7 @@ export default {
   }
 }
 
-
+.btn {
+  @apply rounded-md px-3 py-2 text-sm font-medium text-gray-300 hover:bg-red-500 hover:text-white;
+}
 </style>

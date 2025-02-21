@@ -1,87 +1,155 @@
 <template>
-  <div class="home">
-    <Menu />
+  <div class="min-h-full bg-gray-50 dark:bg-gray-900">
     <Header />
-    <div class="content-with-menu">
-      <div class="top-menu">
-        <h2>Задание к поставкам #{{supplytask.id}}</h2>
-      </div>
-      <div class="content">
-				<Notifications />
-				
-        <h1></h1>
-				<table>
-					<thead>
-						<tr>
-							<th>#</th>
-							<th>Склад</th>
-							<th>Товара штук</th>
-							<th>Дата создания</th>
-							<th>Прогноз приемки</th>
-							<th>Финальная дата приемки</th>
-							<th>Мой склад</th>
-							<th>Статус</th>
-							<th>Действия</th>
-						</tr>
-					</thead>
-					<tbody>
-						<tr>
-							<td>{{supplytask.id}}</td>
-							<td>{{supplytask.warehouse_name}}</td>
-							<td>{{supplytask.qty_amount}}</td>
-							<td>{{supplytask.start_date}}</td>
-							<td>{{supplytask.estimated_date}}</td>
-							<td>
-								<button class="btn btn-transparent" @click="minus()">-1</button> {{dateInput}} <button class="btn btn-transparent" @click="plus()">+1</button>
-								<br/>
-								<button class="btn" type="submit" v-if="dateInput != supplytask.finish_date" @click="changeDate()">Сохранить</button>
-							</td>
-							<td><a v-if="supplytask.remote_id" :href="'https://online.moysklad.ru/app/#move/edit?id='+supplytask.remote_id">Перейти в мой склад</a></td>
-							<td>
-								<span v-if="supplytask.status_id == 10">Принято</span>
-								<span v-else>Не принято</span>
-							</td>
-							<td>
-								<button v-if="supplytask.status_id !== 10" class="btn btn-transparent" @click="changeStatus();">Принять</button>
-							</td>
-						</tr>
-					</tbody>
-				</table>
-				<br/>
-				<h2>Действия</h2>
-				<ul style="text-align:left;">
-				<li>
-					<button class="btn" @click="syncMs()">Синхронизировать</button><br />
-					<i>Загрузить позиции из моего склада в систему</i>
-				</li>
-				<!--li>
-					<button class="btn">Удалить</button>
-				</li-->
-				</ul>
+    <div class="py-6">
+      <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <!-- Header -->
+        <div class="mb-8">
+          <div class="flex items-center justify-between">
+            <h1 class="text-2xl font-semibold text-gray-900 dark:text-white">
+              Задание к поставкам #{{ supplytask.id }}
+            </h1>
+            <div class="flex space-x-3">
+              <button 
+                @click="syncMs()" 
+                class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600"
+              >
+                <svg class="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                </svg>
+                Синхронизировать
+              </button>
+            </div>
+          </div>
+        </div>
 
-				<h2>Позиции</h2>
-				<table class="table">
-					<thead>
-						<tr>
-							<th>id</th>
-							<th>Название</th>
-							<th>Код</th>
-							<th>Количество</th>
-							<th>Действия</th>
-						</tr>
-					</thead>
-					<tbody>
-						<tr v-for="task in supplytask.positions">
-							<td>{{task.product_id}}</td>
-							<td>{{task.code}}</td>
-							<td>{{task.name}}</td>
-							<td>{{task.qty}}</td>
-							<td><button @click="removePosition(task.id)">Удалить позицию {{task.id}}</button></td>
-						</tr>
-					</tbody>
-				</table>
+        <!-- Main Info Card -->
+        <div class="bg-white dark:bg-gray-800 shadow rounded-lg overflow-hidden mb-8">
+          <div class="px-4 py-5 sm:p-6">
+            <dl class="grid grid-cols-1 gap-5 sm:grid-cols-3">
+              <div>
+                <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Склад</dt>
+                <dd class="mt-1 text-lg font-semibold text-gray-900 dark:text-white">{{ supplytask.warehouse_name }}</dd>
+              </div>
+              <div>
+                <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Товара штук</dt>
+                <dd class="mt-1 text-lg font-semibold text-gray-900 dark:text-white">{{ supplytask.qty_amount }}</dd>
+              </div>
+              <div>
+                <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Статус</dt>
+                <dd class="mt-1">
+                  <span 
+                    :class="[
+                      'px-3 py-1 text-sm font-medium rounded-full',
+                      supplytask.status_id === 10 
+                        ? 'bg-green-100 text-green-800 dark:bg-green-800 dark:text-green-100'
+                        : 'bg-yellow-100 text-yellow-800 dark:bg-yellow-800 dark:text-yellow-100'
+                    ]"
+                  >
+                    {{ supplytask.status_id === 10 ? 'Принято' : 'Не принято' }}
+                  </span>
+                </dd>
+              </div>
+            </dl>
+          </div>
+
+          <div class="border-t border-gray-200 dark:border-gray-700 px-4 py-5 sm:p-6">
+            <dl class="grid grid-cols-1 gap-5 sm:grid-cols-4">
+              <div>
+                <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Дата создания</dt>
+                <dd class="mt-1 text-sm text-gray-900 dark:text-white">{{ supplytask.start_date }}</dd>
+              </div>
+              <div>
+                <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Прогноз приемки</dt>
+                <dd class="mt-1 text-sm text-gray-900 dark:text-white">{{ supplytask.estimated_date }}</dd>
+              </div>
+              <div>
+                <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Финальная дата приемки</dt>
+                <dd class="mt-1 flex items-center space-x-2">
+                  <button @click="minus()" class="text-gray-400 hover:text-gray-500 dark:hover:text-gray-300">
+                    <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 12H4" />
+                    </svg>
+                  </button>
+                  <span class="text-sm text-gray-900 dark:text-white">{{ dateInput }}</span>
+                  <button @click="plus()" class="text-gray-400 hover:text-gray-500 dark:hover:text-gray-300">
+                    <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                    </svg>
+                  </button>
+                  <button 
+                    v-if="dateInput != supplytask.finish_date"
+                    @click="changeDate()"
+                    class="ml-4 inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600"
+                  >
+                    Сохранить
+                  </button>
+                </dd>
+              </div>
+              <div>
+                <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Мой склад</dt>
+                <dd class="mt-1">
+                  <a 
+                    v-if="supplytask.remote_id" 
+                    :href="'https://online.moysklad.ru/app/#move/edit?id='+supplytask.remote_id"
+                    class="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 text-sm"
+                    target="_blank"
+                  >
+                    Перейти в мой склад
+                  </a>
+                </dd>
+              </div>
+            </dl>
+          </div>
+
+          <div v-if="supplytask.status_id !== 10" class="bg-gray-50 dark:bg-gray-700 px-4 py-4 sm:px-6">
+            <button 
+              @click="changeStatus()"
+              class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-green-600 hover:bg-green-700 dark:bg-green-500 dark:hover:bg-green-600"
+            >
+              Принять
+            </button>
+          </div>
+        </div>
+
+        <!-- Positions Table -->
+        <div class="bg-white dark:bg-gray-800 shadow rounded-lg overflow-hidden">
+          <div class="px-4 py-5 sm:px-6 flex justify-between items-center">
+            <h2 class="text-lg font-medium text-gray-900 dark:text-white">Позиции</h2>
+          </div>
+          <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+              <thead class="bg-gray-50 dark:bg-gray-700">
+                <tr>
+                  <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">ID</th>
+                  <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Название</th>
+                  <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Код</th>
+                  <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Количество</th>
+                  <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Действия</th>
+                </tr>
+              </thead>
+              <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+                <tr v-for="task in supplytask.positions" :key="task.id" class="hover:bg-gray-50 dark:hover:bg-gray-700">
+                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">{{ task.product_id }}</td>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">{{ task.name }}</td>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">{{ task.code }}</td>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">{{ task.qty }}</td>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm">
+                    <button 
+                      @click="removePosition(task.id)"
+                      class="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300"
+                    >
+                      Удалить
+                    </button>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
       </div>
     </div>
+    <Notifications />
   </div>
 </template>
 
@@ -214,7 +282,7 @@ export default {
 }
 </script>
 
-<style lang="scss">
+<style lang="postcss">
 	
 h1 {
 	font-size: 28px;
@@ -249,5 +317,9 @@ h1 {
 		margin-top: 10px;
 	
 	}
+}
+
+.btn {
+	@apply bg-lime-300 text-gray-950 px-4 py-2 rounded-md;
 }
 </style>

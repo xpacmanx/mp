@@ -39,7 +39,7 @@
   </div>
 </template>
 
-<style lang="scss" scoped>
+<style lang="postcss" scoped>
 .wrong {
 	background: #ff8893;
 

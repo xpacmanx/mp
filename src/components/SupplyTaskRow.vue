@@ -1,6 +1,6 @@
 <script setup>
 import moment from 'moment'
-import { computed, defineEmits } from 'vue'
+import { computed } from 'vue'
 
 const emit = defineEmits(['onEdit','makeEdit'])
 	
@@ -474,7 +474,7 @@ const suggestion = computed(() => {
 	</tr>
 </template>
 
-<style lang="scss">
+<style lang="postcss">
 .messages {
 	display: inline;
 	position: relative;
