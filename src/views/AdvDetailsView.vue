@@ -328,8 +328,18 @@
                                                         v-else
                                                         @click="addToMinusWords(stat.keyword)"
                                                         class="inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-full shadow-sm text-white bg-red-600 hover:bg-red-700 dark:bg-red-500 dark:hover:bg-red-600"
+                                                        :disabled="loading.addingToMinus === stat.keyword"
                                                     >
-                                                        Убрать
+                                                        <template v-if="loading.addingToMinus === stat.keyword">
+                                                            <svg class="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                                                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                                            </svg>
+                                                            Добавление...
+                                                        </template>
+                                                        <template v-else>
+                                                            Убрать
+                                                        </template>
                                                     </button>
                                                 </td>
                                             </tr>
@@ -396,27 +406,28 @@
                                 </div>
                                 <div class="overflow-x-auto">
                                     <div class="max-h-[400px] overflow-y-auto">
-                                        <table class="min-w-full divide-y divide-gray-200">
-                                            <thead class="bg-gray-50 sticky top-0 z-10">
-                                                <tr>
-                                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider bg-gray-50">
-                                                        Слово
-                                                    </th>
-                                                </tr>
-                                            </thead>
-                                            <tbody class="bg-white divide-y divide-gray-200">
-                                                <tr v-for="word in trustedWords" :key="word">
-                                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                                        {{ word }}
-                                                    </td>
-                                                </tr>
-                                                <tr v-if="!trustedWords.length">
-                                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-center">
-                                                        Нет проверенных слов
-                                                    </td>
-                                                </tr>
-                                            </tbody>
-                                        </table>
+                                        <div class="flex flex-wrap gap-2 mt-2">
+                                            <div v-for="word in trustedWords" :key="word" class="inline-flex items-center bg-blue-50 dark:bg-blue-900 rounded-full px-3 py-1">
+                                                <span class="text-sm text-blue-700 dark:text-blue-300">{{ word }}</span>
+                                                <button 
+                                                    @click="deleteTrustedWord(word)"
+                                                    class="ml-2 text-blue-400 hover:text-blue-600 dark:hover:text-blue-200"
+                                                    :disabled="loading.deletingTrustedWord === word"
+                                                >
+                                                    <template v-if="loading.deletingTrustedWord === word">
+                                                        <svg class="animate-spin h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                                        </svg>
+                                                    </template>
+                                                    <template v-else>
+                                                        <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                                                        </svg>
+                                                    </template>
+                                                </button>
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -431,17 +442,24 @@
                 </div>
             </div>
         </div>
+
+        <LoadingBar 
+            :loading="loading.global" 
+            :progress="loadingProgress" 
+        />
     </div>
 </template>
 
 <script>
 import Header from '@/components/navigation/Header.vue'
+import LoadingBar from '@/components/LoadingBar.vue'
 import mpr from './../tools/mpr'
 
 export default {
     name: 'AdvDetailsView',
     components: {
-        Header
+        Header,
+        LoadingBar
     },
     data() {
         return {
@@ -450,6 +468,17 @@ export default {
             comments: [],
             newComment: '',
             showCommentForm: false,
+            loading: {
+                global: false,
+                progress: 0,
+                deletingWord: null,
+                addingToMinus: false,
+                changingDate: false,
+                syncingStats: false,
+                addingComment: false,
+                deletingComment: false,
+                deletingTrustedWord: null,
+            }
         }
     },
     computed: {
@@ -490,6 +519,9 @@ export default {
             ]
             
             return markers
+        },
+        loadingProgress() {
+            return this.loading.progress
         }
     },
     methods: {
@@ -509,105 +541,54 @@ export default {
             if (ctr === null || ctr === undefined) return '0.00%'
             return (ctr * 100).toFixed(2) + '%'
         },
+        async loadAllData() {
+            this.loading.global = true
+            this.loading.progress = 0
+            
+            try {
+                // Fetch ad data
+                this.loading.progress = 30
+                await this.fetchAdData()
+                
+                // Fetch stats
+                this.loading.progress = 60
+                await this.fetchStats()
+                
+                // Fetch comments
+                this.loading.progress = 90
+                await this.fetchComments()
+                
+                this.loading.progress = 100
+            } catch (error) {
+                console.error('Failed to load data:', error)
+            } finally {
+                // Hide the loading bar after a short delay to show completion
+                setTimeout(() => {
+                    this.loading.global = false
+                    this.loading.progress = 0
+                }, 500)
+            }
+        },
         async fetchAdData() {
+            if (!this.loading.global) {
+                this.loading.global = true
+                this.loading.progress = 30
+            }
+            
             try {
                 const response = await mpr({
                     url: `/wbadv/${this.$route.params.id}`
                 })
                 this.adData = response.data.result.advertisement
-                // this.stats = response.data.result.keyword_stats
             } catch (error) {
                 console.error('Failed to fetch ad data:', error)
-                // Handle error appropriately
-            }
-        },
-        async changeMinCtr() {
-            const newCtr = prompt('Введите новый минимальный CTR (в процентах)', (this.adData.min_ctr * 100).toFixed(2))
-            if (newCtr === null) return
-            
-            try {
-                await mpr({
-                    url: `/wbadv/${this.$route.params.id}/min_ctr`,
-                    method: 'PUT',
-                    data: { min_ctr: parseFloat(newCtr) / 100 }
-                })
-                this.fetchAdData()
-            } catch (error) {
-                console.error('Failed to update min CTR:', error)
-            }
-        },
-        async changeViewsToMinus() {
-            const newViews = prompt('Введите новое количество просмотров для минусации', this.adData.views_to_minus)
-            if (newViews === null) return
-            
-            try {
-                await mpr({
-                    url: `/wbadv/${this.$route.params.id}/views_to_minus`,
-                    method: 'PUT',
-                    data: { views_to_minus: parseInt(newViews) }
-                })
-                this.fetchAdData()
-            } catch (error) {
-                console.error('Failed to update views to minus:', error)
-            }
-        },
-        async deleteMinusWord(word) {
-            if (!confirm(`Удалить минус-слово "${word}"?`)) return
-            
-            try {
-                await mpr({
-                    url: `/wbadv/${this.$route.params.id}/minus_words`,
-                    method: 'DELETE',
-                    data: { word }
-                })
-                this.fetchAdData()
-            } catch (error) {
-                console.error('Failed to delete minus word:', error)
-            }
-        },
-        async addTrustedWord() {
-            const word = prompt('Введите проверенное слово')
-            if (!word) return
-            
-            try {
-                await mpr({
-                    url: `/wbadv/${this.$route.params.id}/trusted_words`,
-                    method: 'POST',
-                    data: { word }
-                })
-                this.fetchAdData()
-            } catch (error) {
-                console.error('Failed to add trusted word:', error)
-            }
-        },
-        getWordCtr(word) {
-            const stat = this.keywordStats.find(s => s.keyword === word)
-            return stat ? stat.ctr : 0
-        },
-        async toggleBot() {
-            try {
-                await mpr({
-                    url: `/wbadv/${this.$route.params.id}/bot`,
-                    method: 'PUT',
-                    data: { enabled: !this.adData.bot_enabled }
-                })
-                this.fetchAdData()
-            } catch (error) {
-                console.error('Failed to toggle bot:', error)
-            }
-        },
-        async addToMinusWords(word) {
-            if (this.minusWords.includes(word)) return
-            
-            try {
-                await mpr({
-                    url: `/wbadv/${this.$route.params.id}/minus_words`,
-                    method: 'POST',
-                    data: { word }
-                })
-                this.fetchAdData()
-            } catch (error) {
-                console.error('Failed to add minus word:', error)
+            } finally {
+                if (!this.loading.global) {
+                    setTimeout(() => {
+                        this.loading.global = false
+                        this.loading.progress = 0
+                    }, 500)
+                }
             }
         },
         async fetchStats() {
@@ -633,38 +614,97 @@ export default {
                 console.error('Failed to fetch comments:', error)
             }
         },
-        async addComment() {
-            if (!this.newComment.trim()) return
-
+        async changeMinCtr() {
+            const newCtr = prompt('Введите новый минимальный CTR (в процентах)', (this.adData.min_ctr * 100).toFixed(2))
+            if (newCtr === null) return
+            
             try {
                 await mpr({
-                    url: `/wbadv/${this.$route.params.id}/comments`,
-                    method: 'POST',
-                    data: { comment: this.newComment }
+                    url: `/wbadv/${this.$route.params.id}/min_ctr`,
+                    method: 'PUT',
+                    data: { min_ctr: parseFloat(newCtr) / 100 }
                 })
-                this.newComment = ''
-                this.showCommentForm = false // Hide form after successful comment
-                await this.fetchComments()
+                await this.loadAllData()
             } catch (error) {
-                console.error('Failed to add comment:', error)
+                console.error('Failed to update min CTR:', error)
             }
         },
-        formatDate(date, format = 'full') {
-            if (!date) return ''
-            const d = new Date(date)
-            if (format === 'short') {
-                return d.toLocaleDateString('ru-RU', {
-                    day: '2-digit',
-                    month: '2-digit'
+        async changeViewsToMinus() {
+            const newViews = prompt('Введите новое количество просмотров для минусации', this.adData.views_to_minus)
+            if (newViews === null) return
+            
+            try {
+                await mpr({
+                    url: `/wbadv/${this.$route.params.id}/views_to_minus`,
+                    method: 'PUT',
+                    data: { views_to_minus: parseInt(newViews) }
                 })
+                await this.loadAllData()
+            } catch (error) {
+                console.error('Failed to update views to minus:', error)
             }
-            return d.toLocaleString('ru-RU', {
-                day: '2-digit',
-                month: '2-digit',
-                year: 'numeric',
-                hour: '2-digit',
-                minute: '2-digit'
-            })
+        },
+        async deleteMinusWord(word) {
+            if (!confirm(`Удалить минус-слово "${word}"?`)) return
+            
+            try {
+                await mpr({
+                    url: `/wbadv/${this.$route.params.id}/minus_words`,
+                    method: 'DELETE',
+                    data: { word }
+                })
+                await this.loadAllData()
+            } catch (error) {
+                console.error('Failed to delete minus word:', error)
+            }
+        },
+        async addTrustedWord() {
+            const word = prompt('Введите проверенное слово')
+            if (!word) return
+            
+            try {
+                await mpr({
+                    url: `/wbadv/${this.$route.params.id}/trusted_words`,
+                    method: 'POST',
+                    data: { word }
+                })
+                await this.loadAllData()
+            } catch (error) {
+                console.error('Failed to add trusted word:', error)
+            }
+        },
+        getWordCtr(word) {
+            const stat = this.keywordStats.find(s => s.keyword === word)
+            return stat ? stat.ctr : 0
+        },
+        async toggleBot() {
+            try {
+                await mpr({
+                    url: `/wbadv/${this.$route.params.id}/bot`,
+                    method: 'PUT',
+                    data: { enabled: !this.adData.bot_enabled }
+                })
+                await this.loadAllData()
+            } catch (error) {
+                console.error('Failed to toggle bot:', error)
+            }
+        },
+        async addToMinusWords(word) {
+            if (this.minusWords.includes(word)) return
+            
+            this.loading.addingToMinus = word
+            try {
+                await mpr({
+                    url: `/wbadv/${this.$route.params.id}/minus_words`,
+                    method: 'POST',
+                    data: { word }
+                })
+                await this.loadAllData()
+            } catch (error) {
+                console.error('Failed to add minus word:', error)
+            } finally {
+                this.loading.addingToMinus = null
+            }
         },
         async deleteComment(commentId) {
             if (!confirm('Удалить комментарий?')) return
@@ -675,7 +715,7 @@ export default {
                     method: 'DELETE',
                     data: { comment_id: commentId }
                 })
-                await this.fetchComments()
+                await this.loadAllData()
             } catch (error) {
                 console.error('Failed to delete comment:', error)
             }
@@ -700,14 +740,63 @@ export default {
                 word && word.toLowerCase().trim() === normalizedKeyword
             )
         },
+        async deleteTrustedWord(word) {
+            if (!confirm(`Удалить проверенное слово "${word}"?`)) return
+            
+            this.loading.deletingTrustedWord = word
+            try {
+                await mpr({
+                    url: `/wbadv/${this.$route.params.id}/trusted_words`,
+                    method: 'DELETE',
+                    data: { word }
+                })
+                await this.loadAllData()
+            } catch (error) {
+                console.error('Failed to delete trusted word:', error)
+            } finally {
+                this.loading.deletingTrustedWord = null
+            }
+        },
+        async addComment() {
+            if (!this.newComment.trim()) return
+
+            this.loading.addingComment = true
+            try {
+                await mpr({
+                    url: `/wbadv/${this.$route.params.id}/comments`,
+                    method: 'POST',
+                    data: { comment: this.newComment }
+                })
+                this.newComment = ''
+                this.showCommentForm = false
+                await this.loadAllData()
+            } catch (error) {
+                console.error('Failed to add comment:', error)
+            } finally {
+                this.loading.addingComment = false
+            }
+        },
+        formatDate(date, format = 'full') {
+            if (!date) return ''
+            const d = new Date(date)
+            if (format === 'short') {
+                return d.toLocaleDateString('ru-RU', {
+                    day: '2-digit',
+                    month: '2-digit'
+                })
+            }
+            return d.toLocaleString('ru-RU', {
+                day: '2-digit',
+                month: '2-digit',
+                year: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            })
+        },
     },
     async mounted() {
-        // Fetch data in parallel
-        await Promise.all([
-            this.fetchAdData(),
-            this.fetchStats(),
-            this.fetchComments()
-        ])
+        // Replace individual fetches with the combined loading method
+        await this.loadAllData()
     }
 }
 </script> 
