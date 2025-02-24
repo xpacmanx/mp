@@ -3,6 +3,9 @@ import { updateState, clearState } from './userState';
 
 const API_SERVER = import.meta.env.VITE_API_SERVER;
 
+// Add a flag to prevent multiple logout attempts
+let isLoggingOut = false;
+
 // Add axios interceptor to handle token refresh
 axios.interceptors.response.use(
     (response) => response,
@@ -15,24 +18,24 @@ axios.interceptors.response.use(
 
             try {
                 const refreshToken = localStorage.getItem('refreshToken');
-                if (refreshToken) {
-                    const response = await axios.post(API_SERVER + '/api/token/refresh/', {
-                        refresh: refreshToken
-                    });
-
-                    const { access } = response.data;
-                    localStorage.setItem('authToken', access);
-                    updateState(access);
-
-                    // Retry the original request with the new token
-                    originalRequest.headers['Authorization'] = 'Bearer ' + access;
-                    return axios(originalRequest);
+                if (!refreshToken) {
+                    handleLogout();
+                    return Promise.reject(error);
                 }
+
+                const response = await axios.post(API_SERVER + '/api/token/refresh/', {
+                    refresh: refreshToken
+                });
+
+                const { access } = response.data;
+                localStorage.setItem('authToken', access);
+                updateState(access);
+
+                originalRequest.headers['Authorization'] = 'Bearer ' + access;
+                return axios(originalRequest);
             } catch (refreshError) {
-                // If refresh token fails, logout the user
-                clearState();
-                localStorage.clear();
-                window.location.href = '/login';
+                // If refresh token fails, always logout
+                handleLogout();
                 return Promise.reject(refreshError);
             }
         }
@@ -53,6 +56,27 @@ axios.interceptors.request.use(
         return Promise.reject(error);
     }
 );
+
+// Helper function to handle logout
+function handleLogout() {
+    if (isLoggingOut) return; // Prevent multiple logout attempts
+    isLoggingOut = true;
+    
+    clearState();
+    localStorage.clear();
+    
+    // Get current path for redirect after login
+    const currentPath = window.location.pathname + window.location.search;
+    // Redirect to login with back URL if not already on login page
+    if (!window.location.pathname.startsWith('/login')) {
+        window.location.href = `/login?backUrl=${encodeURIComponent(currentPath)}`;
+    }
+    
+    // Reset the flag after a short delay
+    setTimeout(() => {
+        isLoggingOut = false;
+    }, 1000);
+}
 
 export async function loginUser(username, password, router) {
     try {
@@ -92,14 +116,11 @@ export async function loginUser(username, password, router) {
 export async function logoutUser(router) {
     try {
         const currentPath = router.currentRoute.value.fullPath;
-        clearState();
-        localStorage.clear();
+        handleLogout();
         window.location.href = `/login?backUrl=${encodeURIComponent(currentPath)}`;
     } catch (error) {
         console.error('Logout failed:', error);
-        clearState();
-        localStorage.clear();
-        window.location.href = '/login';
+        handleLogout();
     }
 }
 

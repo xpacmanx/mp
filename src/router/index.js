@@ -160,6 +160,20 @@ router.beforeEach(async (to, from, next) => {
 	const token = localStorage.getItem('authToken');
 	const refreshToken = localStorage.getItem('refreshToken');
 
+	// If no tokens at all and trying to access protected route, go to login
+	if ((!token || !refreshToken) && to.meta.requiresAuth) {
+		localStorage.clear(); // Clear any partial state
+		return next({
+			path: '/login',
+			query: { backUrl: to.fullPath }
+		});
+	}
+
+	// If on login page and no tokens, proceed
+	if (to.path === '/login' && (!token && !refreshToken)) {
+		return next();
+	}
+
 	const isTokenExpired = (token) => {
 		if (!token) return true;
 		try {
@@ -172,8 +186,8 @@ router.beforeEach(async (to, from, next) => {
 	};
 
 	try {
-		if (token && isTokenExpired(token) && refreshToken) {
-			// Try to refresh the token
+		// Only try to refresh if we have both tokens and the access token is expired
+		if (token && refreshToken && isTokenExpired(token) && !to.meta._retryRefresh) {
 			try {
 				const API_SERVER = import.meta.env.VITE_API_SERVER;
 				const response = await axios.post(API_SERVER + '/api/token/refresh/', {
@@ -181,21 +195,10 @@ router.beforeEach(async (to, from, next) => {
 				});
 				const { access } = response.data;
 				localStorage.setItem('authToken', access);
+				
+				to.meta._retryRefresh = true;
+				return next();
 			} catch (error) {
-				// If refresh fails, clear everything and redirect to login
-				localStorage.clear();
-				if (to.path !== '/login') {
-					return next({
-						path: '/login',
-						query: { backUrl: to.fullPath }
-					});
-				}
-			}
-		}
-
-		// Check if route requires auth
-		if (to.meta.requiresAuth) {
-			if (!token || isTokenExpired(token)) {
 				localStorage.clear();
 				return next({
 					path: '/login',
@@ -204,14 +207,22 @@ router.beforeEach(async (to, from, next) => {
 			}
 		}
 
+		// For protected routes, ensure we have a valid token
+		if (to.meta.requiresAuth && (!token || isTokenExpired(token))) {
+			localStorage.clear();
+			return next({
+				path: '/login',
+				query: { backUrl: to.fullPath }
+			});
+		}
+
 		// Prevent authenticated users from accessing login page
 		if (token && !isTokenExpired(token) && to.path === '/login') {
-			// If there's a backUrl, use it, otherwise go to home
 			const backUrl = to.query.backUrl || '/';
 			return next(backUrl);
 		}
 
-		// Update page title
+		// Update page title and proceed
 		const nearestWithTitle = to.matched.slice().reverse().find(r => r.meta && r.meta.title);
 		if (nearestWithTitle) {
 			document.title = nearestWithTitle.meta.title;
