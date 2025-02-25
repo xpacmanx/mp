@@ -12,6 +12,13 @@ axios.interceptors.response.use(
     async (error) => {
         const originalRequest = error.config;
 
+        // Check if this is a token validation error
+        if (error.response?.data?.code === "token_not_valid" || 
+            error.response?.data?.detail?.includes("Token is invalid or expired")) {
+            handleLogout();
+            return Promise.reject(error);
+        }
+
         // If the error is 401 and we haven't tried to refresh the token yet
         if (error.response?.status === 401 && !originalRequest._retry) {
             originalRequest._retry = true;
@@ -34,8 +41,12 @@ axios.interceptors.response.use(
                 originalRequest.headers['Authorization'] = 'Bearer ' + access;
                 return axios(originalRequest);
             } catch (refreshError) {
-                // If refresh token fails, always logout
-                handleLogout();
+                // Check for specific token validation error in refresh attempt
+                if (refreshError.response?.data?.code === "token_not_valid" ||
+                    refreshError.response?.data?.detail?.includes("Token is invalid or expired")) {
+                    handleLogout();
+                    return Promise.reject(refreshError);
+                }
                 return Promise.reject(refreshError);
             }
         }
@@ -59,20 +70,18 @@ axios.interceptors.request.use(
 
 // Helper function to handle logout
 function handleLogout() {
-    if (isLoggingOut) return; // Prevent multiple logout attempts
+    if (isLoggingOut) return;
     isLoggingOut = true;
     
+    // Clear all auth related data
     clearState();
+    localStorage.removeItem('authToken');
+    localStorage.removeItem('refreshToken');
     localStorage.clear();
     
-    // Get current path for redirect after login
-    const currentPath = window.location.pathname + window.location.search;
-    // Redirect to login with back URL if not already on login page
-    if (!window.location.pathname.startsWith('/login')) {
-        window.location.href = `/login?backUrl=${encodeURIComponent(currentPath)}`;
-    }
+    // Force reload to clear any cached state
+    window.location.href = `/login`;
     
-    // Reset the flag after a short delay
     setTimeout(() => {
         isLoggingOut = false;
     }, 1000);
