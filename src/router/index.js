@@ -179,7 +179,11 @@ router.beforeEach(async (to, from, next) => {
 		try {
 			const decoded = jwtDecode(token);
 			const currentTime = Date.now() / 1000;
-			return decoded.exp && decoded.exp < currentTime;
+			
+			// Add a 5-minute buffer - only refresh if token expires in less than 5 minutes
+			// This prevents unnecessary refreshes when the token is about to expire
+			const bufferTime = 5 * 60; // 5 minutes in seconds
+			return decoded.exp && (decoded.exp - bufferTime) < currentTime;
 		} catch {
 			return true;
 		}
