@@ -357,34 +357,82 @@
                         <!-- Minus Words -->
                         <div class="bg-white shadow rounded-lg">
                             <div class="p-6">
-                                <h2 class="text-lg font-medium text-gray-900 mb-4">Минус слова ({{ minusWords.length }} из 1000)</h2>
+                                <div class="flex justify-between items-center mb-4">
+                                    <h2 class="text-lg font-medium text-gray-900">Минус слова ({{ minusWords.length }} из 1000)</h2>
+                                    <button 
+                                        v-if="selectedMinusWords.length > 0"
+                                        @click="deleteSelectedMinusWords"
+                                        class="inline-flex items-center px-3 py-1.5 border border-transparent text-sm font-medium rounded-md text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
+                                        :disabled="loading.deletingSelectedWords"
+                                    >
+                                        <template v-if="loading.deletingSelectedWords">
+                                            <svg class="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                            </svg>
+                                            Удаление...
+                                        </template>
+                                        <template v-else>
+                                            Удалить выбранные ({{ selectedMinusWords.length }})
+                                        </template>
+                                    </button>
+                                </div>
                                 <div class="overflow-x-auto">
                                     <div class="max-h-[400px] overflow-y-auto">
                                         <table class="min-w-full divide-y divide-gray-200">
                                             <thead class="bg-gray-50 sticky top-0 z-10">
                                                 <tr>
-                                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider bg-gray-50">
+                                                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider bg-gray-50">
+                                                        <input 
+                                                            type="checkbox" 
+                                                            class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                                                            :checked="minusWords.length > 0 && selectedMinusWords.length === minusWords.length"
+                                                            :indeterminate="selectedMinusWords.length > 0 && selectedMinusWords.length < minusWords.length"
+                                                            @change="toggleAllMinusWords"
+                                                        />
+                                                    </th>
+                                                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider bg-gray-50">
                                                         Слово
                                                     </th>
-                                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider bg-gray-50">
+                                                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider bg-gray-50">
                                                         CTR
                                                     </th>
-                                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider bg-gray-50">
+                                                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider bg-gray-50">
                                                         Действия
                                                     </th>
                                                 </tr>
                                             </thead>
                                             <tbody class="bg-white divide-y divide-gray-200">
-                                                <tr v-for="word in minusWords" :key="word">
-                                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                                <tr v-for="word in minusWords" :key="word" class="hover:bg-gray-50">
+                                                    <td class="px-4 py-4 whitespace-nowrap">
+                                                        <input 
+                                                            type="checkbox" 
+                                                            class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                                                            :checked="selectedMinusWords.includes(word)"
+                                                            @change="toggleMinusWord(word)"
+                                                        />
+                                                    </td>
+                                                    <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-500">
                                                         {{ word }}
                                                     </td>
-                                                    <td class="px-6 py-4 whitespace-nowrap text-sm" :class="getCtrClass(getWordCtr(word))">
+                                                    <td class="px-4 py-4 whitespace-nowrap text-sm" :class="getCtrClass(getWordCtr(word))">
                                                         {{ formatCtr(getWordCtr(word)) }}
                                                     </td>
-                                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                                        <button @click="deleteMinusWord(word)" class="text-red-600 hover:text-red-900">
-                                                            Удалить
+                                                    <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-500">
+                                                        <button 
+                                                            @click="deleteMinusWord(word)" 
+                                                            class="text-red-600 hover:text-red-900"
+                                                            :disabled="loading.deletingWord === word"
+                                                        >
+                                                            <template v-if="loading.deletingWord === word">
+                                                                <svg class="animate-spin h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                                                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                                                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                                                </svg>
+                                                            </template>
+                                                            <template v-else>
+                                                                Удалить
+                                                            </template>
                                                         </button>
                                                     </td>
                                                 </tr>
@@ -468,10 +516,12 @@ export default {
             comments: [],
             newComment: '',
             showCommentForm: false,
+            selectedMinusWords: [],
             loading: {
                 global: false,
                 progress: 0,
                 deletingWord: null,
+                deletingSelectedWords: false,
                 addingToMinus: false,
                 changingDate: false,
                 syncingStats: false,
@@ -647,15 +697,22 @@ export default {
         async deleteMinusWord(word) {
             if (!confirm(`Удалить минус-слово "${word}"?`)) return
             
+            this.loading.deletingWord = word
             try {
                 await mpr({
                     url: `/wbadv/${this.$route.params.id}/minus_words`,
                     method: 'DELETE',
                     data: { word }
                 })
+                // Remove from selected if it was selected
+                if (this.selectedMinusWords.includes(word)) {
+                    this.selectedMinusWords = this.selectedMinusWords.filter(w => w !== word)
+                }
                 await this.loadAllData()
             } catch (error) {
                 console.error('Failed to delete minus word:', error)
+            } finally {
+                this.loading.deletingWord = null
             }
         },
         async addTrustedWord() {
@@ -792,6 +849,40 @@ export default {
                 hour: '2-digit',
                 minute: '2-digit'
             })
+        },
+        toggleAllMinusWords(event) {
+            if (event.target.checked) {
+                this.selectedMinusWords = [...this.minusWords]
+            } else {
+                this.selectedMinusWords = []
+            }
+        },
+        toggleMinusWord(word) {
+            if (this.selectedMinusWords.includes(word)) {
+                this.selectedMinusWords = this.selectedMinusWords.filter(w => w !== word)
+            } else {
+                this.selectedMinusWords.push(word)
+            }
+        },
+        async deleteSelectedMinusWords() {
+            if (this.selectedMinusWords.length === 0) return
+            
+            if (!confirm(`Удалить ${this.selectedMinusWords.length} выбранных минус-слов?`)) return
+            
+            this.loading.deletingSelectedWords = true
+            try {
+                await mpr({
+                    url: `/wbadv/${this.$route.params.id}/minus_words`,
+                    method: 'DELETE',
+                    data: { words: this.selectedMinusWords }
+                })
+                this.selectedMinusWords = []
+                await this.loadAllData()
+            } catch (error) {
+                console.error('Failed to delete selected minus words:', error)
+            } finally {
+                this.loading.deletingSelectedWords = false
+            }
         },
     },
     async mounted() {
