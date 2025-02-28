@@ -65,9 +65,6 @@
                   <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
                     {{ ad.id }}
                   </td>
-                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
-                    {{ ad.code }}
-                  </td>
                   <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
                     <router-link 
                       :to="'/adv/' + ad.id" 
@@ -78,6 +75,11 @@
                   </td>
                   <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
                     {{ ad.product_type }}
+                  </td>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm">
+                    <span :class="getStatusClass(ad.status_id)" class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full">
+                      {{ getStatusText(ad.status_id) }}
+                    </span>
                   </td>
                   <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">
                     {{ ad.current_cpm }}
@@ -93,18 +95,6 @@
                   </td>
                   <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
                     {{ getMinusWordsCount(ad.minus_words) }} из 1000
-                  </td>
-                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
-                    <template v-if="hasTrustedWords(ad.trusted_words)">
-                      <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800 dark:bg-green-800 dark:text-green-100">
-                        Есть
-                      </span>
-                    </template>
-                    <template v-else>
-                      <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300">
-                        Нет
-                      </span>
-                    </template>
                   </td>
                 </tr>
               </tbody>
@@ -141,9 +131,9 @@ export default {
       columns: [
         { key: 'created_at', label: 'Дата создания', sortable: true },
         { key: 'id', label: 'ID', sortable: true },
-        { key: 'code', label: 'Код МС', sortable: true },
         { key: 'name', label: 'Название', sortable: true },
         { key: 'product_type', label: 'Тип товара', sortable: true },
+        { key: 'status', label: 'Статус', sortable: true },
         { key: 'current_cpm', label: 'CPM', sortable: true },
         { key: 'min_ctr', label: 'CTR для минусации', sortable: true },
         { key: 'views_to_minus', label: 'Просмотры для минусации', sortable: true },
@@ -154,7 +144,6 @@ export default {
           tooltip: 'ДРР обновляется раз в день по утрам, актуальные ДРР в таблице маркетинга'
         },
         { key: 'minus_words_count', label: 'Минус-слова', sortable: true },
-        { key: 'trusted_words', label: 'Проверенные фразы', sortable: true }
       ]
     }
   },
@@ -167,7 +156,6 @@ export default {
         const searchLower = this.search.toLowerCase()
         filtered = filtered.filter(ad => 
           ad.name?.toLowerCase().includes(searchLower) ||
-          ad.code?.toLowerCase().includes(searchLower) ||
           ad.product_type?.toLowerCase().includes(searchLower)
         )
       }
@@ -176,15 +164,6 @@ export default {
       return filtered.sort((a, b) => {
         let aValue = a[this.sortConfig.key]
         let bValue = b[this.sortConfig.key]
-
-        // Special handling for specific fields
-        if (this.sortConfig.key === 'minus_words_count') {
-          aValue = this.getMinusWordsCount(a.minus_words)
-          bValue = this.getMinusWordsCount(b.minus_words)
-        } else if (this.sortConfig.key === 'trusted_words') {
-          aValue = this.hasTrustedWords(a.trusted_words) ? 1 : 0
-          bValue = this.hasTrustedWords(b.trusted_words) ? 1 : 0
-        }
 
         if (this.sortConfig.direction === 'asc') {
           return aValue > bValue ? 1 : -1
@@ -228,15 +207,48 @@ export default {
       if (!minusWords) return 0
       return minusWords.split(',').filter(word => word.trim()).length
     },
-    hasTrustedWords(trustedWords) {
-      return trustedWords && Array.isArray(trustedWords) && trustedWords.length > 0
-    },
     sort(key) {
       if (this.sortConfig.key === key) {
         this.sortConfig.direction = this.sortConfig.direction === 'asc' ? 'desc' : 'asc'
       } else {
         this.sortConfig.key = key
         this.sortConfig.direction = 'asc'
+      }
+    },
+    getStatusClass(status_id) {
+      switch (Number(status_id)) {
+        case 9: // идут показы
+          return 'bg-green-100 text-green-800 dark:bg-green-800 dark:text-green-100'
+        case 11: // на паузе
+          return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-800 dark:text-yellow-100'
+        case 4: // готова к запуску
+          return 'bg-blue-100 text-blue-800 dark:bg-blue-800 dark:text-blue-100'
+        case 7: // завершена
+          return 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300'
+        case 8: // отказался
+          return 'bg-red-100 text-red-800 dark:bg-red-800 dark:text-red-100'
+        case -1: // в процессе удаления
+          return 'bg-red-100 text-red-800 dark:bg-red-800 dark:text-red-100'
+        default:
+          return 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300'
+      }
+    },
+    getStatusText(status_id) {
+      switch (Number(status_id)) {
+        case 9:
+          return 'Идут показы'
+        case 11:
+          return 'На паузе'
+        case 4:
+          return 'Готова к запуску'
+        case 7:
+          return 'Завершена'
+        case 8:
+          return 'Отказ'
+        case -1:
+          return 'Удаляется'
+        default:
+          return 'Неизвестно'
       }
     }
   },
