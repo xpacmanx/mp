@@ -62,21 +62,25 @@
                   <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
                     {{ formatDate(ad.created_at) }}
                   </td>
+                  <td class="px-6 py-4">
+                    <div class="flex flex-col">
+                      <router-link 
+                        :to="'/adv/' + ad.id" 
+                        class="text-sm font-medium text-blue-600 dark:text-blue-400 hover:text-blue-900 dark:hover:text-blue-300 hover:underline"
+                      >
+                        {{ ad.name }}
+                      </router-link>
+                      <div class="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                        <span class="inline-block">
+                          <span class="font-medium">ID:</span> {{ ad.id }}
+                        </span>
+                        <span class="inline-block ml-3">
+                          <span class="font-medium">Тип:</span> {{ ad.product_type }}
+                        </span>
+                      </div>
+                    </div>
+                  </td>
                   <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
-                    {{ ad.id }}
-                  </td>
-                  <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                    <router-link 
-                      :to="'/adv/' + ad.id" 
-                      class="text-blue-600 dark:text-blue-400 hover:text-blue-900 dark:hover:text-blue-300 hover:underline"
-                    >
-                      {{ ad.name }}
-                    </router-link>
-                  </td>
-                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
-                    {{ ad.product_type }}
-                  </td>
-                  <td class="px-6 py-4 whitespace-nowrap text-sm">
                     <span :class="getStatusClass(ad.status_id)" class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full">
                       {{ getStatusText(ad.status_id) }}
                     </span>
@@ -84,13 +88,13 @@
                   <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">
                     {{ ad.current_cpm }}
                   </td>
-                  <td class="px-6 py-4 whitespace-nowrap text-sm" :class="getCtrClass(ad.min_ctr)">
+                  <td class="px-6 py-4 whitespace-nowrap text-sm">
                     {{ formatCtr(ad.min_ctr) }}
                   </td>
                   <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
                     {{ (ad.views_to_minus || 0).toLocaleString() }}
                   </td>
-                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+                  <td class="px-6 py-4 whitespace-nowrap text-sm" :class="getDrrClass(ad.drr)">
                     {{ formatDrr(ad.drr) }}
                   </td>
                   <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
@@ -130,9 +134,7 @@ export default {
       },
       columns: [
         { key: 'created_at', label: 'Дата создания', sortable: true },
-        { key: 'id', label: 'ID', sortable: true },
         { key: 'name', label: 'Название', sortable: true },
-        { key: 'product_type', label: 'Тип товара', sortable: true },
         { key: 'status', label: 'Статус', sortable: true },
         { key: 'current_cpm', label: 'CPM', sortable: true },
         { key: 'min_ctr', label: 'CTR для минусации', sortable: true },
@@ -180,9 +182,7 @@ export default {
       return (ctr * 100).toFixed(2) + '%'
     },
     getCtrClass(ctr) {
-      if (ctr >= 0.1) return 'text-green-600 dark:text-green-400 font-medium'
-      if (ctr >= 0.05) return 'text-yellow-600 dark:text-yellow-400'
-      return 'text-red-600 dark:text-red-400'
+      return ''
     },
     getAdv() {
       mpr({
@@ -250,6 +250,14 @@ export default {
         default:
           return 'Неизвестно'
       }
+    },
+    getDrrClass(drr) {
+      if (!drr && drr !== 0) return 'text-gray-500 dark:text-gray-400'
+      
+      const drrPercentage = drr * 100
+      if (drrPercentage <= 5) return 'text-green-600 dark:text-green-400 font-medium'
+      if (drrPercentage <= 10) return 'text-yellow-600 dark:text-yellow-400 font-medium'
+      return 'text-red-600 dark:text-red-400 font-medium'
     }
   },
   mounted() {
@@ -277,8 +285,22 @@ table {
 th, td {
   overflow: hidden;
   text-overflow: ellipsis;
-  white-space: nowrap;
 }
+
+/* Remove whitespace-nowrap from the name column */
+td:nth-child(2) {
+  white-space: normal;
+}
+
+/* Adjust column widths */
+th:nth-child(1) { width: 10%; } /* Date */
+th:nth-child(2) { width: 25%; } /* Name (with ID and Type) */
+th:nth-child(3) { width: 10%; } /* Status */
+th:nth-child(4) { width: 8%; }  /* CPM */
+th:nth-child(5) { width: 12%; } /* CTR */
+th:nth-child(6) { width: 12%; } /* Views */
+th:nth-child(7) { width: 10%; } /* DRR */
+th:nth-child(8) { width: 13%; } /* Minus words */
 
 .group:hover .group-hover\:block {
   display: block;
