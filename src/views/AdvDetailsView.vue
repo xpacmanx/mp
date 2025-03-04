@@ -445,23 +445,31 @@
                             <div class="p-6">
                                 <div class="flex justify-between items-center mb-4">
                                     <h2 class="text-lg font-medium text-gray-900">Минус слова ({{ minusWords.length }} из 1000)</h2>
-                                    <button 
-                                        v-if="selectedMinusWords.length > 0"
-                                        @click="deleteSelectedMinusWords"
-                                        class="inline-flex items-center px-3 py-1.5 border border-transparent text-sm font-medium rounded-md text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
-                                        :disabled="loading.deletingSelectedWords"
-                                    >
-                                        <template v-if="loading.deletingSelectedWords">
-                                            <svg class="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                                                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                                            </svg>
-                                            Удаление...
-                                        </template>
-                                        <template v-else>
-                                            Удалить выбранные ({{ selectedMinusWords.length }})
-                                        </template>
-                                    </button>
+                                    <div class="flex space-x-2">
+                                        <button 
+                                            v-if="selectedMinusWords.length > 0"
+                                            @click="deleteSelectedMinusWords"
+                                            class="inline-flex items-center px-3 py-1.5 border border-transparent text-sm font-medium rounded-md text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
+                                            :disabled="loading.deletingSelectedWords"
+                                        >
+                                            <template v-if="loading.deletingSelectedWords">
+                                                <svg class="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                                </svg>
+                                                Удаление...
+                                            </template>
+                                            <template v-else>
+                                                Удалить выбранные ({{ selectedMinusWords.length }})
+                                            </template>
+                                        </button>
+                                        <button 
+                                            @click="showRestoreMinusWordsModal"
+                                            class="inline-flex items-center px-3 py-1.5 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                                        >
+                                            Вернуть с CTR выше текущего
+                                        </button>
+                                    </div>
                                 </div>
                                 
                                 <!-- Search field -->
@@ -511,7 +519,7 @@
                                                             </span>
                                                         </div>
                                                     </th>
-                                                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider bg-gray-50 cursor-pointer w-1/12" @click="setSortMinusWords('ctr')">
+                                                    <!-- <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider bg-gray-50 cursor-pointer w-1/12" @click="setSortMinusWords('ctr')">
                                                         <div class="flex items-center">
                                                             CTR
                                                             <span class="ml-1">
@@ -526,7 +534,7 @@
                                                                 </template>
                                                             </span>
                                                         </div>
-                                                    </th>
+                                                    </th> -->
                                                     <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider bg-gray-50 w-1/12">
                                                         Действия
                                                     </th>
@@ -545,9 +553,9 @@
                                                     <td class="px-4 py-4 text-sm text-gray-500 break-all">
                                                         {{ word }}
                                                     </td>
-                                                    <td class="px-4 py-4 whitespace-nowrap text-sm" :class="getCtrClass(getWordCtr(word))">
+                                                    <!-- <td class="px-4 py-4 whitespace-nowrap text-sm" :class="getCtrClass(getWordCtr(word))">
                                                         {{ formatCtr(getWordCtr(word)) }}
-                                                    </td>
+                                                    </td> -->
                                                     <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-500">
                                                         <button 
                                                             @click="deleteMinusWord(word)" 
@@ -632,6 +640,122 @@
             :loading="loading.global" 
             :progress="loadingProgress" 
         />
+
+        <!-- Add this modal at the end of the template -->
+        <div v-if="showRestoreModal" class="fixed inset-0 bg-gray-500 bg-opacity-75 flex items-center justify-center z-50">
+            <div class="bg-white rounded-lg shadow-xl max-w-4xl w-full max-h-[90vh] flex flex-col">
+                <div class="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
+                    <h3 class="text-lg font-medium text-gray-900">Восстановление минус-слов с CTR выше {{ adData.min_ctr * 100 }}%</h3>
+                    <button @click="showRestoreModal = false" class="text-gray-400 hover:text-gray-500">
+                        <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                    </button>
+                </div>
+                
+                <div class="px-6 py-4 flex-grow overflow-auto">
+                    <div v-if="loading.checkingMinusWords" class="flex justify-center items-center py-10">
+                        <svg class="animate-spin h-8 w-8 text-blue-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                        <span class="ml-2 text-gray-600">Загрузка данных...</span>
+                    </div>
+                    
+                    <div v-else-if="restorableMinusWords.length === 0" class="text-center py-10 text-gray-500">
+                        Нет минус-слов с CTR выше текущего порога
+                    </div>
+                    
+                    <table v-else class="min-w-full divide-y divide-gray-200">
+                        <thead class="bg-gray-50">
+                            <tr>
+                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    <input 
+                                        type="checkbox" 
+                                        class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                                        :checked="selectedRestoreWords.length === restorableMinusWords.length && restorableMinusWords.length > 0"
+                                        :indeterminate="selectedRestoreWords.length > 0 && selectedRestoreWords.length < restorableMinusWords.length"
+                                        @change="toggleAllRestoreWords"
+                                    />
+                                </th>
+                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    Ключевое слово
+                                </th>
+                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    CTR
+                                </th>
+                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    Просмотры
+                                </th>
+                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    Дата
+                                </th>
+                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    Статус
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody class="bg-white divide-y divide-gray-200">
+                            <tr v-for="word in restorableMinusWords" :key="word.keyword" class="hover:bg-gray-50">
+                                <td class="px-4 py-4 whitespace-nowrap">
+                                    <input 
+                                        type="checkbox" 
+                                        class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                                        :checked="selectedRestoreWords.includes(word.keyword)"
+                                        @change="toggleRestoreWord(word.keyword)"
+                                    />
+                                </td>
+                                <td class="px-4 py-4 text-sm text-gray-900">
+                                    {{ word.keyword }}
+                                </td>
+                                <td class="px-4 py-4 whitespace-nowrap text-sm">
+                                    {{ formatCtr(word.ctr) }}
+                                </td>
+                                <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-500">
+                                    {{ word.views }}
+                                </td>
+                                <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-500">
+                                    {{ formatDate(word.date, 'short') }}
+                                </td>
+                                <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-500">
+                                    <span v-if="word.force" class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
+                                        Исключение: {{ word.reason || 'Не указана' }}
+                                    </span>
+                                    <span v-else>-</span>
+                                </td>
+                            </tr>
+                            <tr v-if="restorableMinusWords.length === 0">
+                                <td colspan="6" class="px-6 py-4 text-center text-sm text-gray-500">
+                                    Нет минус-слов с CTR выше текущего порога
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                
+                <div class="px-6 py-4 border-t border-gray-200 flex justify-between">
+                    <button @click="showRestoreModal = false" class="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50">
+                        Отмена
+                    </button>
+                    <button 
+                        @click="restoreSelectedMinusWords" 
+                        class="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                        :disabled="selectedRestoreWords.length === 0 || loading.restoringWords"
+                    >
+                        <template v-if="loading.restoringWords">
+                            <svg class="animate-spin -ml-1 mr-2 inline-block h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                            </svg>
+                            Восстановление...
+                        </template>
+                        <template v-else>
+                            Вернуть выделенные слова ({{ selectedRestoreWords.length }})
+                        </template>
+                    </button>
+                </div>
+            </div>
+        </div>
     </div>
 </template>
 
@@ -665,6 +789,8 @@ export default {
                 addingComment: false,
                 deletingComment: false,
                 deletingTrustedWord: null,
+                restoringWords: false,
+                checkingMinusWords: false,
             },
             statsSort: {
                 field: 'views',
@@ -676,6 +802,9 @@ export default {
             },
             statsSearch: '',
             minusWordsSearch: '',
+            showRestoreModal: false,
+            selectedRestoreWords: [],
+            restorableMinusWords: [],
         }
     },
     computed: {
@@ -781,7 +910,7 @@ export default {
                         : b.localeCompare(a)
                 }
             })
-        }
+        },
     },
     methods: {
         getStatusClass(status) {
@@ -1115,6 +1244,70 @@ export default {
                 // Set new field with default direction
                 this.minusWordsSort.field = field
                 this.minusWordsSort.direction = field === 'word' ? 'asc' : 'desc'
+            }
+        },
+        async showRestoreMinusWordsModal() {
+            this.showRestoreModal = true
+            this.selectedRestoreWords = []
+            this.restorableMinusWords = []
+            
+            this.loading.checkingMinusWords = true
+            try {
+                const response = await mpr({
+                    url: `/wbadv/${this.$route.params.id}/check_minus_words`,
+                    method: 'POST',
+                    data: { ctr: this.adData.min_ctr }
+                })
+                
+                // Make sure we're properly handling the response
+                if (response.data && response.data.result) {
+                    this.restorableMinusWords = response.data.result
+                    console.log('Loaded restorable words:', this.restorableMinusWords.length, this.restorableMinusWords)
+                } else {
+                    console.error('Unexpected API response format:', response.data)
+                    this.restorableMinusWords = []
+                }
+            } catch (error) {
+                console.error('Failed to check minus words:', error)
+                this.restorableMinusWords = []
+            } finally {
+                this.loading.checkingMinusWords = false
+            }
+        },
+        toggleAllRestoreWords(event) {
+            if (event.target.checked) {
+                this.selectedRestoreWords = this.restorableMinusWords.map(word => word.keyword)
+            } else {
+                this.selectedRestoreWords = []
+            }
+        },
+        toggleRestoreWord(keyword) {
+            if (this.selectedRestoreWords.includes(keyword)) {
+                this.selectedRestoreWords = this.selectedRestoreWords.filter(w => w !== keyword)
+            } else {
+                this.selectedRestoreWords.push(keyword)
+            }
+        },
+        async restoreSelectedMinusWords() {
+            if (this.selectedRestoreWords.length === 0) return
+            
+            if (!confirm(`Вернуть ${this.selectedRestoreWords.length} выбранных минус-слов?`)) return
+            
+            this.loading.restoringWords = true
+            try {
+                await mpr({
+                    url: `/wbadv/${this.$route.params.id}/minus_words`,
+                    method: 'DELETE',
+                    data: { words: this.selectedRestoreWords }
+                })
+                
+                this.showRestoreModal = false
+                this.selectedRestoreWords = []
+                await this.loadAllData()
+            } catch (error) {
+                console.error('Failed to restore minus words:', error)
+            } finally {
+                this.loading.restoringWords = false
             }
         },
     },
