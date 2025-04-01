@@ -1,7 +1,11 @@
 import axios from 'axios';
 import { updateState, clearState } from './userState';
 
-const API_SERVER = import.meta.env.VITE_API_SERVER;
+let API_SERVER = import.meta.env.VITE_API_SERVER;
+
+if (!API_SERVER || API_SERVER === '') {
+    API_SERVER = window.location.origin.replace('://', '://api.');
+}
 
 // Add a flag to prevent multiple logout attempts
 let isLoggingOut = false;
