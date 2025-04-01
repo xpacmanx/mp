@@ -3,8 +3,14 @@ import axios from 'axios'
 function createRequest(config) {
 	let { method, data, url, query, params, headers } = config;
 	if (method == undefined) method = 'get';
-	let API_SERVER = import.meta.env.VITE_API_SERVER;
 	console.log(import.meta.env.VITE_DEBUG);
+
+	let API_SERVER = import.meta.env.VITE_API_SERVER;
+
+	if (!API_SERVER || API_SERVER === '') {
+		API_SERVER = window.location.origin.replace('://', '://api.');
+	}
+	
 	if (import.meta.env.VITE_DEBUG == 'false') API_SERVER = import.meta.env.VITE_DEV_API_SERVER;
 	url = API_SERVER + url;
 
