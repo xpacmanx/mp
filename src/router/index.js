@@ -12,6 +12,18 @@ import SupplytasksDashboardView from '../views/SupplytasksDashboardView.vue'
 import { jwtDecode } from "jwt-decode";
 import axios from 'axios';
 
+// Create a global event bus for auth events
+export const authEvents = {
+	listeners: new Set(),
+	emit(event) {
+		this.listeners.forEach(listener => listener(event));
+	},
+	on(callback) {
+		this.listeners.add(callback);
+		return () => this.listeners.delete(callback);
+	}
+};
+
 const routes = [
 	{
 		path: '/',
@@ -181,7 +193,6 @@ router.beforeEach(async (to, from, next) => {
 			const currentTime = Date.now() / 1000;
 			
 			// Add a 5-minute buffer - only refresh if token expires in less than 5 minutes
-			// This prevents unnecessary refreshes when the token is about to expire
 			const bufferTime = 5 * 60; // 5 minutes in seconds
 			return decoded.exp && (decoded.exp - bufferTime) < currentTime;
 		} catch {
@@ -203,21 +214,33 @@ router.beforeEach(async (to, from, next) => {
 				to.meta._retryRefresh = true;
 				return next();
 			} catch (error) {
+				// Instead of redirecting, emit an auth event
+				if (from.name) { // If we're not on the initial route
+					authEvents.emit('tokenExpired');
+					return false; // Stop navigation
+				} else {
+					// If this is the initial route, redirect to login
+					localStorage.clear();
+					return next({
+						path: '/login',
+						query: { backUrl: to.fullPath }
+					});
+				}
+			}
+		}
+
+		// For protected routes, ensure we have a valid token
+		if (to.meta.requiresAuth && (!token || isTokenExpired(token))) {
+			if (from.name) { // If we're not on the initial route
+				authEvents.emit('tokenExpired');
+				return false; // Stop navigation
+			} else {
 				localStorage.clear();
 				return next({
 					path: '/login',
 					query: { backUrl: to.fullPath }
 				});
 			}
-		}
-
-		// For protected routes, ensure we have a valid token
-		if (to.meta.requiresAuth && (!token || isTokenExpired(token))) {
-			localStorage.clear();
-			return next({
-				path: '/login',
-				query: { backUrl: to.fullPath }
-			});
 		}
 
 		// Prevent authenticated users from accessing login page
@@ -235,14 +258,19 @@ router.beforeEach(async (to, from, next) => {
 		next();
 	} catch (error) {
 		console.error('Navigation guard error:', error);
-		localStorage.clear();
-		if (to.path !== '/login') {
-			return next({
-				path: '/login',
-				query: { backUrl: to.fullPath }
-			});
+		if (from.name) { // If we're not on the initial route
+			authEvents.emit('tokenExpired');
+			return false; // Stop navigation
+		} else {
+			localStorage.clear();
+			if (to.path !== '/login') {
+				return next({
+					path: '/login',
+					query: { backUrl: to.fullPath }
+				});
+			}
+			next();
 		}
-		next();
 	}
 });
 

@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { updateState, clearState } from './userState';
+import { updateState, clearState, isTokenAboutToExpire, refreshToken } from './userState';
 
 let API_SERVER = import.meta.env.VITE_API_SERVER;
 
@@ -9,6 +9,19 @@ if (!API_SERVER || API_SERVER === '') {
 
 // Add a flag to prevent multiple logout attempts
 let isLoggingOut = false;
+let showLoginModal = false;
+let loginModalCallback = null;
+
+// Function to set login modal visibility
+export function setLoginModalVisibility(show, callback = null) {
+    showLoginModal = show;
+    loginModalCallback = callback;
+}
+
+// Function to get login modal visibility
+export function getLoginModalVisibility() {
+    return showLoginModal;
+}
 
 // Add axios interceptor to handle token refresh
 axios.interceptors.response.use(
@@ -19,7 +32,12 @@ axios.interceptors.response.use(
         // Check if this is a token validation error
         if (error.response?.data?.code === "token_not_valid" || 
             error.response?.data?.detail?.includes("Token is invalid or expired")) {
-            handleLogout();
+            if (!isLoggingOut) {
+                setLoginModalVisibility(true, () => {
+                    // Retry the original request after successful login
+                    return axios(originalRequest);
+                });
+            }
             return Promise.reject(error);
         }
 
@@ -28,29 +46,24 @@ axios.interceptors.response.use(
             originalRequest._retry = true;
 
             try {
-                const refreshToken = localStorage.getItem('refreshToken');
-                if (!refreshToken) {
-                    handleLogout();
-                    return Promise.reject(error);
+                const token = localStorage.getItem('authToken');
+                if (!token || isTokenAboutToExpire(token)) {
+                    const refreshed = await refreshToken();
+                    if (!refreshed) {
+                        setLoginModalVisibility(true, () => {
+                            return axios(originalRequest);
+                        });
+                        return Promise.reject(error);
+                    }
                 }
 
-                const response = await axios.post(API_SERVER + '/api/token/refresh/', {
-                    refresh: refreshToken
-                });
-
-                const { access } = response.data;
-                localStorage.setItem('authToken', access);
-                updateState(access);
-
-                originalRequest.headers['Authorization'] = 'Bearer ' + access;
+                const newToken = localStorage.getItem('authToken');
+                originalRequest.headers['Authorization'] = 'Bearer ' + newToken;
                 return axios(originalRequest);
             } catch (refreshError) {
-                // Check for specific token validation error in refresh attempt
-                if (refreshError.response?.data?.code === "token_not_valid" ||
-                    refreshError.response?.data?.detail?.includes("Token is invalid or expired")) {
-                    handleLogout();
-                    return Promise.reject(refreshError);
-                }
+                setLoginModalVisibility(true, () => {
+                    return axios(originalRequest);
+                });
                 return Promise.reject(refreshError);
             }
         }
@@ -60,10 +73,21 @@ axios.interceptors.response.use(
 
 // Add axios request interceptor to add token to all requests
 axios.interceptors.request.use(
-    (config) => {
+    async (config) => {
         const token = localStorage.getItem('authToken');
         if (token) {
-            config.headers['Authorization'] = 'Bearer ' + token;
+            // Check if token is about to expire before making the request
+            if (isTokenAboutToExpire(token)) {
+                try {
+                    await refreshToken();
+                    const newToken = localStorage.getItem('authToken');
+                    config.headers['Authorization'] = 'Bearer ' + newToken;
+                } catch (error) {
+                    console.error('Failed to refresh token before request:', error);
+                }
+            } else {
+                config.headers['Authorization'] = 'Bearer ' + token;
+            }
         }
         return config;
     },
@@ -83,15 +107,15 @@ function handleLogout() {
     localStorage.removeItem('refreshToken');
     localStorage.clear();
     
-    // Force reload to clear any cached state
-    window.location.href = `/login`;
+    // Show login modal instead of redirecting
+    setLoginModalVisibility(true);
     
     setTimeout(() => {
         isLoggingOut = false;
     }, 1000);
 }
 
-export async function loginUser(username, password, router) {
+export async function loginUser(username, password) {
     try {
         const response = await axios.post(API_SERVER + '/api/token/', {
             username,
@@ -106,6 +130,13 @@ export async function loginUser(username, password, router) {
         }
 
         updateState(access);
+        setLoginModalVisibility(false);
+
+        // If there's a callback, execute it
+        if (loginModalCallback) {
+            await loginModalCallback();
+            loginModalCallback = null;
+        }
 
         return { success: true, data: response.data };
     } catch (error) {
@@ -126,11 +157,9 @@ export async function loginUser(username, password, router) {
     }
 }
 
-export async function logoutUser(router) {
+export async function logoutUser() {
     try {
-        const currentPath = router.currentRoute.value.fullPath;
         handleLogout();
-        window.location.href = `/login?backUrl=${encodeURIComponent(currentPath)}`;
     } catch (error) {
         console.error('Logout failed:', error);
         handleLogout();

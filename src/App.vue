@@ -1,6 +1,48 @@
 <template>
-  <router-view />
+  <div id="app">
+    <AuthManager />
+    <router-view></router-view>
+    <LoginModal 
+      :show="showLoginModal" 
+      @close="showLoginModal = false"
+      @success="handleLoginSuccess"
+    />
+  </div>
 </template>
+
+<script>
+import LoginModal from './components/LoginModal.vue'
+import { authEvents } from './router'
+import AuthManager from '@/components/auth/AuthManager.vue'
+
+export default {
+  name: 'App',
+  components: {
+    LoginModal,
+    AuthManager
+  },
+  data() {
+    return {
+      showLoginModal: false
+    }
+  },
+  created() {
+    // Listen for auth events
+    authEvents.on((event) => {
+      if (event === 'tokenExpired') {
+        this.showLoginModal = true;
+      }
+    });
+  },
+  methods: {
+    handleLoginSuccess() {
+      this.showLoginModal = false;
+      // Retry the last failed request or reload the current page
+      window.location.reload();
+    }
+  }
+}
+</script>
 
 <style lang="postcss">
 @import url('https://fonts.googleapis.com/css2?family=Rubik:wght@300;400;700&display=swap');
