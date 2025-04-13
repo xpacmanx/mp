@@ -172,6 +172,11 @@ router.beforeEach(async (to, from, next) => {
 	const token = localStorage.getItem('authToken');
 	const refreshToken = localStorage.getItem('refreshToken');
 
+	// If on login page and no tokens, proceed
+	if (to.path === '/login' && (!token && !refreshToken)) {
+		return next();
+	}
+
 	// If no tokens at all and trying to access protected route, go to login
 	if ((!token || !refreshToken) && to.meta.requiresAuth) {
 		localStorage.clear(); // Clear any partial state
@@ -179,11 +184,6 @@ router.beforeEach(async (to, from, next) => {
 			path: '/login',
 			query: { backUrl: to.fullPath }
 		});
-	}
-
-	// If on login page and no tokens, proceed
-	if (to.path === '/login' && (!token && !refreshToken)) {
-		return next();
 	}
 
 	const isTokenExpired = (token) => {
@@ -204,18 +204,21 @@ router.beforeEach(async (to, from, next) => {
 		// Only try to refresh if we have both tokens and the access token is expired
 		if (token && refreshToken && isTokenExpired(token) && !to.meta._retryRefresh) {
 			try {
-				const API_SERVER = import.meta.env.VITE_API_SERVER;
-				const response = await axios.post(API_SERVER + '/api/token/refresh/', {
+				const response = await axios.post('/api/token/refresh/', {
 					refresh: refreshToken
 				});
-				const { access } = response.data;
-				localStorage.setItem('authToken', access);
 				
-				to.meta._retryRefresh = true;
-				return next();
+				const { access } = response.data;
+				if (access) {
+					localStorage.setItem('authToken', access);
+					to.meta._retryRefresh = true;
+					return next();
+				} else {
+					throw new Error('No access token in response');
+				}
 			} catch (error) {
-				// Instead of redirecting, emit an auth event
-				if (from.name) { // If we're not on the initial route
+				// If we're not on the initial route, emit an auth event
+				if (from.name) {
 					authEvents.emit('tokenExpired');
 					return false; // Stop navigation
 				} else {
@@ -231,7 +234,7 @@ router.beforeEach(async (to, from, next) => {
 
 		// For protected routes, ensure we have a valid token
 		if (to.meta.requiresAuth && (!token || isTokenExpired(token))) {
-			if (from.name) { // If we're not on the initial route
+			if (from.name) {
 				authEvents.emit('tokenExpired');
 				return false; // Stop navigation
 			} else {
@@ -258,7 +261,7 @@ router.beforeEach(async (to, from, next) => {
 		next();
 	} catch (error) {
 		console.error('Navigation guard error:', error);
-		if (from.name) { // If we're not on the initial route
+		if (from.name) {
 			authEvents.emit('tokenExpired');
 			return false; // Stop navigation
 		} else {

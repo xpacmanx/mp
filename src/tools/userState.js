@@ -3,12 +3,6 @@ import { jwtDecode } from "jwt-decode";
 import { DateTime } from 'luxon'
 import mpr from './mpr'
 
-let API_SERVER = import.meta.env.VITE_API_SERVER;
-
-if (!API_SERVER || API_SERVER === '') {
-    API_SERVER = window.location.origin.replace('://', '://api.');
-}
-
 // Create reactive references
 const isAuthenticated = ref(false)
 const username = ref('')
@@ -85,20 +79,14 @@ async function initializeState() {
             // Check if token is about to expire
             if (isTokenAboutToExpire(token)) {
                 console.log('Token is about to expire, attempting to refresh...');
-                const refreshed = await refreshToken();
-                if (!refreshed) {
-                    clearState();
-                    window.location.href = '/login'; // Redirect to login page
-                }
+                await refreshToken();
             }
         } catch (error) {
             console.error('Failed to decode token:', error);
             clearState();
-            window.location.href = '/login'; // Redirect to login page
         }
     } else {
         clearState();
-        window.location.href = '/login'; // Redirect to login page
     }
 }
 
