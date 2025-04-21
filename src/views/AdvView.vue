@@ -105,9 +105,28 @@
                     </div>
                   </td>
                   <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
-                    <span :class="getStatusClass(ad.status_id)" class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full">
-                      {{ getStatusText(ad.status_id) }}
-                    </span>
+                    <div class="flex flex-col">
+                      <span :class="getStatusClass(ad.status_id)" class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full">
+                        {{ getStatusText(ad.status_id) }}
+                      </span>
+                      <div class="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                        <span class="font-medium">Ставка:</span> {{ formatCpm(ad.current_cpm) }}
+                      </div>
+                      <div class="mt-1 flex flex-wrap gap-1">
+                        <span v-if="ad.tools?.carousel" 
+                              class="px-2 py-0.5 text-xs font-medium rounded-full bg-blue-100 text-blue-800 dark:bg-blue-800 dark:text-blue-100">
+                          Карусель
+                        </span>
+                        <span v-if="ad.tools?.recom" 
+                              class="px-2 py-0.5 text-xs font-medium rounded-full bg-purple-100 text-purple-800 dark:bg-purple-800 dark:text-purple-100">
+                          Рекомендации
+                        </span>
+                        <span v-if="ad.tools?.booster" 
+                              class="px-2 py-0.5 text-xs font-medium rounded-full bg-indigo-100 text-indigo-800 dark:bg-indigo-800 dark:text-indigo-100">
+                          Бустер
+                        </span>
+                      </div>
+                    </div>
                   </td>
                   <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
                     <div class="flex flex-col space-y-1">
@@ -316,6 +335,15 @@ export default {
     formatProfitability(value) {
       if (!value && value !== 0) return '-'
       return `${(value * 100).toFixed(1)}%`
+    },
+    formatCpm(value) {
+      if (!value && value !== 0) return '-'
+      return new Intl.NumberFormat('ru-RU', {
+        style: 'currency',
+        currency: 'RUB',
+        minimumFractionDigits: 0,
+        maximumFractionDigits: 0
+      }).format(value)
     },
     getCampaignWeeks(createdAt) {
       if (!createdAt) return '-'
