@@ -30,7 +30,7 @@ const routes = [
 		name: 'home',
 		component: HomeView,
 		meta: {
-			title: 'Home Dashboard 1',
+			title: 'Сервис поставок. Синхронизация. Непринятые задания.',
 			requiresAuth: true
 		}
 	},

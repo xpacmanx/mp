@@ -2,46 +2,6 @@
 </script>
 
 <template>
-  <nav class="menu">
-    <li>
-      <div class="logo">
-        <router-link to="/"><img src="./../../assets/logo.svg" /></router-link>
-      </div>
-    </li>
-<!--     <li>
-      <router-link to="/">Home</router-link>
-	</li-->
-		<li>
-      <router-link to="/supplytasks/dashboard">
-        <i>1</i>
-        <span>Панель управления сервисом поставок</span>
-      </router-link>
-    </li>
-    <!--li>
-      <router-link to="/newsupplytask">
-        <i>2</i>
-        <span>Подсорт для выбранного склада</span>
-      </router-link>
-    </li-->
-		<li>
-      <router-link to="/newsupplytask2">
-        <i>2</i>
-        <span>Подсорт для выбранного склада</span>
-      </router-link>
-    </li>
-    <!--li>
-      <router-link to="/goalsbywarehouse">
-        <i>3</i>
-        <span>Цели факты для выбранного склада</span>
-      </router-link>
-		</li-->
-<!--    <li>
-      <router-link to="/goalsbyproduct">
-        <i>4</i>
-        <span>Цели и факты для выбранного товара</span>
-      </router-link>
-    </li>-->
-  </nav>
 </template>
 
 <style lang="postcss" scoped>

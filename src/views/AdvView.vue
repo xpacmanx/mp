@@ -60,7 +60,12 @@
                     class="hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-150 ease-in-out"
                 >
                   <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
-                    {{ formatDate(ad.created_at) }}
+                    <div class="flex flex-col">
+                      <span>{{ formatDate(ad.created_at) }}</span>
+                      <span class="text-xs text-gray-400 dark:text-gray-500">
+                        {{ getCampaignWeeks(ad.created_at) }}
+                      </span>
+                    </div>
                   </td>
                   <td class="px-6 py-4">
                     <div class="flex flex-col">
@@ -75,8 +80,27 @@
                           <span class="font-medium">ID:</span> {{ ad.id }}
                         </span>
                         <span class="inline-block ml-3">
-                          <span class="font-medium">Тип:</span> {{ ad.product_type }}
+                          <span class="font-medium">Тип:</span> {{ ad.product_type || '-' }}
                         </span>
+                      </div>
+                      <div class="mt-1">
+                        <div class="flex items-center space-x-2">
+                          <span :class="getCampaignStatusClass(ad.created_at, ad.profitability)" 
+                                class="px-2 py-0.5 text-xs font-medium rounded-full">
+                            {{ getCampaignStatusText(ad.created_at, ad.profitability) }}
+                          </span>
+                          <div v-if="showProgressBar(ad.created_at)" class="flex-1">
+                            <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-1.5">
+                              <div :class="getProgressBarColor(ad.created_at, ad.profitability)" 
+                                   class="h-1.5 rounded-full" 
+                                   :style="{ width: getProgressBarWidth(ad.created_at) + '%' }">
+                              </div>
+                            </div>
+                            <div class="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                              Осталось {{ getRemainingDays(ad.created_at) }} дней
+                            </div>
+                          </div>
+                        </div>
                       </div>
                     </div>
                   </td>
@@ -85,20 +109,38 @@
                       {{ getStatusText(ad.status_id) }}
                     </span>
                   </td>
-                  <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">
-                    {{ ad.current_cpm }}
-                  </td>
-                  <td class="px-6 py-4 whitespace-nowrap text-sm">
-                    {{ formatCtr(ad.min_ctr) }}
-                  </td>
                   <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
-                    {{ (ad.views_to_minus || 0).toLocaleString() }}
+                    <div class="flex flex-col space-y-1">
+                      <div class="flex items-center">
+                        <span class="text-xs text-gray-400 dark:text-gray-500 mr-1">Min CTR:</span>
+                        <span>{{ formatCtr(ad.min_ctr) }}</span>
+                      </div>
+                      <div class="flex items-center">
+                        <span class="text-xs text-gray-400 dark:text-gray-500 mr-1">Min Просмотры:</span>
+                        <span>{{ (ad.views_to_minus || 0).toLocaleString() }}</span>
+                      </div>
+                      <div class="flex items-center">
+                        <span class="text-xs text-gray-400 dark:text-gray-500 mr-1">Минус-слова:</span>
+                        <span>{{ getMinusWordsCount(ad.minus_words) }} из 1000</span>
+                      </div>
+                    </div>
                   </td>
                   <td class="px-6 py-4 whitespace-nowrap text-sm" :class="getDrrClass(ad.drr)">
                     {{ formatDrr(ad.drr) }}
                   </td>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm" :class="getProfitabilityClass(ad.profitability)">
+                    {{ formatProfitability(ad.profitability) }}
+                  </td>
                   <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
-                    {{ getMinusWordsCount(ad.minus_words) }} из 1000
+                    {{ formatCurrency(ad.expected_revenue) }}
+                  </td>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+                    <div class="flex flex-col">
+                      <span class="text-xs text-gray-400 dark:text-gray-500">по 7 дням:</span>
+                      <span>{{ formatCurrency(ad.revenue7) }}</span>
+                      <span class="text-xs text-gray-400 dark:text-gray-500 mt-1">по вчера:</span>
+                      <span>{{ formatCurrency(ad.revenue1) }}</span>
+                    </div>
                   </td>
                 </tr>
               </tbody>
@@ -136,16 +178,13 @@ export default {
         { key: 'created_at', label: 'Дата создания', sortable: true },
         { key: 'name', label: 'Название', sortable: true },
         { key: 'status', label: 'Статус', sortable: true },
-        { key: 'current_cpm', label: 'CPM', sortable: true },
-        { key: 'min_ctr', label: 'CTR для минусации', sortable: true },
-        { key: 'views_to_minus', label: 'Просмотры для минусации', sortable: true },
-        { 
-          key: 'drr', 
-          label: 'ДРР', 
-          sortable: true,
-          tooltip: 'ДРР обновляется раз в день по утрам, актуальные ДРР в таблице маркетинга'
-        },
-        { key: 'minus_words_count', label: 'Минус-слова', sortable: true },
+        { key: 'minus_words_count', label: 'Параметры', sortable: true },
+        // { key: 'views_to_minus', label: `Просмотры для минусации`, sortable: true },
+        // { key: 'minus_words_count', label: 'Минус-слова', sortable: true },
+        { key: 'drr', label: 'ДРР', sortable: true },
+        { key: 'profitability', label: 'Рентабельность', sortable: true },
+        { key: 'expected_revenue', label: 'Ожидаемая касса', sortable: true },
+        { key: 'revenue', label: 'Уровень кассы', sortable: true },
       ]
     }
   },
@@ -166,6 +205,12 @@ export default {
       return filtered.sort((a, b) => {
         let aValue = a[this.sortConfig.key]
         let bValue = b[this.sortConfig.key]
+
+        // Handle revenue sorting
+        if (this.sortConfig.key === 'revenue') {
+          aValue = a.revenue7 || 0
+          bValue = b.revenue7 || 0
+        }
 
         if (this.sortConfig.direction === 'asc') {
           return aValue > bValue ? 1 : -1
@@ -258,6 +303,115 @@ export default {
       if (drrPercentage <= 5) return 'text-green-600 dark:text-green-400 font-medium'
       if (drrPercentage <= 10) return 'text-yellow-600 dark:text-yellow-400 font-medium'
       return 'text-red-600 dark:text-red-400 font-medium'
+    },
+    formatCurrency(value) {
+      if (!value && value !== 0) return '-'
+      return new Intl.NumberFormat('ru-RU', {
+        style: 'currency',
+        currency: 'RUB',
+        minimumFractionDigits: 0,
+        maximumFractionDigits: 0
+      }).format(value)
+    },
+    formatProfitability(value) {
+      if (!value && value !== 0) return '-'
+      return `${(value * 100).toFixed(1)}%`
+    },
+    getCampaignWeeks(createdAt) {
+      if (!createdAt) return '-'
+      const createdDate = new Date(createdAt)
+      const now = new Date()
+      const diffTime = Math.abs(now - createdDate)
+      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
+      const weeks = Math.floor(diffDays / 7)
+      
+      if (weeks === 0) return 'Менее недели'
+      if (weeks === 1) return '1 неделя'
+      if (weeks >= 2 && weeks <= 4) return `${weeks} недели`
+      return `${weeks} недель`
+    },
+    getCampaignStatusText(createdAt, profitability) {
+      if (!createdAt) return '-'
+      const createdDate = new Date(createdAt)
+      const now = new Date()
+      const diffTime = Math.abs(now - createdDate)
+      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
+      const weeks = Math.floor(diffDays / 7)
+
+      if (weeks < 4) return 'Разгон'
+      if (weeks < 8) return 'Оптимизация'
+      if (profitability < 0.4) return 'Спасение'
+      return 'Стабильная'
+    },
+    getCampaignStatusClass(createdAt, profitability) {
+      if (!createdAt) return 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300'
+      const createdDate = new Date(createdAt)
+      const now = new Date()
+      const diffTime = Math.abs(now - createdDate)
+      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
+      const weeks = Math.floor(diffDays / 7)
+
+      if (weeks < 4) return 'bg-green-100 text-green-800 dark:bg-green-800 dark:text-green-100'
+      if (weeks < 8) return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-800 dark:text-yellow-100'
+      if (profitability < 0.4) return 'bg-red-100 text-red-800 dark:bg-red-800 dark:text-red-100'
+      return 'bg-blue-100 text-blue-800 dark:bg-blue-800 dark:text-blue-100'
+    },
+    showProgressBar(createdAt) {
+      if (!createdAt) return false
+      const createdDate = new Date(createdAt)
+      const now = new Date()
+      const diffTime = Math.abs(now - createdDate)
+      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
+      const weeks = Math.floor(diffDays / 7)
+      return weeks < 8 // Show progress bar for both phases
+    },
+    getProgressBarWidth(createdAt) {
+      if (!createdAt) return 0
+      const createdDate = new Date(createdAt)
+      const now = new Date()
+      const diffTime = Math.abs(now - createdDate)
+      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
+      const weeks = Math.floor(diffDays / 7)
+
+      if (weeks < 4) {
+        // For "Разгон" phase: 0% at start, 100% at 4 weeks
+        return Math.min(100, (diffDays / 28) * 100)
+      } else {
+        // For "Оптимизация" phase: 0% at 4 weeks, 100% at 8 weeks
+        return Math.min(100, ((diffDays - 28) / 28) * 100)
+      }
+    },
+    getRemainingDays(createdAt) {
+      if (!createdAt) return 0
+      const createdDate = new Date(createdAt)
+      const now = new Date()
+      const diffTime = Math.abs(now - createdDate)
+      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
+      const weeks = Math.floor(diffDays / 7)
+
+      if (weeks < 4) {
+        // For "Разгон" phase: days until 4 weeks
+        return Math.max(0, 28 - diffDays)
+      } else {
+        // For "Оптимизация" phase: days until 8 weeks
+        return Math.max(0, 56 - diffDays)
+      }
+    },
+    getProgressBarColor(createdAt, profitability) {
+      if (!createdAt) return 'bg-gray-500'
+      if (profitability >= 0.4) return 'bg-green-500'
+      
+      const remainingDays = this.getRemainingDays(createdAt)
+      if (remainingDays > 14) return 'bg-yellow-500'
+      return 'bg-red-500'
+    },
+    getProfitabilityClass(value) {
+      if (!value && value !== 0) return 'text-gray-500 dark:text-gray-400'
+      
+      const percentage = value * 100
+      if (percentage >= 40) return 'text-green-600 dark:text-green-400 font-medium'
+      if (percentage >= 30) return 'text-yellow-600 dark:text-yellow-400 font-medium'
+      return 'text-red-600 dark:text-red-400 font-medium'
     }
   },
   mounted() {
@@ -296,11 +450,11 @@ td:nth-child(2) {
 th:nth-child(1) { width: 10%; } /* Date */
 th:nth-child(2) { width: 25%; } /* Name (with ID and Type) */
 th:nth-child(3) { width: 10%; } /* Status */
-th:nth-child(4) { width: 8%; }  /* CPM */
-th:nth-child(5) { width: 12%; } /* CTR */
-th:nth-child(6) { width: 12%; } /* Views */
-th:nth-child(7) { width: 10%; } /* DRR */
-th:nth-child(8) { width: 13%; } /* Minus words */
+th:nth-child(4) { width: 15%; } /* Parameters */
+th:nth-child(5) { width: 10%; } /* DRR */
+th:nth-child(6) { width: 12%; } /* Expected revenue */
+th:nth-child(7) { width: 12%; } /* Revenue */
+th:nth-child(8) { width: 10%; } /* Profitability */
 
 .group:hover .group-hover\:block {
   display: block;

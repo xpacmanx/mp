@@ -18,14 +18,33 @@
           </div>
 
           <div class="flex items-center">
-            <!-- Show username when authenticated -->
-            <div v-if="isAuthenticated" class="text-gray-300 mr-4">
-              {{ username }}
-            </div>
-            
-            <!-- Show logout button only when authenticated -->
-            <div v-if="isAuthenticated">
-              <button class="btn" @click="logout">Выйти</button>
+            <!-- User profile dropdown -->
+            <div v-if="isAuthenticated" class="relative">
+              <button @click="toggleDropdown" class="flex items-center focus:outline-none">
+                <div class="w-10 h-10 rounded-full bg-lime-300 flex items-center justify-center">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-gray-950" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                  </svg>
+                </div>
+              </button>
+
+              <!-- Dropdown menu -->
+              <div v-if="isDropdownOpen" class="absolute right-0 mt-2 w-48 bg-gray-800 rounded-md shadow-lg py-1 z-50">
+                <div class="px-4 py-2 border-b border-gray-700">
+                  <div class="text-sm font-medium text-white">{{ username }}</div>
+                  <div class="text-xs text-lime-300 font-semibold">{{ role }}</div>
+                </div>
+                <!-- <router-link to="/profile" class="block px-4 py-2 text-sm text-gray-300 hover:bg-gray-700">
+                  Профиль
+                </router-link>
+                <router-link to="/settings" class="block px-4 py-2 text-sm text-gray-300 hover:bg-gray-700">
+                  Настройки
+                </router-link> -->
+                <div class="border-t border-gray-700"></div>
+                <button @click="logout" class="block w-full text-left px-4 py-2 text-sm text-gray-300 hover:bg-gray-700">
+                  Выйти
+                </button>
+              </div>
             </div>
           </div>
 
@@ -99,14 +118,34 @@
 
 <script>
 import { logoutUser } from './../../tools/auth'
-import { isAuthenticated, username } from './../../tools/userState'
+import { isAuthenticated, username, role } from './../../tools/userState'
+import { ref } from 'vue'
 
 export default {
   name: 'Header',
   setup() {
+    const isDropdownOpen = ref(false)
+
+    const toggleDropdown = () => {
+      isDropdownOpen.value = !isDropdownOpen.value
+    }
+
+    // Close dropdown when clicking outside
+    const closeDropdown = (event) => {
+      if (!event.target.closest('.relative')) {
+        isDropdownOpen.value = false
+      }
+    }
+
+    // Add click event listener to close dropdown
+    document.addEventListener('click', closeDropdown)
+
     return {
       isAuthenticated,
-      username
+      username,
+      role,
+      isDropdownOpen,
+      toggleDropdown
     }
   },
   methods: {
@@ -120,6 +159,9 @@ export default {
       if (this.$router.fullPath.includes('/adv')) return 'adv'
     }
   },
+  beforeUnmount() {
+    document.removeEventListener('click', this.closeDropdown)
+  }
 }
 </script>
 
