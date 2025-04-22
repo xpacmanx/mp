@@ -11,6 +11,7 @@ import AdvView from '../views/AdvView.vue'
 import SupplytasksDashboardView from '../views/SupplytasksDashboardView.vue'
 import { jwtDecode } from "jwt-decode";
 import axios from 'axios';
+import { refreshToken as refreshTokenFn, isTokenAboutToExpire } from '../tools/userState';
 
 // Create a global event bus for auth events
 export const authEvents = {
@@ -156,11 +157,17 @@ const routes = [
 			requiresAuth: true
 		}
 	},
-	// {
-	//   path: '/about',
-	//   name: 'about',
-	//   component: () => import(/* webpackChunkName: "about" */ '../views/AboutView.vue')
-	// }
+	{
+		path: '/:pathMatch(.*)*',
+		name: 'not-found',
+		redirect: to => {
+			console.log('404 redirect triggered for path:', to.path);
+			return {
+				path: '/login',
+				query: { backUrl: to.fullPath }
+			}
+		}
+	}
 ]
 
 const router = createRouter({
@@ -169,75 +176,87 @@ const router = createRouter({
 });
 
 router.beforeEach(async (to, from, next) => {
+	console.log('Navigation guard triggered:', { to: to.path, from: from.path });
+	
 	const token = localStorage.getItem('authToken');
 	const refreshToken = localStorage.getItem('refreshToken');
+	
+	console.log('Auth state:', { 
+		hasToken: !!token, 
+		hasRefreshToken: !!refreshToken,
+		requiresAuth: to.meta.requiresAuth
+	});
 
-	// If on login page and no tokens, proceed
-	if (to.path === '/login' && (!token && !refreshToken)) {
-		return next();
-	}
-
-	// If no tokens at all and trying to access protected route, go to login
-	if ((!token || !refreshToken) && to.meta.requiresAuth) {
-		localStorage.clear(); // Clear any partial state
-		return next({
-			path: '/login',
-			query: { backUrl: to.fullPath }
-		});
-	}
-
-	const isTokenExpired = (token) => {
-		if (!token) return true;
+	// Helper function to safely check token expiration
+	const checkTokenExpiration = (token) => {
 		try {
-			const decoded = jwtDecode(token);
-			const currentTime = Date.now() / 1000;
-			
-			// Add a 5-minute buffer - only refresh if token expires in less than 5 minutes
-			const bufferTime = 5 * 60; // 5 minutes in seconds
-			return decoded.exp && (decoded.exp - bufferTime) < currentTime;
-		} catch {
-			return true;
+			return isTokenAboutToExpire(token);
+		} catch (error) {
+			console.error('Error checking token expiration:', error);
+			return true; // Assume token is expired if we can't check it
 		}
 	};
 
 	try {
-		// Only try to refresh if we have both tokens and the access token is expired
-		if (token && refreshToken && isTokenExpired(token) && !to.meta._retryRefresh) {
-			try {
-				const response = await axios.post('/api/token/refresh/', {
-					refresh: refreshToken
-				});
-				
-				const { access } = response.data;
-				if (access) {
-					localStorage.setItem('authToken', access);
-					to.meta._retryRefresh = true;
-					return next();
-				} else {
-					throw new Error('No access token in response');
-				}
-			} catch (error) {
-				// If we're not on the initial route, emit an auth event
-				if (from.name) {
-					authEvents.emit('tokenExpired');
-					return false; // Stop navigation
-				} else {
-					// If this is the initial route, redirect to login
-					localStorage.clear();
-					return next({
-						path: '/login',
-						query: { backUrl: to.fullPath }
-					});
-				}
+		// If on login page
+		if (to.path === '/login') {
+			if (!token || !refreshToken) {
+				console.log('No tokens, proceeding to login');
+				return next();
 			}
+
+			const isExpired = checkTokenExpiration(token);
+			console.log('Token expiration check on login page:', { isExpired });
+
+			if (isExpired && refreshToken) {
+				console.log('Token expired on login page, attempting refresh');
+				try {
+					const refreshed = await refreshTokenFn();
+					if (refreshed) {
+						console.log('Token refreshed successfully on login page');
+						return next('/');
+					}
+				} catch (error) {
+					console.error('Token refresh failed on login page:', error);
+				}
+				localStorage.clear();
+				return next();
+			}
+
+			if (!isExpired) {
+				console.log('Valid token exists on login page, redirecting to home');
+				return next('/');
+			}
+
+			return next();
 		}
 
-		// For protected routes, ensure we have a valid token
-		if (to.meta.requiresAuth && (!token || isTokenExpired(token))) {
-			if (from.name) {
-				authEvents.emit('tokenExpired');
-				return false; // Stop navigation
-			} else {
+		// For protected routes
+		if (to.meta.requiresAuth) {
+			if (!token || !refreshToken) {
+				console.log('No tokens for protected route');
+				localStorage.clear();
+				return next({
+					path: '/login',
+					query: { backUrl: to.fullPath }
+				});
+			}
+
+			const isExpired = checkTokenExpiration(token);
+			console.log('Token expiration check for protected route:', { isExpired });
+
+			if (isExpired) {
+				console.log('Token expired for protected route, attempting refresh');
+				try {
+					const refreshed = await refreshTokenFn();
+					if (refreshed) {
+						console.log('Token refreshed successfully for protected route');
+						return next();
+					}
+				} catch (error) {
+					console.error('Token refresh failed for protected route:', error);
+				}
+				
 				localStorage.clear();
 				return next({
 					path: '/login',
@@ -246,34 +265,21 @@ router.beforeEach(async (to, from, next) => {
 			}
 		}
 
-		// Prevent authenticated users from accessing login page
-		if (token && !isTokenExpired(token) && to.path === '/login') {
-			const backUrl = to.query.backUrl || '/';
-			return next(backUrl);
-		}
-
 		// Update page title and proceed
 		const nearestWithTitle = to.matched.slice().reverse().find(r => r.meta && r.meta.title);
 		if (nearestWithTitle) {
 			document.title = nearestWithTitle.meta.title;
 		}
 
+		console.log('Navigation proceeding normally');
 		next();
 	} catch (error) {
 		console.error('Navigation guard error:', error);
-		if (from.name) {
-			authEvents.emit('tokenExpired');
-			return false; // Stop navigation
-		} else {
-			localStorage.clear();
-			if (to.path !== '/login') {
-				return next({
-					path: '/login',
-					query: { backUrl: to.fullPath }
-				});
-			}
-			next();
-		}
+		localStorage.clear();
+		return next({
+			path: '/login',
+			query: { backUrl: to.fullPath }
+		});
 	}
 });
 

@@ -6,7 +6,7 @@
 </template>
 
 <script>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, onUnmounted } from 'vue'
 import LoginModal from './LoginModal.vue'
 import { getLoginModalVisibility, setLoginModalVisibility } from '@/tools/auth'
 
@@ -18,14 +18,19 @@ export default {
   setup() {
     const showLoginModal = ref(false)
 
-    // Watch for changes in login modal visibility
-    const checkLoginModalVisibility = () => {
+    // Function to update modal visibility
+    const updateModalVisibility = () => {
       showLoginModal.value = getLoginModalVisibility()
     }
 
-    // Set up an interval to check for changes
+    // Set up event listener for auth events
     onMounted(() => {
-      setInterval(checkLoginModalVisibility, 100)
+      window.addEventListener('auth-state-changed', updateModalVisibility)
+      updateModalVisibility() // Initial check
+    })
+
+    onUnmounted(() => {
+      window.removeEventListener('auth-state-changed', updateModalVisibility)
     })
 
     const handleLoginSuccess = () => {

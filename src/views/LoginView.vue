@@ -84,9 +84,11 @@ export default {
         if (result.success) {
           const redirectPath = getRedirectPath(this.router);
           this.router.push(redirectPath);
+        } else {
+          this.errorMessage = result.message;
         }
       } catch (error) {
-        this.errorMessage = error.message;
+        this.errorMessage = error.message || 'Произошла ошибка при авторизации';
       } finally {
         this.isLoading = false;
       }

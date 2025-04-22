@@ -6,6 +6,7 @@ let API_SERVER = import.meta.env.VITE_API_SERVER;
 if (!API_SERVER || API_SERVER === '') {
     API_SERVER = window.location.origin.replace('://', '://api.');
 }
+console.log('API_SERVER configured as:', API_SERVER);
 
 // Add a flag to prevent multiple logout attempts
 let isLoggingOut = false;
@@ -16,6 +17,8 @@ let loginModalCallback = null;
 export function setLoginModalVisibility(show, callback = null) {
     showLoginModal = show;
     loginModalCallback = callback;
+    // Dispatch event when visibility changes
+    window.dispatchEvent(new Event('auth-state-changed'));
 }
 
 // Function to get login modal visibility
@@ -106,10 +109,12 @@ function handleLogout() {
 
 export async function loginUser(username, password) {
     try {
+        console.log('Attempting login request to:', `${API_SERVER}/api/token/`);
         const response = await axios.post(`${API_SERVER}/api/token/`, {
             username,
             password
         });
+        console.log('Login response:', response.data);
 
         const { access, refresh, user } = response.data;
         
@@ -126,10 +131,14 @@ export async function loginUser(username, password) {
             id: user.id
         });
         
-        return true;
+        return { success: true };
     } catch (error) {
         console.error('Login failed:', error);
-        return false;
+        console.error('Error response:', error.response?.data);
+        return { 
+            success: false, 
+            message: error.response?.data?.detail || 'Ошибка авторизации' 
+        };
     }
 }
 

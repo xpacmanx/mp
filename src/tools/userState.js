@@ -1,5 +1,5 @@
 import { ref } from 'vue'
-import { jwtDecode } from "jwt-decode";
+import { jwtDecode } from "jwt-decode"
 import { DateTime } from 'luxon'
 import mpr from './mpr'
 
@@ -14,10 +14,18 @@ let refreshPromise = null;
 function isTokenAboutToExpire(token) {
     if (!token) return true;
     try {
+        console.log('Checking token expiration for token:', token);
         const decoded = jwtDecode(token);
+        console.log('Decoded token:', decoded);
         const currentTime = DateTime.now().toSeconds();
         const expirationTime = decoded.exp;
         const timeUntilExpiration = expirationTime - currentTime;
+        
+        console.log('Token expiration details:', {
+            currentTime,
+            expirationTime,
+            timeUntilExpiration
+        });
         
         // Return true if token expires in less than 1 hour
         return timeUntilExpiration < 3600; // 3600 seconds = 1 hour
@@ -31,40 +39,55 @@ function isTokenAboutToExpire(token) {
 async function refreshToken() {
     // If there's already a refresh in progress, return that promise
     if (refreshPromise) {
+        console.log('Refresh already in progress, returning existing promise');
         return refreshPromise;
     }
 
     try {
         const refreshToken = localStorage.getItem('refreshToken');
         if (!refreshToken) {
+            console.error('No refresh token found in localStorage');
             throw new Error('No refresh token available');
         }
 
-        // Create a new promise for this refresh attempt
-        refreshPromise = mpr({
-            url: '/api/token/refresh/',
-            method: 'post',
-            data: {
-                refresh: refreshToken
-            }
-        });
+        console.log('Attempting to refresh token with refresh token:', refreshToken);
 
-        const response = await refreshPromise;
-        const { access, user } = response.data;
+        // Create a new promise for this refresh attempt with a timeout
+        const request = Promise.race([
+            mpr({
+                url: '/api/token/refresh/',
+                method: 'post',
+                data: {
+                    refresh: refreshToken
+                }
+            }),
+            new Promise((_, reject) => setTimeout(() => reject(new Error('Refresh token request timed out')), 10000))
+        ]);
+
+        refreshPromise = request; // Store the promise
+
+        const response = await request;
+        console.log('Token refresh response:', response.data);
         
+        const { access } = response.data;
         if (access) {
+            console.log('Successfully received new access token');
             localStorage.setItem('authToken', access);
-            updateUserState(user);
             return true;
         } else {
+            console.error('No access token in refresh response');
             throw new Error('No access token in response');
         }
     } catch (error) {
         console.error('Failed to refresh token:', error);
+        console.error('Error details:', error.response?.data || error.message);
+        // Clear tokens if refresh fails
+        localStorage.removeItem('authToken');
+        localStorage.removeItem('refreshToken');
         clearUserState();
         return false;
     } finally {
-        // Clear the promise so future refresh attempts can proceed
+        // Always clear the promise so future refresh attempts can proceed
         refreshPromise = null;
     }
 }
