@@ -438,6 +438,95 @@
                         </div>
                     </div>
 
+                    <div class="mb-8 bg-white dark:bg-gray-800 shadow rounded-lg">
+                        <div class="p-6">
+                            <h2 class="text-lg font-medium text-gray-900 dark:text-white mb-4">Топ ключевых фраз</h2>
+                            
+                            <div class="overflow-x-auto">
+                                <div class="max-h-[600px] overflow-y-auto relative">
+                                    <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                                        <thead class="bg-gray-50 dark:bg-gray-700 sticky top-0 z-10">
+                                            <tr>
+                                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider cursor-pointer" @click="setSortStats('keyword')">
+                                                    <div class="flex items-center">
+                                                    Ключевое слово
+                                                    </div>
+                                                </th>
+                                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider cursor-pointer" @click="setSortStats('views')">
+                                                    <div class="flex items-center">
+                                                    Рекламная позиция
+                                                    </div>
+                                                </th>
+                                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider cursor-pointer" @click="setSortStats('clicks')">
+                                                    <div class="flex items-center">
+                                                    Органическая позиция
+                                                    </div>
+                                                </th>
+                                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider cursor-pointer" @click="setSortStats('ctr')">
+                                                    <div class="flex items-center">
+                                                        Ставка
+                                                    </div>
+                                                </th>
+                                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider cursor-pointer" @click="setSortStats('inMinus')">
+                                                    <div class="flex items-center">
+                                                        Действия
+                                                    </div>
+                                                </th>
+                                            </tr>
+                                        </thead>
+
+                                        <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+                                            <tr v-for="top_keyword in adData.top_keywords" :key="top_keyword.keyword" class="hover:bg-gray-50 dark:hover:bg-gray-700">
+                                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-300">
+                                                    {{ top_keyword.keyword }}<br/>
+                                                    <span class="text-xsm text-gray-400 dark:text-gray-300">{{ formatDate(top_keyword.date) }}</span>
+                                                </td>
+                                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+                                                    {{ (top_keyword.promo_position || 0).toLocaleString() }}
+                                                </td>
+                                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+                                                    {{ (top_keyword.position || 0).toLocaleString() }}
+                                                </td>
+                                                <td class="px-6 py-4 whitespace-nowrap text-sm">
+                                                    {{ top_keyword.cpm }}
+                                                </td>
+                                                <td class="px-6 py-4 whitespace-nowrap text-sm">
+                                                    <template v-if="isInMinusWords(top_keyword.keyword)">
+                                                        <span class="inline-flex items-center px-3 py-1.5 text-xs font-medium rounded-full bg-gray-100 text-gray-500 dark:bg-gray-700 dark:text-gray-400">
+                                                            Уже в минусе
+                                                        </span>
+                                                    </template>
+                                                    <button 
+                                                        v-else
+                                                        @click="addToMinusWords(top_keyword.keyword)"
+                                                        class="inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-full shadow-sm text-white bg-red-600 hover:bg-red-700 dark:bg-red-500 dark:hover:bg-red-600"
+                                                        :disabled="loading.addingToMinus === top_keyword.keyword"
+                                                    >
+                                                        <template v-if="loading.addingToMinus === top_keyword.keyword">
+                                                            <svg class="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                                                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                                            </svg>
+                                                            Добавление...
+                                                        </template>
+                                                        <template v-else>
+                                                            Убрать
+                                                        </template>
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                            <tr v-if="adData.top_keywords.length === 0">
+                                                <td colspan="5" class="px-6 py-4 text-center text-sm text-gray-500 dark:text-gray-400">
+                                                    {{ statsSearch ? 'Нет результатов по вашему запросу' : 'Нет данных' }}
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
                     <!-- Words Tables -->
                     <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
                         <!-- Minus Words - Make it take 2/3 of the space -->
