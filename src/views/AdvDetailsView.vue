@@ -488,7 +488,10 @@
                                                     {{ (top_keyword.position || 0).toLocaleString() }}
                                                 </td>
                                                 <td class="px-6 py-4 whitespace-nowrap text-sm">
-                                                    {{ top_keyword.cpm }}
+                                                    <span v-if="top_keyword.cpm == adData.current_cpm" class="inline-flex items-center px-3 py-1.5 text-xs font-medium rounded-full bg-gray-100 text-gray-500 dark:bg-gray-700 dark:text-gray-400">
+                                                        Совпадает с текущей ({{ top_keyword.cpm }})
+                                                    </span>
+                                                    <span v-else class="text-red-600">{{ top_keyword.cpm }}</span>
                                                 </td>
                                                 <td class="px-6 py-4 whitespace-nowrap text-sm">
                                                     <template v-if="isInMinusWords(top_keyword.keyword)">
