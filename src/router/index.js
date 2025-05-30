@@ -8,6 +8,8 @@ import ConnectionsView from '../views/ConnectionsView.vue'
 import WarehousesView from '../views/WarehousesView.vue'
 import SupplytaskView from '../views/SupplytaskView.vue'
 import AdvView from '../views/AdvView.vue'
+import ProductView from '../views/ProductView.vue'
+
 import SupplytasksDashboardView from '../views/SupplytasksDashboardView.vue'
 import { jwtDecode } from "jwt-decode";
 import axios from 'axios';
@@ -40,23 +42,71 @@ const routes = [
 		component: () => import('../views/LoginView.vue'),
 		meta: { title: 'Login' }
 	},
+	// {
+	// 	path: '/adv',
+	// 	name: 'adv',
+	// 	component: AdvView,
+	// 	meta: {
+	// 		title: 'Реклама',
+	// 		requiresAuth: true
+	// 	}
+	// },
+	// {
+	// 	path: '/adv/:id',
+	// 	name: 'adv-details',
+	// 	component: () => import('../views/AdvDetailsView.vue'),
+	// 	meta: {
+	// 		title: 'Детали рекламы',
+	// 		requiresAuth: true
+	// 	}
+	// },
 	{
 		path: '/adv',
-		name: 'adv',
-		component: AdvView,
+		component: AdvView, // родитель
 		meta: {
-			title: 'Реклама',
-			requiresAuth: true
-		}
+		  title: 'Реклама',
+		  requiresAuth: true
+		},
+		children: [
+		  {
+			path: '', // /adv
+			name: 'adv',
+			component: () => import('../views/AdvListView.vue')
+		  },
+		  {
+			path: ':id', // /adv/:id
+			name: 'adv-details',
+			component: () => import('../views/AdvDetailsView.vue'),
+			meta: {
+			  title: 'Детали рекламы',
+			  requiresAuth: true
+			}
+		  }
+		]
 	},
 	{
-		path: '/adv/:id',
-		name: 'adv-details',
-		component: () => import('../views/AdvDetailsView.vue'),
+		path: '/products',
+		component: ProductView, // родитель
 		meta: {
-			title: 'Детали рекламы',
-			requiresAuth: true
-		}
+		  title: 'Товары',
+		  requiresAuth: true
+		},
+		children: [
+		  {
+			path: '', // /products
+			name: 'products',
+			component: () => import('../views/ProductListView.vue')
+		  },
+		  {
+			path: ':id', // /products/:id
+			name: 'product-details',
+			component: () => import('../views/ProductDetailsView.vue'),
+			meta: {
+			  title: 'Аналитика товара',
+			  requiresAuth: true
+			}
+		  }
+		]
 	},
 	{
 		path: '/newsupplytask',
