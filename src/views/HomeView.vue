@@ -7,6 +7,7 @@
 			<div class="flex h-16 items-center justify-between">
 				<h2 class="text-2xl font-bold text-left dark:text-lime-300">Сервис поставок</h2>
 				<div class="flex items-center">
+					<button @click="syncLegacyStock()" class="rounded-md mr-2 bg-gray-200 px-3 py-2 text-sm font-medium text-gray-950 hover:text-gray-600 visited:text-gray-950">Синхронизовать таблицу Распределение (подсорт)</button>
 					<router-link to="/supplytasks/dashboard" class="rounded-md mr-2 bg-gray-200 px-3 py-2 text-sm font-medium text-gray-950 hover:text-gray-600 visited:text-gray-950" aria-current="page">Список складов к распределению</router-link>
 					<router-link to="/newsupplytask2/" class="rounded-md bg-lime-300 px-3 py-2 text-sm font-medium text-gray-950 hover:text-gray-600 visited:text-gray-950" aria-current="page">Новая поставка</router-link>
 				</div>
@@ -20,7 +21,7 @@
 					
 					<div class="basis-1/4 flex flex-col bg-gray-200 dark:bg-gray-800 p-4 rounded-md">
 						<div class="flex flex-row items-center justify-between">
-							<div class="text-m text-left">Товаров</div>
+							<div class="text-m text-left">Товары</div>
 							<ArrowPathIcon class="h-5 w-5 hover:cursor-pointer" v-if="!products.sync" @click="syncProducts()" />
 							<ArrowPathIcon class="h-5 w-5 hover:cursor-progress animate-spin" v-else />
 						</div>
@@ -30,7 +31,7 @@
 
 					<div class="basis-1/4 flex flex-col bg-gray-200 dark:bg-gray-800 p-4 rounded-md">
 						<div class="flex flex-row items-center justify-between">
-							<div class="text-m text-left">Складов</div>
+							<div class="text-m text-left">Склады</div>
 							<ArrowPathIcon class="h-5 w-5 hover:cursor-pointer" v-if="!warehouses.total.sync" @click="syncWarehouses()" />
 							<ArrowPathIcon class="h-5 w-5 hover:cursor-progress animate-spin" v-else />
 						</div>
@@ -56,6 +57,16 @@
 						</div>
 						<div class="text-4xl font-bold text-left pt-5">{{ozonstocks.qty}}</div>
 						<p class="text-left text-xs">Дата последнего изменения:<br />{{ozonstocks.date}}</p>
+					</div>
+
+					<div class="basis-1/4 flex flex-col bg-gray-200 dark:bg-gray-800 p-4 rounded-md">
+						<div class="flex flex-row items-center justify-between">
+							<div class="text-m text-left">Цели</div>
+							<ArrowPathIcon class="h-5 w-5 hover:cursor-pointer" v-if="!stocks.sync" @click="syncGoals()" />
+							<ArrowPathIcon class="h-5 w-5 hover:cursor-progress animate-spin" v-else />
+						</div>
+						<div class="text-4xl font-bold text-left pt-5">{{goals.qty}}</div>
+						<p class="text-left text-xs">Дата последнего изменения:<br />{{goals.date}}</p>
 					</div>
 				</div>
 				
@@ -180,6 +191,11 @@ export default {
 				date: '',
 				sync: false,
 			},
+			goals: {
+				qty: '...',
+				date: '',
+				sync: false,
+			},
 			supplytasks: [],
 		}
 	},
@@ -237,6 +253,34 @@ export default {
 				// alert('Синхронизация затянулась, сообщу о завершение в телеграме');
 			});
 		},
+
+		syncLegacyStock() {
+			this.stocks.sync = true;
+			mpr({
+				url: '/automation/stockslegacy/sync'
+			}).then(res => {
+				this.addNotification('success', 'Запустил синхронизацию, скоро придет сообщение в телеграм');
+			}).catch(error => {
+				this.addNotification('error', 'Синхронизация затянулась, сообщу о завершение в телеграме' + JSON.stringify(error));
+				// alert('Синхронизация затянулась, сообщу о завершение в телеграме');
+			});
+		},
+
+		syncGoals() {
+			this.stocks.sync = true;
+			mpr({
+				url: '/automation/goals/sync'
+			}).then(res => {
+				this.addNotification('success', 'Запустил синхронизацию, скоро придет сообщение в телеграм');
+				this.updateDashboard();
+				this.stocks.sync = false;
+			}).catch(error => {
+				this.stocks.sync = false;
+				this.addNotification('error', 'Синхронизация затянулась, сообщу о завершение в телеграме' + JSON.stringify(error));
+				// alert('Синхронизация затянулась, сообщу о завершение в телеграме');
+			});
+		},
+
 		getSupplytasks() {
 			mpr({
 				url: '/supplytasks/list'

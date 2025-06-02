@@ -12,7 +12,7 @@
               <div class="menu2-list space-x-4" v-if="isAuthenticated">
                 <router-link to="/" class="ml-5" active-class="bg-lime-300 hover:text-gray-600 visited:text-gray-950">Сервис
                   поставок</router-link>
-                <!-- <router-link to="/products" active-class="bg-lime-300 hover:text-gray-600 visited:text-gray-950">Товары</router-link> -->
+                <router-link to="/products" active-class="bg-lime-300 hover:text-gray-600 visited:text-gray-950">Товары</router-link>
                 <router-link to="/adv" active-class="bg-lime-300 hover:text-gray-600 visited:text-gray-950">Реклама</router-link>
               </div>
             </div>
