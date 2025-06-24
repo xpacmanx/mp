@@ -5,25 +5,189 @@
         <div class="py-6">
             <div class="mx-auto max-w-7xl px-4 sm:px-6 md:px-8">
                 <div v-if="adData" class="min-h-screen">
-                    <!-- Header section -->
+                    <!-- Redesigned Header section -->
                     <div class="mb-8">
-                        <div class="flex items-center justify-between">
-                            <h1 class="text-2xl font-semibold text-gray-900">{{ adData.name }}</h1>
-                            <span :class="getStatusClass(adData.status)" class="px-3 py-1 rounded-full text-sm font-medium">
-                                {{ adData.status }}
-                            </span>
+                        <!-- Campaign Name and Basic Info -->
+                        <div class="flex items-center justify-between mb-6">
+                            <div>
+                                <h1 class="text-2xl font-semibold text-gray-900 dark:text-white">{{ adData.name }}</h1>
+                                <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">Код: {{ adData.code }}</p>
+                                <p class="text-sm text-gray-500 dark:text-gray-500">Последнее обновление: {{ formatDate(adData.updated_at) }}</p>
+                            </div>
                         </div>
-                        <p class="mt-2 text-sm text-gray-600">Код: {{ adData.code }}</p>
-                        <p class="mt-2 text-sm text-gray-600">Тип товара: {{ adData.product_type }}</p>
-                        <p class="mt-2 text-sm text-gray-600">Тип рекламы: {{ adData.type === 8 ? 'Авто' : 'Поиск' }}</p>
-                        <p class="mt-2 text-sm text-gray-500">Последнее обновление: {{ formatDate(adData.updated_at) }}</p>
+
+                        <!-- Campaign Status and Progress Row -->
+                        <div class="grid grid-cols-1 lg:grid-cols-4 gap-6 mb-6">
+                            <!-- Current Step -->
+                            <div class="bg-white dark:bg-gray-800 shadow rounded-lg p-6">
+                                <div class="flex items-center justify-between">
+                                    <div>
+                                        <h3 class="text-sm font-medium text-gray-500 dark:text-gray-400">Текущий этап</h3>
+                                        <div class="mt-2">
+                                            <span :class="getCampaignStatusClass(adData.step_date, adData.profitability)" 
+                                                  class="px-3 py-1 text-sm font-medium rounded-full">
+                                                {{ getCampaignStatusText(adData.step_date, adData.profitability) }}
+                                            </span>
+                                        </div>
+                                        <div v-if="showProgressBar(adData.step_date)" class="mt-3">
+                                            <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+                                                <div :class="getProgressBarColor(adData.step_date, adData.profitability)" 
+                                                     class="h-2 rounded-full transition-all duration-300" 
+                                                     :style="{ width: getProgressBarWidth(adData.step_date) + '%' }">
+                                                </div>
+                                            </div>
+                                            <div class="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                                                Осталось {{ getRemainingDays(adData.step_date) }} дней
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Current Status -->
+                            <div class="bg-white dark:bg-gray-800 shadow rounded-lg p-6">
+                                <h3 class="text-sm font-medium text-gray-500 dark:text-gray-400">Статус рекламы</h3>
+                                <div class="mt-2">
+                                    <span :class="getStatusClass(adData.status_id)" class="px-3 py-1 text-sm font-medium rounded-full">
+                                        {{ getStatusText(adData.status_id) }}
+                                    </span>
+                                </div>
+                                <div class="mt-3">
+                                    <p class="text-sm text-gray-600 dark:text-gray-400">Тип: {{ adData.type === 8 ? 'Авто' : 'Поиск' }}</p>
+                                    <p class="text-sm text-gray-600 dark:text-gray-400">Товар: {{ adData.product_type || '-' }}</p>
+                                </div>
+                            </div>
+
+                            <!-- DRR -->
+                            <div class="bg-white dark:bg-gray-800 shadow rounded-lg p-6">
+                                <h3 class="text-sm font-medium text-gray-500 dark:text-gray-400">ДРР</h3>
+                                <div class="mt-2">
+                                    <span :class="getDrrClass(adData.drr)" class="text-2xl font-bold">
+                                        {{ formatDrr(adData.drr) }}
+                                    </span>
+                                </div>
+                            </div>
+
+                            <!-- Profitability -->
+                            <div class="bg-white dark:bg-gray-800 shadow rounded-lg p-6">
+                                <h3 class="text-sm font-medium text-gray-500 dark:text-gray-400">Рентабельность</h3>
+                                <div class="mt-2">
+                                    <span :class="getProfitabilityClass(adData.profitability)" class="text-2xl font-bold">
+                                        {{ formatProfitability(adData.profitability) }}
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Revenue and Orders Row -->
+                        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+                            <!-- Expected Revenue -->
+                            <div class="bg-white dark:bg-gray-800 shadow rounded-lg p-6">
+                                <h3 class="text-sm font-medium text-gray-500 dark:text-gray-400">Ожидаемая касса</h3>
+                                <div class="mt-2">
+                                    <span class="text-2xl font-bold text-gray-900 dark:text-white">
+                                        {{ formatCurrency(adData.expected_revenue) }}
+                                    </span>
+                                </div>
+                            </div>
+
+                            <!-- Orders 7 days -->
+                            <div class="bg-white dark:bg-gray-800 shadow rounded-lg p-6">
+                                <h3 class="text-sm font-medium text-gray-500 dark:text-gray-400">Заказы за 7 дней</h3>
+                                <div class="mt-2">
+                                    <span class="text-2xl font-bold text-gray-900 dark:text-white">
+                                        {{ formatCurrency(adData.revenue7) }}
+                                    </span>
+                                </div>
+                            </div>
+
+                            <!-- Orders Yesterday -->
+                            <div class="bg-white dark:bg-gray-800 shadow rounded-lg p-6">
+                                <h3 class="text-sm font-medium text-gray-500 dark:text-gray-400">Заказы вчера</h3>
+                                <div class="mt-2">
+                                    <span class="text-2xl font-bold text-gray-900 dark:text-white">
+                                        {{ formatCurrency(adData.revenue1) }}
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Settings Row -->
+                        <div class="grid grid-cols-1 lg:grid-cols-4 gap-6 mb-8">
+                            <!-- Current CPM -->
+                            <div class="bg-white dark:bg-gray-800 shadow rounded-lg p-6">
+                                <div class="flex items-center justify-between">
+                                    <div>
+                                        <h3 class="text-sm font-medium text-gray-500 dark:text-gray-400">Текущий CPM</h3>
+                                        <div class="mt-2">
+                                            <span class="text-xl font-bold text-gray-900 dark:text-white">
+                                                {{ formatCpm(adData.current_cpm) }}
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Bot Status -->
+                            <div class="bg-white dark:bg-gray-800 shadow rounded-lg p-6">
+                                <h3 class="text-sm font-medium text-gray-500 dark:text-gray-400">Автоминусация</h3>
+                                <div class="mt-2 flex items-center">
+                                    <button 
+                                        @click="toggleBot" 
+                                        class="relative inline-flex items-center h-6 rounded-full w-11 focus:outline-none"
+                                        :class="adData.bot_enabled ? 'bg-blue-600' : 'bg-gray-200'"
+                                    >
+                                        <span 
+                                            class="inline-block w-4 h-4 transform transition-transform bg-white rounded-full"
+                                            :class="adData.bot_enabled ? 'translate-x-6' : 'translate-x-1'"
+                                        ></span>
+                                    </button>
+                                    <span class="ml-2 text-sm font-medium" :class="adData.bot_enabled ? 'text-blue-600' : 'text-gray-500'">
+                                        {{ adData.bot_enabled ? 'Вкл' : 'Выкл' }}
+                                    </span>
+                                </div>
+                            </div>
+
+                            <!-- Min CTR -->
+                            <div class="bg-white dark:bg-gray-800 shadow rounded-lg p-6">
+                                <div class="flex items-center justify-between">
+                                    <div>
+                                        <h3 class="text-sm font-medium text-gray-500 dark:text-gray-400">Мин CTR</h3>
+                                        <div class="mt-2">
+                                            <span class="text-xl font-bold text-gray-900 dark:text-white">
+                                                {{ formatCtr(adData.min_ctr) }}
+                                            </span>
+                                        </div>
+                                    </div>
+                                    <button @click="changeMinCtr" class="px-3 py-1 bg-blue-600 text-white rounded-md text-sm hover:bg-blue-700">
+                                        Изменить
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- Views to Minus -->
+                            <div class="bg-white dark:bg-gray-800 shadow rounded-lg p-6">
+                                <div class="flex items-center justify-between">
+                                    <div>
+                                        <h3 class="text-sm font-medium text-gray-500 dark:text-gray-400">Мин Просмотры</h3>
+                                        <div class="mt-2">
+                                            <span class="text-xl font-bold text-gray-900 dark:text-white">
+                                                {{ (adData.views_to_minus || 0).toLocaleString() }}
+                                            </span>
+                                        </div>
+                                    </div>
+                                    <button @click="changeViewsToMinus" class="px-3 py-1 bg-blue-600 text-white rounded-md text-sm hover:bg-blue-700">
+                                        Изменить
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
                     </div>
 
                     <!-- Timeline Progress -->
-                    <div class="mb-8 bg-white dark:bg-gray-800 shadow rounded-lg p-6">
+                    <!-- <div class="mb-8 bg-white dark:bg-gray-800 shadow rounded-lg p-6">
                         <h3 class="text-sm font-medium text-gray-900 dark:text-white mb-6">Таймлайн с момента создания</h3>
                         <div class="relative pt-6">
-                            <!-- Current Time Marker -->
                             <div 
                                 class="absolute transform -translate-x-1/2 top-0"
                                 :style="{ left: `${getProgressPercentage()}%` }"
@@ -34,7 +198,6 @@
                                 <div class="w-px h-3 bg-blue-600 dark:bg-blue-500 mx-auto"></div>
                             </div>
 
-                            <!-- Progress Bar -->
                             <div class="h-2 bg-gray-200 dark:bg-gray-700 rounded-full">
                                 <div 
                                     class="h-2 bg-blue-600 dark:bg-blue-500 rounded-full transition-all duration-500"
@@ -42,7 +205,6 @@
                                 ></div>
                             </div>
 
-                            <!-- Timeline Markers -->
                             <div class="relative h-14">
                                 <template v-for="(marker, index) in timelineMarkers" :key="index">
                                     <div 
@@ -70,11 +232,10 @@
                                 </template>
                             </div>
                         </div>
-                    </div>
+                    </div> -->
 
                     <!-- Stats Grid -->
-                    <div class="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4 mb-8">
-                        <!-- Current CPM -->
+                    <!-- <div class="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4 mb-8">
                         <div class="bg-white overflow-hidden shadow rounded-lg">
                             <div class="p-5">
                                 <div class="flex items-center">
@@ -93,7 +254,6 @@
                             </div>
                         </div>
 
-                        <!-- Bot Status -->
                         <div class="bg-white overflow-hidden shadow rounded-lg">
                             <div class="p-5">
                                 <div class="flex items-center justify-between">
@@ -128,7 +288,6 @@
                             </div>
                         </div>
 
-                        <!-- Min CTR -->
                         <div class="bg-white overflow-hidden shadow rounded-lg">
                             <div class="p-5">
                                 <div class="flex items-center justify-between">
@@ -153,7 +312,6 @@
                             </div>
                         </div>
 
-                        <!-- Views to Minus -->
                         <div class="bg-white overflow-hidden shadow rounded-lg">
                             <div class="p-5">
                                 <div class="flex items-center justify-between">
@@ -176,7 +334,7 @@
                                 </div>
                             </div>
                         </div>
-                    </div>
+                    </div> -->
 
                     <!-- Additional Info -->
                     <!-- <div class="mt-8 mb-8 bg-white shadow rounded-lg">
@@ -1011,6 +1169,159 @@ export default {
                 'default': 'bg-gray-100 text-gray-800'
             }
             return classes[status] || classes.default
+        },
+        getStatusClass(status_id) {
+            switch (Number(status_id)) {
+                case 9: // идут показы
+                    return 'bg-green-100 text-green-800 dark:bg-green-800 dark:text-green-100'
+                case 11: // на паузе
+                    return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-800 dark:text-yellow-100'
+                case 4: // готова к запуску
+                    return 'bg-blue-100 text-blue-800 dark:bg-blue-800 dark:text-blue-100'
+                case 7: // завершена
+                    return 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300'
+                case 8: // отказался
+                    return 'bg-red-100 text-red-800 dark:bg-red-800 dark:text-red-100'
+                case -1: // в процессе удаления
+                    return 'bg-red-100 text-red-800 dark:bg-red-800 dark:text-red-100'
+                default:
+                    return 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300'
+            }
+        },
+        getStatusText(status_id) {
+            switch (Number(status_id)) {
+                case 9:
+                    return 'Идут показы'
+                case 11:
+                    return 'На паузе'
+                case 4:
+                    return 'Готова к запуску'
+                case 7:
+                    return 'Завершена'
+                case 8:
+                    return 'Отказ'
+                case -1:
+                    return 'Удаляется'
+                default:
+                    return 'Неизвестно'
+            }
+        },
+        formatDrr(drr) {
+            if (!drr && drr !== 0) return '-'
+            return `${(drr * 100).toFixed(2)}%`
+        },
+        getDrrClass(drr) {
+            if (!drr && drr !== 0) return 'text-gray-500 dark:text-gray-400'
+            
+            const drrPercentage = drr * 100
+            if (drrPercentage <= 5) return 'text-green-600 dark:text-green-400 font-medium'
+            if (drrPercentage <= 10) return 'text-yellow-600 dark:text-yellow-400 font-medium'
+            return 'text-red-600 dark:text-red-400 font-medium'
+        },
+        formatCurrency(value) {
+            if (!value && value !== 0) return '-'
+            return new Intl.NumberFormat('ru-RU', {
+                style: 'currency',
+                currency: 'RUB',
+                minimumFractionDigits: 0,
+                maximumFractionDigits: 0
+            }).format(value)
+        },
+        formatProfitability(value) {
+            if (!value && value !== 0) return '-'
+            return `${(value * 100).toFixed(1)}%`
+        },
+        getProfitabilityClass(value) {
+            if (!value && value !== 0) return 'text-gray-500 dark:text-gray-400'
+            
+            const percentage = value * 100
+            if (percentage >= 40) return 'text-green-600 dark:text-green-400 font-medium'
+            if (percentage >= 30) return 'text-yellow-600 dark:text-yellow-400 font-medium'
+            return 'text-red-600 dark:text-red-400 font-medium'
+        },
+        formatCpm(value) {
+            if (!value && value !== 0) return '-'
+            return new Intl.NumberFormat('ru-RU', {
+                style: 'currency',
+                currency: 'RUB',
+                minimumFractionDigits: 0,
+                maximumFractionDigits: 0
+            }).format(value)
+        },
+        getCampaignStatusText(createdAt, profitability) {
+            if (!createdAt) return '-'
+            const createdDate = new Date(createdAt)
+            const now = new Date()
+            const diffTime = Math.abs(now - createdDate)
+            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
+            const weeks = Math.floor(diffDays / 7)
+
+            if (weeks < 4) return 'Разгон'
+            if (weeks < 8) return 'Оптимизация'
+            if (profitability < 0.4) return 'Спасение'
+            return 'Стабильная'
+        },
+        getCampaignStatusClass(createdAt, profitability) {
+            if (!createdAt) return 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300'
+            const createdDate = new Date(createdAt)
+            const now = new Date()
+            const diffTime = Math.abs(now - createdDate)
+            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
+            const weeks = Math.floor(diffDays / 7)
+
+            if (weeks < 4) return 'bg-green-100 text-green-800 dark:bg-green-800 dark:text-green-100'
+            if (weeks < 8) return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-800 dark:text-yellow-100'
+            if (profitability < 0.4) return 'bg-red-100 text-red-800 dark:bg-red-800 dark:text-red-100'
+            return 'bg-blue-100 text-blue-800 dark:bg-blue-800 dark:text-blue-100'
+        },
+        showProgressBar(createdAt) {
+            if (!createdAt) return false
+            const createdDate = new Date(createdAt)
+            const now = new Date()
+            const diffTime = Math.abs(now - createdDate)
+            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
+            const weeks = Math.floor(diffDays / 7)
+            return weeks < 8 // Show progress bar for both phases
+        },
+        getProgressBarWidth(createdAt) {
+            if (!createdAt) return 0
+            const createdDate = new Date(createdAt)
+            const now = new Date()
+            const diffTime = Math.abs(now - createdDate)
+            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
+            const weeks = Math.floor(diffDays / 7)
+
+            if (weeks < 4) {
+                // For "Разгон" phase: 0% at start, 100% at 4 weeks
+                return Math.min(100, (diffDays / 28) * 100)
+            } else {
+                // For "Оптимизация" phase: 0% at 4 weeks, 100% at 8 weeks
+                return Math.min(100, ((diffDays - 28) / 28) * 100)
+            }
+        },
+        getRemainingDays(createdAt) {
+            if (!createdAt) return 0
+            const createdDate = new Date(createdAt)
+            const now = new Date()
+            const diffTime = Math.abs(now - createdDate)
+            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
+            const weeks = Math.floor(diffDays / 7)
+
+            if (weeks < 4) {
+                // For "Разгон" phase: days until 4 weeks
+                return Math.max(0, 28 - diffDays)
+            } else {
+                // For "Оптимизация" phase: days until 8 weeks
+                return Math.max(0, 56 - diffDays)
+            }
+        },
+        getProgressBarColor(createdAt, profitability) {
+            if (!createdAt) return 'bg-gray-500'
+            if (profitability >= 0.4) return 'bg-green-500'
+            
+            const remainingDays = this.getRemainingDays(createdAt)
+            if (remainingDays > 14) return 'bg-yellow-500'
+            return 'bg-red-500'
         },
         getCtrClass(ctr) {
             if (ctr >= 0.1) return 'text-green-600 dark:text-green-400 font-medium'
