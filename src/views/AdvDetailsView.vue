@@ -361,76 +361,146 @@
                         </div>
                     </div> -->
 
-                    <!-- Comments Section -->
-                    <div class="mb-8 bg-white dark:bg-gray-800 shadow rounded-lg">
-                        <div class="p-6">
-                            <div class="flex justify-between items-center mb-4">
-                                <h2 class="text-lg font-medium text-gray-900 dark:text-white">Комментарии</h2>
-                                <button
-                                    @click="showCommentForm = true"
-                                    v-if="!showCommentForm"
-                                    class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 dark:hover:bg-blue-500"
-                                >
-                                    Добавить комментарий
-                                </button>
-                            </div>
-                            
-                            <!-- Comment Form -->
-                            <div v-if="showCommentForm" class="mb-6">
-                                <div class="flex items-start space-x-4">
-                                    <div class="min-w-0 flex-1">
-                                        <div class="relative">
-                                            <textarea
-                                                rows="3"
-                                                class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white sm:text-sm"
-                                                placeholder="Добавить комментарий..."
-                                                v-model="newComment"
-                                            ></textarea>
-                                        </div>
-                                        <div class="mt-3 flex items-center justify-end space-x-3">
-                                            <button
-                                                @click="showCommentForm = false"
-                                                class="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 dark:bg-gray-600 dark:text-gray-200 dark:hover:bg-gray-700 dark:border-gray-500"
-                                            >
-                                                Отмена
-                                            </button>
-                                            <button
-                                                @click="addComment"
-                                                class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 dark:hover:bg-blue-500"
-                                            >
-                                                Отправить
-                                            </button>
-                                        </div>
-                                    </div>
+                    <!-- Comments and Related Campaigns Section -->
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+                        <!-- Comments Section -->
+                        <div class="bg-white dark:bg-gray-800 shadow rounded-lg">
+                            <div class="p-6">
+                                <div class="flex justify-between items-center mb-4">
+                                    <h2 class="text-lg font-medium text-gray-900 dark:text-white">Комментарии</h2>
+                                    <button
+                                        @click="showCommentForm = true"
+                                        v-if="!showCommentForm"
+                                        class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 dark:hover:bg-blue-500"
+                                    >
+                                        Добавить комментарий
+                                    </button>
                                 </div>
-                            </div>
-
-                            <!-- Comments List -->
-                            <div class="space-y-4">
-                                <div v-for="comment in comments" :key="comment.id" class="flex space-x-3">
-                                    <div class="flex-1 bg-gray-50 dark:bg-gray-700 rounded-lg px-4 py-3">
-                                        <div class="flex items-center justify-between mb-1">
-                                            <p class="text-sm text-gray-700 dark:text-gray-300 flex-grow">
-                                                {{ comment.comment }}
-                                            </p>
-                                            <div class="flex items-center ml-4 space-x-4">
-                                                <span class="text-sm text-gray-500 dark:text-gray-400 whitespace-nowrap">
-                                                    {{ formatDate(comment.created_at) }}
-                                                </span>
-                                                <button 
-                                                    @click="deleteComment(comment.id)"
-                                                    class="text-sm text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300"
+                                
+                                <!-- Comment Form -->
+                                <div v-if="showCommentForm" class="mb-6">
+                                    <div class="flex items-start space-x-4">
+                                        <div class="min-w-0 flex-1">
+                                            <div class="relative">
+                                                <textarea
+                                                    rows="3"
+                                                    class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white sm:text-sm"
+                                                    placeholder="Добавить комментарий..."
+                                                    v-model="newComment"
+                                                ></textarea>
+                                            </div>
+                                            <div class="mt-3 flex items-center justify-end space-x-3">
+                                                <button
+                                                    @click="showCommentForm = false"
+                                                    class="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 dark:bg-gray-600 dark:text-gray-200 dark:hover:bg-gray-700 dark:border-gray-500"
                                                 >
-                                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                                                    </svg>
+                                                    Отмена
+                                                </button>
+                                                <button
+                                                    @click="addComment"
+                                                    class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 dark:hover:bg-blue-500"
+                                                >
+                                                    Отправить
                                                 </button>
                                             </div>
                                         </div>
                                     </div>
                                 </div>
-                                <div v-if="!comments.length" class="text-center text-gray-500 dark:text-gray-400">
-                                    Нет комментариев
+
+                                <!-- Comments List -->
+                                <div class="space-y-4">
+                                    <div v-for="comment in comments" :key="comment.id" class="flex space-x-3">
+                                        <div class="flex-1 bg-gray-50 dark:bg-gray-700 rounded-lg px-4 py-3">
+                                            <div class="flex items-center justify-between mb-1">
+                                                <p class="text-sm text-gray-700 dark:text-gray-300 flex-grow">
+                                                    {{ comment.comment }}
+                                                </p>
+                                                <div class="flex items-center ml-4 space-x-4">
+                                                    <span class="text-sm text-gray-500 dark:text-gray-400 whitespace-nowrap">
+                                                        {{ formatDate(comment.created_at) }}
+                                                    </span>
+                                                    <button 
+                                                        @click="deleteComment(comment.id)"
+                                                        class="text-sm text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300"
+                                                    >
+                                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                                        </svg>
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div v-if="!comments.length" class="text-center text-gray-500 dark:text-gray-400">
+                                        Нет комментариев
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Related Campaigns Section -->
+                        <div class="bg-white dark:bg-gray-800 shadow rounded-lg">
+                            <div class="p-6">
+                                <h2 class="text-lg font-medium text-gray-900 dark:text-white mb-4">Другие кампании</h2>
+                                
+                                <div class="overflow-x-auto">
+                                    <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                                        <thead class="bg-gray-50 dark:bg-gray-700">
+                                            <tr>
+                                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                                                    Название
+                                                </th>
+                                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                                                    Статус
+                                                </th>
+                                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                                                    Тип
+                                                </th>
+                                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                                                    ДРР
+                                                </th>
+                                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                                                    Действия
+                                                </th>
+                                            </tr>
+                                        </thead>
+                                        <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+                                            <tr v-for="campaign in relatedCampaigns" :key="campaign.id" class="hover:bg-gray-50 dark:hover:bg-gray-700">
+                                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-300">
+                                                    <router-link 
+                                                        :to="'/adv/' + campaign.id" 
+                                                        class="text-blue-600 dark:text-blue-400 hover:text-blue-900 dark:hover:text-blue-300 hover:underline"
+                                                    >
+                                                        {{ campaign.name }}
+                                                    </router-link>
+                                                </td>
+                                                <td class="px-6 py-4 whitespace-nowrap">
+                                                    <span :class="getStatusClass(campaign.status_id)" class="px-2 py-1 text-xs font-medium rounded-full">
+                                                        {{ getStatusText(campaign.status_id) }}
+                                                    </span>
+                                                </td>
+                                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+                                                    {{ campaign.type === 8 ? 'Авто' : 'Поиск' }}
+                                                </td>
+                                                <td class="px-6 py-4 whitespace-nowrap text-sm" :class="getDrrClass(campaign.drr)">
+                                                    {{ formatDrr(campaign.drr) }}
+                                                </td>
+                                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+                                                    <router-link 
+                                                        :to="'/adv/' + campaign.id" 
+                                                        class="text-blue-600 dark:text-blue-400 hover:text-blue-900 dark:hover:text-blue-300"
+                                                    >
+                                                        Просмотр
+                                                    </router-link>
+                                                </td>
+                                            </tr>
+                                            <tr v-if="relatedCampaigns.length === 0">
+                                                <td colspan="5" class="px-6 py-4 text-center text-sm text-gray-500 dark:text-gray-400">
+                                                    Нет связанных кампаний
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
                                 </div>
                             </div>
                         </div>
@@ -1025,6 +1095,7 @@ export default {
             adData: null,
             stats: [],
             comments: [],
+            relatedCampaigns: [],
             newComment: '',
             showCommentForm: false,
             selectedMinusWords: [],
@@ -1338,16 +1409,20 @@ export default {
             
             try {
                 // Fetch ad data
-                this.loading.progress = 30
+                this.loading.progress = 20
                 await this.fetchAdData()
                 
                 // Fetch stats
-                this.loading.progress = 60
+                this.loading.progress = 40
                 await this.fetchStats()
                 
                 // Fetch comments
-                this.loading.progress = 90
+                this.loading.progress = 60
                 await this.fetchComments()
+                
+                // Fetch related campaigns
+                this.loading.progress = 80
+                await this.fetchRelatedCampaigns()
                 
                 this.loading.progress = 100
             } catch (error) {
@@ -1403,6 +1478,17 @@ export default {
                 }))
             } catch (error) {
                 console.error('Failed to fetch comments:', error)
+            }
+        },
+        async fetchRelatedCampaigns() {
+            try {
+                const response = await mpr({
+                    url: `/wbadv/${this.$route.params.id}/related`
+                })
+                this.relatedCampaigns = response.data.result || []
+            } catch (error) {
+                console.error('Failed to fetch related campaigns:', error)
+                this.relatedCampaigns = []
             }
         },
         async changeMinCtr() {
