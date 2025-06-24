@@ -93,7 +93,7 @@
 
                             <!-- Orders 7 days -->
                             <div class="bg-white dark:bg-gray-800 shadow rounded-lg p-6">
-                                <h3 class="text-sm font-medium text-gray-500 dark:text-gray-400">Заказы за 7 дней</h3>
+                                <h3 class="text-sm font-medium text-gray-500 dark:text-gray-400">Заказы по 7 дней</h3>
                                 <div class="mt-2">
                                     <span class="text-2xl font-bold text-gray-900 dark:text-white">
                                         {{ formatCurrency(adData.revenue7) }}
@@ -103,7 +103,7 @@
 
                             <!-- Orders Yesterday -->
                             <div class="bg-white dark:bg-gray-800 shadow rounded-lg p-6">
-                                <h3 class="text-sm font-medium text-gray-500 dark:text-gray-400">Заказы вчера</h3>
+                                <h3 class="text-sm font-medium text-gray-500 dark:text-gray-400">Заказы по вчера</h3>
                                 <div class="mt-2">
                                     <span class="text-2xl font-bold text-gray-900 dark:text-white">
                                         {{ formatCurrency(adData.revenue1) }}
