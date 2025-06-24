@@ -24,6 +24,47 @@
             </div>
           </div>
         </div>
+
+        <!-- Campaign Status Filter Panel -->
+        <div class="mb-6">
+          <div class="flex items-center space-x-4">
+            <span class="text-sm font-medium text-gray-700 dark:text-gray-300">Этап кампании:</span>
+            <div class="flex items-center">
+              <template v-for="(status, index) in campaignStatuses" :key="status.key">
+                <button
+                  @click="setCampaignStatusFilter(status.key)"
+                  :class="[
+                    'px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 flex items-center space-x-2',
+                    selectedCampaignStatus === status.key
+                      ? status.activeClass
+                      : status.inactiveClass
+                  ]"
+                >
+                  <span>{{ status.label }}</span>
+                  <span class="px-2 py-0.5 text-xs rounded-full bg-white bg-opacity-20">
+                    {{ getCampaignStatusCount(status.key) }}
+                  </span>
+                </button>
+                <svg 
+                  v-if="index < campaignStatuses.length - 1" 
+                  class="w-4 h-4 text-gray-400 mx-2" 
+                  fill="none" 
+                  stroke="currentColor" 
+                  viewBox="0 0 24 24"
+                >
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                </svg>
+              </template>
+            </div>
+            <button
+              v-if="selectedCampaignStatus !== null"
+              @click="clearCampaignStatusFilter"
+              class="px-3 py-2 text-sm text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 transition-colors duration-200"
+            >
+              Сбросить
+            </button>
+          </div>
+        </div>
         
         <div class="bg-white dark:bg-gray-800 shadow rounded-lg">
           <div class="overflow-x-auto">
@@ -85,19 +126,19 @@
                       </div>
                       <div class="mt-1">
                         <div class="flex items-center space-x-2">
-                          <span :class="getCampaignStatusClass(ad.created_at, ad.profitability)" 
+                          <span :class="getCampaignStatusClass(ad.step_date, ad.profitability)" 
                                 class="px-2 py-0.5 text-xs font-medium rounded-full">
-                            {{ getCampaignStatusText(ad.created_at, ad.profitability) }}
+                            {{ getCampaignStatusText(ad.step_date, ad.profitability) }}
                           </span>
-                          <div v-if="showProgressBar(ad.created_at)" class="flex-1">
+                          <div v-if="showProgressBar(ad.step_date)" class="flex-1">
                             <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-1.5">
-                              <div :class="getProgressBarColor(ad.created_at, ad.profitability)" 
+                              <div :class="getProgressBarColor(ad.step_date, ad.profitability)" 
                                    class="h-1.5 rounded-full" 
-                                   :style="{ width: getProgressBarWidth(ad.created_at) + '%' }">
+                                   :style="{ width: getProgressBarWidth(ad.step_date) + '%' }">
                               </div>
                             </div>
                             <div class="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                              Осталось {{ getRemainingDays(ad.created_at) }} дней
+                              Осталось {{ getRemainingDays(ad.step_date) }} дней
                             </div>
                           </div>
                         </div>
@@ -205,7 +246,14 @@ export default {
         { key: 'profitability', label: 'Рентабельность', sortable: true },
         { key: 'expected_revenue', label: 'Ожидаемая касса', sortable: true },
         { key: 'revenue', label: 'Уровень кассы', sortable: true },
-      ]
+      ],
+      campaignStatuses: [
+        { key: 'razgon', label: 'Разгон', activeClass: 'bg-green-100 text-green-800 dark:bg-green-800 dark:text-green-100', inactiveClass: 'bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600' },
+        { key: 'optimization', label: 'Оптимизация', activeClass: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-800 dark:text-yellow-100', inactiveClass: 'bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600' },
+        { key: 'stable', label: 'Стабильная', activeClass: 'bg-blue-100 text-blue-800 dark:bg-blue-800 dark:text-blue-100', inactiveClass: 'bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600' },
+        { key: 'rescue', label: 'Спасение', activeClass: 'bg-red-100 text-red-800 dark:bg-red-800 dark:text-red-100', inactiveClass: 'bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600' },
+      ],
+      selectedCampaignStatus: null
     }
   },
   computed: {
@@ -219,6 +267,20 @@ export default {
           ad.name?.toLowerCase().includes(searchLower) ||
           ad.product_type?.toLowerCase().includes(searchLower)
         )
+      }
+
+      // Apply campaign status filter
+      if (this.selectedCampaignStatus) {
+        filtered = filtered.filter(ad => {
+          const campaignStatus = this.getCampaignStatusText(ad.step_date, ad.profitability)
+          const statusMap = {
+            'razgon': 'Разгон',
+            'optimization': 'Оптимизация',
+            'stable': 'Стабильная',
+            'rescue': 'Спасение'
+          }
+          return campaignStatus === statusMap[this.selectedCampaignStatus]
+        })
       }
 
       // Apply sorting
@@ -279,6 +341,7 @@ export default {
         this.sortConfig.key = key
         this.sortConfig.direction = 'asc'
       }
+      this.saveFilterState()
     },
     getStatusClass(status_id) {
       switch (Number(status_id)) {
@@ -441,12 +504,59 @@ export default {
       if (percentage >= 40) return 'text-green-600 dark:text-green-400 font-medium'
       if (percentage >= 30) return 'text-yellow-600 dark:text-yellow-400 font-medium'
       return 'text-red-600 dark:text-red-400 font-medium'
+    },
+    setCampaignStatusFilter(status) {
+      this.selectedCampaignStatus = status
+      this.saveFilterState()
+    },
+    clearCampaignStatusFilter() {
+      this.selectedCampaignStatus = null
+      this.saveFilterState()
+    },
+    getCampaignStatusCount(status) {
+      const statusMap = {
+        'razgon': 'Разгон',
+        'optimization': 'Оптимизация',
+        'stable': 'Стабильная',
+        'rescue': 'Спасение'
+      }
+      return this.adv.filter(ad => {
+        const campaignStatus = this.getCampaignStatusText(ad.step_date, ad.profitability)
+        return campaignStatus === statusMap[status]
+      }).length
+    },
+    saveFilterState() {
+      const filterState = {
+        search: this.search,
+        sortConfig: this.sortConfig,
+        selectedCampaignStatus: this.selectedCampaignStatus
+      }
+      localStorage.setItem('advListFilters', JSON.stringify(filterState))
+    },
+    restoreFilterState() {
+      try {
+        const savedState = localStorage.getItem('advListFilters')
+        if (savedState) {
+          const filterState = JSON.parse(savedState)
+          this.search = filterState.search || ''
+          this.sortConfig = filterState.sortConfig || { key: 'step_date', direction: 'desc' }
+          this.selectedCampaignStatus = filterState.selectedCampaignStatus || null
+        }
+      } catch (error) {
+        console.warn('Failed to restore filter state:', error)
+      }
+    }
+  },
+  watch: {
+    search() {
+      this.saveFilterState()
     }
   },
   mounted() {
     this.advStore = useAdvStore()
     this.advStore.load().then(() => {
       this.adv = this.advStore.adv
+      this.restoreFilterState()
     })
     // this.getAdv();
   }
