@@ -1,0 +1,14 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+---
+name: vue-router-best-practices.mdc
+description: Best practices for Vue Router
+globs: **/*.{ts,tsx,js,jsx}
+---
+
+- Use named routes for better readability and maintainability.
+- Implement route guards for authentication and authorization.
+- Lazy-load routes to improve initial load performance.

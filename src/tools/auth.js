@@ -128,7 +128,8 @@ export async function loginUser(username, password) {
             email: user.email,
             firstName: user.first_name,
             lastName: user.last_name,
-            id: user.id
+            id: user.id,
+            photo_url: user.photo_url
         });
         
         return { success: true };

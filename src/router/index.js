@@ -9,6 +9,7 @@ import WarehousesView from '../views/WarehousesView.vue'
 import SupplytaskView from '../views/SupplytaskView.vue'
 import AdvView from '../views/AdvView.vue'
 import ProductView from '../views/ProductView.vue'
+import UserListView from '../views/UserListView.vue'
 
 import SupplytasksDashboardView from '../views/SupplytasksDashboardView.vue'
 import { jwtDecode } from "jwt-decode";
@@ -204,6 +205,15 @@ const routes = [
 		component: WarehousesView,
 		meta: {
 			title: 'Warehouses',
+			requiresAuth: true
+		}
+	},
+	{
+		path: '/users',
+		name: 'users',
+		component: UserListView,
+		meta: {
+			title: 'Пользователи',
 			requiresAuth: true
 		}
 	},

@@ -1,0 +1,14 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+---
+name: vue-best-practices.mdc
+description: Best practices for Vue.js applications
+globs: **/*.{vue,ts,tsx,js,jsx}
+---
+
+- Use the Composition API for better code organization and reusability.
+- Implement Vue Router for managing application routes effectively.
+- Utilize Vuex or Pinia for state management, depending on your project needs.

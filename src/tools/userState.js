@@ -7,6 +7,7 @@ import mpr from './mpr'
 const isAuthenticated = ref(false)
 const username = ref('')
 const role = ref('')
+const photo_url = ref('')
 const userData = ref(null)
 let refreshPromise = null;
 
@@ -98,13 +99,16 @@ function updateUserState(user) {
         isAuthenticated.value = true
         username.value = user.username || ''
         role.value = user.role || 'Пользователь'
+        photo_url.value = user.photo_url || ''
+        
         userData.value = {
             id: user.id,
             username: user.username,
             email: user.email,
             firstName: user.firstName || user.first_name,
             lastName: user.lastName || user.last_name,
-            role: user.role
+            role: user.role,
+            photo_url: user.photo_url
         }
         // Store in localStorage for persistence
         localStorage.setItem('userData', JSON.stringify(userData.value))
@@ -119,6 +123,7 @@ function clearUserState() {
     username.value = ''
     role.value = ''
     userData.value = null
+    photo_url.value = ''
     localStorage.removeItem('userData')
 }
 
@@ -135,6 +140,7 @@ function initializeUserState() {
             if (storedUser) {
                 const user = JSON.parse(storedUser)
                 username.value = user.username || decoded.username || ''
+                photo_url.value = user.photo_url || ''
                 role.value = user.role || 'Пользователь'
                 userData.value = user
             } else {
@@ -159,6 +165,7 @@ export {
     username,
     role,
     userData,
+    photo_url,
     updateUserState,
     clearUserState,
     isTokenAboutToExpire,

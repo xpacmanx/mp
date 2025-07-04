@@ -14,6 +14,7 @@
                   поставок</router-link>
                 <router-link to="/products" active-class="bg-lime-300 hover:text-gray-600 visited:text-gray-950">Товары</router-link>
                 <router-link to="/adv" active-class="bg-lime-300 hover:text-gray-600 visited:text-gray-950">Реклама</router-link>
+                <router-link v-if="role === 'admin'" to="/users" active-class="bg-lime-300 hover:text-gray-600 visited:text-gray-950">HR</router-link>
               </div>
             </div>
           </div>
@@ -23,7 +24,8 @@
             <div v-if="isAuthenticated" class="relative">
               <button @click="toggleDropdown" class="flex items-center focus:outline-none">
                 <div class="w-10 h-10 rounded-full bg-lime-300 flex items-center justify-center">
-                  <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-gray-950" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <img v-if="userData.photo_url" :src="userData.photo_url" alt="Фото" class="w-full h-full rounded-full">
+                  <svg v-else xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-gray-950" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                   </svg>
                 </div>
@@ -119,7 +121,7 @@
 
 <script>
 import { logoutUser } from './../../tools/auth'
-import { isAuthenticated, username, role } from './../../tools/userState'
+import { isAuthenticated, username, role, userData } from './../../tools/userState'
 import { ref } from 'vue'
 
 export default {
@@ -145,6 +147,7 @@ export default {
       isAuthenticated,
       username,
       role,
+      userData,
       isDropdownOpen,
       toggleDropdown
     }
