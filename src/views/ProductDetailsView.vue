@@ -22,6 +22,18 @@
                         </router-link>
                     </div>
                 </div>
+                <!-- Metrics Chart (moved up) -->
+                <div class="bg-white dark:bg-gray-800 shadow rounded-lg p-4 mt-4 mx-6">
+                    <h3 class="font-medium text-gray-900 dark:text-white mb-3">Метрики</h3>
+                    <div class="flex flex-wrap gap-4 mb-4">
+                        <label v-for="opt in metricsOptions" :key="opt.key" class="flex items-center space-x-2 cursor-pointer">
+                            <input type="checkbox" v-model="opt.checked" @change="debouncedRenderMetricsChart" :disabled="isRenderingChart" />
+                            <span :style="{ color: opt.color }">{{ opt.label }}</span>
+                        </label>
+                    </div>
+                    <div v-if="loadingMetrics" class="w-full h-48 bg-gray-100 dark:bg-gray-700 animate-pulse rounded"></div>
+                    <canvas v-else ref="metricsChart" height="80"></canvas>
+                </div>
 
                 <!-- Content -->
                 <div class="p-6">
@@ -578,6 +590,14 @@
 <script>
 import { useProductStore } from '@/store/productStore'
 import mpr from '@/tools/mpr'
+import Chart from 'chart.js/auto'
+function debounce(fn, delay) {
+  let timeout
+  return function(...args) {
+    clearTimeout(timeout)
+    timeout = setTimeout(() => fn.apply(this, args), delay)
+  }
+}
 
 export default {
     data() {
@@ -592,8 +612,25 @@ export default {
             loadingStocks: true,
             loadingGoals: true,
             loadingAds: true,
-            loadingSupplyTasks: true
+            loadingSupplyTasks: true,
+            metrics: [],
+            metricsChart: null,
+            metricsOptions: [
+                { key: 'total_orders_per_day', label: 'Кол-во заказов в день', color: '#6B7280', bg: 'rgba(107, 114, 128, 0.15)', checked: true }, // серый
+                { key: 'total_amount_per_day', label: 'Выручка в день', color: '#60A5FA', bg: 'rgba(96, 165, 250, 0.15)', checked: false }, // голубой
+                { key: 'average_price_per_order', label: 'Ср. цена заказа', color: '#A78BFA', bg: 'rgba(167, 139, 250, 0.15)', checked: false }, // сиреневый
+                { key: 'marketing_amount_per_day', label: 'Маркетинг (₽/день)', color: '#FBBF24', bg: 'rgba(251, 191, 36, 0.15)', checked: false }, // желтый
+                { key: 'marketing_percent', label: '% на маркетинг', color: '#F472B6', bg: 'rgba(244, 114, 182, 0.15)', checked: false }, // розовый
+                { key: 'average_spp_percent', label: 'Средняя СПП', color: '#34D399', bg: 'rgba(52, 211, 153, 0.15)', checked: false }, // мятный
+                { key: 'profit_amount_per_day', label: 'Марж. прибыль', color: '#FCA5A5', bg: 'rgba(252, 165, 165, 0.15)', checked: false }, // светло-красный
+                { key: 'profit_margin', label: 'Рентабельность', color: '#C4B5FD', bg: 'rgba(196, 181, 253, 0.15)', checked: false } // светло-сиреневый
+            ],
+            loadingMetrics: true,
+            isRenderingChart: false,
         }
+    },
+    created() {
+      this.debouncedRenderMetricsChart = debounce(this.renderMetricsChart, 200)
     },
     async mounted() {
         await this.loadProduct()
@@ -602,8 +639,10 @@ export default {
                 this.loadStocks(),
                 this.loadGoals(),
                 this.loadAds(),
-                this.loadSupplyTasks()
+                this.loadSupplyTasks(),
+                this.loadMetrics()
             ])
+            this.$nextTick(this.renderMetricsChart)
         }
     },
     methods: {
@@ -665,6 +704,14 @@ export default {
                 minute: '2-digit'
             })
         },
+        formatChartDate(date) {
+            if (!date) return ''
+            const d = new Date(date)
+            const day = String(d.getDate()).padStart(2, '0')
+            const month = String(d.getMonth() + 1).padStart(2, '0')
+            const year = d.getFullYear()
+            return `${day}.${month}.${year}`
+        },
         async loadStocks() {
             try {
                 const response = await mpr({ url: `/products/${this.$route.params.id}/stocks` })
@@ -704,6 +751,83 @@ export default {
             } finally {
                 this.loadingSupplyTasks = false
             }
+        },
+        async loadMetrics() {
+            try {
+                const response = await mpr({ url: `/products/${this.$route.params.id}/metrics` })
+                this.metrics = response.data.result
+                this.loadingMetrics = false
+            } catch (error) {
+                console.error('Error loading metrics:', error)
+                this.loadingMetrics = false
+            }
+        },
+        renderMetricsChart() {
+            this.isRenderingChart = true
+            if (!this.metrics || this.metrics.length === 0) {
+                this.isRenderingChart = false
+                return
+            }
+            if (!this.$refs.metricsChart) {
+                this.isRenderingChart = false
+                return
+            }
+            // Удаляем старый график максимально безопасно
+            if (this.metricsChart) {
+                try {
+                    this.metricsChart.destroy()
+                } catch (e) {}
+                this.metricsChart = null
+            }
+            // Проверяем, что canvas всё ещё есть
+            if (!this.$refs.metricsChart) {
+                this.isRenderingChart = false
+                return
+            }
+            const ctx = this.$refs.metricsChart.getContext('2d')
+            // Формируем выбранные датасеты и оси
+            const selected = this.metricsOptions.filter(opt => opt.checked)
+            const percentKeys = ['average_spp_percent', 'marketing_percent', 'profit_margin']
+            const datasets = selected.map((opt, idx) => ({
+                label: opt.label,
+                data: this.metrics.map(m => percentKeys.includes(opt.key) && typeof m[opt.key] === 'number' ? m[opt.key] * 100 : m[opt.key]),
+                borderColor: opt.color,
+                backgroundColor: opt.bg,
+                fill: false,
+                tension: 0.3,
+                yAxisID: 'y' + idx,
+                spanGaps: true
+            }))
+            // Динамически создаём оси
+            const scales = {}
+            selected.forEach((opt, idx) => {
+                const axisId = 'y' + idx
+                scales[axisId] = {
+                    position: idx % 2 === 0 ? 'left' : 'right',
+                    display: false,
+                    grid: { display: false },
+                    ticks: { display: false },
+                    beginAtZero: true
+                }
+            })
+            scales['x'] = { title: { display: true, text: 'Дата' } }
+            this.metricsChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: this.metrics.map(m => this.formatChartDate(m.order_date)),
+                    datasets
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: { display: true },
+                        title: { display: true, text: 'Динамика по выбранным метрикам' }
+                    },
+                    animation: false,
+                    scales
+                }
+            })
+            this.isRenderingChart = false
         },
         getWarehouseTypeClass(type) {
             switch (type) {

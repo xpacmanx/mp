@@ -184,182 +184,18 @@
                         </div>
                     </div>
 
-                    <!-- Timeline Progress -->
-                    <!-- <div class="mb-8 bg-white dark:bg-gray-800 shadow rounded-lg p-6">
-                        <h3 class="text-sm font-medium text-gray-900 dark:text-white mb-6">Таймлайн с момента создания</h3>
-                        <div class="relative pt-6">
-                            <div 
-                                class="absolute transform -translate-x-1/2 top-0"
-                                :style="{ left: `${getProgressPercentage()}%` }"
-                            >
-                                <span class="text-xs font-medium text-blue-600 dark:text-blue-400 whitespace-nowrap block mb-1">
-                                    Сейчас
-                                </span>
-                                <div class="w-px h-3 bg-blue-600 dark:bg-blue-500 mx-auto"></div>
-                            </div>
-
-                            <div class="h-2 bg-gray-200 dark:bg-gray-700 rounded-full">
-                                <div 
-                                    class="h-2 bg-blue-600 dark:bg-blue-500 rounded-full transition-all duration-500"
-                                    :style="{ width: `${getProgressPercentage()}%` }"
-                                ></div>
-                            </div>
-
-                            <div class="relative h-14">
-                                <template v-for="(marker, index) in timelineMarkers" :key="index">
-                                    <div 
-                                        class="absolute transform"
-                                        :style="{ 
-                                            left: `${marker.position}%`,
-                                            transform: index === 0 ? 'translateX(0)' : index === timelineMarkers.length - 1 ? 'translateX(-100%)' : 'translateX(-50%)'
-                                        }"
-                                    >
-                                        <div 
-                                            v-if="index !== 0 && index !== timelineMarkers.length - 1"
-                                            class="w-px h-3 bg-gray-300 dark:bg-gray-600 mx-auto mt-1"
-                                        ></div>
-                                        <span 
-                                            class="text-xs text-gray-500 dark:text-gray-400 whitespace-nowrap block"
-                                            :style="{
-                                                textAlign: index === 0 ? 'left' : index === timelineMarkers.length - 1 ? 'right' : 'center',
-                                                minWidth: '60px',
-                                                paddingTop: (index === 0 || index === timelineMarkers.length - 1) ? '16px' : 0,
-                                            }"
-                                        >
-                                            {{ marker.label }}
-                                        </span>
-                                    </div>
-                                </template>
-                            </div>
+                    <!-- Metrics Chart (Campaign) -->
+                    <div class="bg-white dark:bg-gray-800 shadow rounded-lg p-4 mt-4 mb-8">
+                        <h3 class="font-medium text-gray-900 dark:text-white mb-3">Метрики товара</h3>
+                        <div class="flex flex-wrap gap-4 mb-4">
+                            <label v-for="opt in metricsOptions" :key="opt.key" class="flex items-center space-x-2 cursor-pointer">
+                                <input type="checkbox" v-model="opt.checked" @change="debouncedRenderMetricsChart" :disabled="isRenderingChart" />
+                                <span :style="{ color: opt.color }">{{ opt.label }}</span>
+                            </label>
                         </div>
-                    </div> -->
-
-                    <!-- Stats Grid -->
-                    <!-- <div class="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4 mb-8">
-                        <div class="bg-white overflow-hidden shadow rounded-lg">
-                            <div class="p-5">
-                                <div class="flex items-center">
-                                    <div class="flex-shrink-0">
-                                        <svg class="h-6 w-6 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path>
-                                        </svg>
-                                    </div>
-                                    <div class="ml-5 w-0 flex-1">
-                                        <dl>
-                                            <dt class="text-sm font-medium text-gray-500 truncate">Текущий CPM</dt>
-                                            <dd class="text-lg font-medium text-gray-900">{{ adData.current_cpm }}</dd>
-                                        </dl>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="bg-white overflow-hidden shadow rounded-lg">
-                            <div class="p-5">
-                                <div class="flex items-center justify-between">
-                                <div class="flex items-center">
-                                    <div class="flex-shrink-0">
-                                        <svg class="h-6 w-6 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 11c0 3.517-1.009 6.799-2.753 9.571m-3.44-2.04l.054-.09A13.916 13.916 0 008 11a4 4 0 118 0c0 1.017-.07 2.019-.203 3m-2.118 6.844A21.88 21.88 0 0015.171 17m3.839 1.132c.645-2.266.99-4.659.99-7.132A8 8 0 008 4.07M3 15.364c.64-1.319 1-2.8 1-4.364 0-1.457.39-2.823 1.07-4"></path>
-                                        </svg>
-                                    </div>
-                                    <div class="ml-5 w-0 flex-1">
-                                        <dl>
-                                                <dt class="text-sm font-medium text-gray-500">Автоминусация</dt>
-                                                <dd class="flex items-center mt-1">
-                                                    <button 
-                                                        @click="toggleBot" 
-                                                        class="relative inline-flex items-center h-6 rounded-full w-11 focus:outline-none"
-                                                        :class="adData.bot_enabled ? 'bg-blue-600' : 'bg-gray-200'"
-                                                    >
-                                                        <span 
-                                                            class="inline-block w-4 h-4 transform transition-transform bg-white rounded-full"
-                                                            :class="adData.bot_enabled ? 'translate-x-6' : 'translate-x-1'"
-                                                        ></span>
-                                                    </button>
-                                                    <span class="ml-2 text-sm font-medium" :class="adData.bot_enabled ? 'text-blue-600' : 'text-gray-500'">
-                                                        {{ adData.bot_enabled ? 'Вкл' : 'Выкл' }}
-                                                    </span>
-                                                </dd>
-                                        </dl>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="bg-white overflow-hidden shadow rounded-lg">
-                            <div class="p-5">
-                                <div class="flex items-center justify-between">
-                                <div class="flex items-center">
-                                    <div class="flex-shrink-0">
-                                        <svg class="h-6 w-6 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
-                        </svg>
-                                    </div>
-                                    <div class="ml-5 w-0 flex-1">
-                                        <dl>
-                                                <dt class="text-sm font-medium text-gray-500">Мин CTR</dt>
-                                                <dd class="text-lg font-medium text-gray-900">{{ formatCtr(adData.min_ctr) }}</dd>
-                                        </dl>
-                                        </div>
-                                    </div>
-                                    <button @click="changeMinCtr" class="ml-4 px-3 py-1 bg-blue-600 text-white rounded-md text-sm hover:bg-blue-700">
-                                        Изменить
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="bg-white overflow-hidden shadow rounded-lg">
-                            <div class="p-5">
-                                <div class="flex items-center justify-between">
-                                <div class="flex items-center">
-                                    <div class="flex-shrink-0">
-                                        <svg class="h-6 w-6 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2z"></path>
-                                        </svg>
-                                    </div>
-                                    <div class="ml-5 w-0 flex-1">
-                                        <dl>
-                                                <dt class="text-sm font-medium text-gray-500">Мин Просмотры</dt>
-                                                <dd class="text-lg font-medium text-gray-900">{{ adData.views_to_minus }}</dd>
-                                        </dl>
-                                        </div>
-                                    </div>
-                                    <button @click="changeViewsToMinus" class="ml-4 px-3 py-1 bg-blue-600 text-white rounded-md text-sm hover:bg-blue-700">
-                                        Изменить
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                    </div> -->
-
-                    <!-- Additional Info -->
-                    <!-- <div class="mt-8 mb-8 bg-white shadow rounded-lg">
-                        <div class="p-6">
-                            <h2 class="text-lg font-medium text-gray-900 mb-4">Дополнительная информация</h2>
-                            <dl class="grid grid-cols-1 gap-x-4 gap-y-6 sm:grid-cols-2">
-                                <div>
-                                    <dt class="text-sm font-medium text-gray-500">Тип товара</dt>
-                                    <dd class="mt-1 text-sm text-gray-900">{{ adData.product_type }}</dd>
-                                </div>
-                                <div>
-                                    <dt class="text-sm font-medium text-gray-500">Тип</dt>
-                                    <dd class="mt-1 text-sm text-gray-900">{{ adData.type }}</dd>
-                                </div>
-                                <div>
-                                    <dt class="text-sm font-medium text-gray-500">Create CTR</dt>
-                                    <dd class="mt-1 text-sm text-gray-900">{{ adData.create_ctr }}</dd>
-                                </div>
-                                <div>
-                                    <dt class="text-sm font-medium text-gray-500">Выключено</dt>
-                                    <dd class="mt-1 text-sm text-gray-900">{{ adData.off ? 'Да' : 'Нет' }}</dd>
-                                </div>
-                            </dl>
-                        </div>
-                    </div> -->
+                        <div v-if="loadingMetrics" class="w-full h-48 bg-gray-100 dark:bg-gray-700 animate-pulse rounded"></div>
+                        <canvas v-else ref="metricsChart" height="80"></canvas>
+                    </div>
 
                     <!-- Comments and Related Campaigns Section -->
                     <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
@@ -1082,7 +918,16 @@
 <script>
 import Header from '@/components/navigation/Header.vue'
 import LoadingBar from '@/components/LoadingBar.vue'
+import Chart from 'chart.js/auto'
 import mpr from './../tools/mpr'
+
+function debounce(fn, delay) {
+  let timeout
+  return function(...args) {
+    clearTimeout(timeout)
+    timeout = setTimeout(() => fn.apply(this, args), delay)
+  }
+}
 
 export default {
     name: 'AdvDetailsView',
@@ -1126,6 +971,20 @@ export default {
             showRestoreModal: false,
             selectedRestoreWords: [],
             restorableMinusWords: [],
+            metrics: [],
+            metricsChart: null,
+            metricsOptions: [
+                { key: 'total_orders_per_day', label: 'Кол-во заказов в день', color: '#6B7280', bg: 'rgba(107, 114, 128, 0.15)', checked: false },
+                { key: 'total_amount_per_day', label: 'Выручка в день', color: '#60A5FA', bg: 'rgba(96, 165, 250, 0.15)', checked: true },
+                { key: 'average_price_per_order', label: 'Ср. цена заказа', color: '#A78BFA', bg: 'rgba(167, 139, 250, 0.15)', checked: false },
+                { key: 'marketing_amount_per_day', label: 'Маркетинг (₽/день)', color: '#FBBF24', bg: 'rgba(251, 191, 36, 0.15)', checked: false },
+                { key: 'marketing_percent', label: '% на маркетинг', color: '#F472B6', bg: 'rgba(244, 114, 182, 0.15)', checked: true },
+                { key: 'average_spp_percent', label: 'Средняя СПП', color: '#34D399', bg: 'rgba(52, 211, 153, 0.15)', checked: false },
+                { key: 'profit_amount_per_day', label: 'Марж. прибыль', color: '#FCA5A5', bg: 'rgba(252, 165, 165, 0.15)', checked: false },
+                { key: 'profit_margin', label: 'Рентабельность', color: '#C4B5FD', bg: 'rgba(196, 181, 253, 0.15)', checked: true }
+            ],
+            loadingMetrics: true,
+            isRenderingChart: false,
         }
     },
     computed: {
@@ -1799,10 +1658,98 @@ export default {
                 this.loading.restoringWords = false
             }
         },
+        async loadMetrics() {
+            this.loadingMetrics = true
+            try {
+                if (!this.adData || !this.adData.product_id) {
+                    this.metrics = []
+                    return
+                }
+                const response = await mpr({ url: `/products/${this.adData.product_id}/metrics` })
+                this.metrics = response.data.result
+            } catch (error) {
+                console.error('Error loading metrics:', error)
+            } finally {
+                this.loadingMetrics = false
+            }
+        },
+        formatChartDate(date) {
+            if (!date) return ''
+            const d = new Date(date)
+            const day = String(d.getDate()).padStart(2, '0')
+            const month = String(d.getMonth() + 1).padStart(2, '0')
+            const year = d.getFullYear()
+            return `${day}.${month}.${year}`
+        },
+        renderMetricsChart() {
+            this.isRenderingChart = true
+            if (!this.metrics || this.metrics.length === 0) {
+                this.isRenderingChart = false
+                return
+            }
+            if (!this.$refs.metricsChart) {
+                this.isRenderingChart = false
+                return
+            }
+            if (this.metricsChart) {
+                try { this.metricsChart.destroy() } catch (e) {}
+                this.metricsChart = null
+            }
+            if (!this.$refs.metricsChart) {
+                this.isRenderingChart = false
+                return
+            }
+            const ctx = this.$refs.metricsChart.getContext('2d')
+            const selected = this.metricsOptions.filter(opt => opt.checked)
+            const percentKeys = ['average_spp_percent', 'marketing_percent', 'profit_margin']
+            const datasets = selected.map((opt, idx) => ({
+                label: opt.label,
+                data: this.metrics.map(m => percentKeys.includes(opt.key) && typeof m[opt.key] === 'number' ? m[opt.key] * 100 : m[opt.key]),
+                borderColor: opt.color,
+                backgroundColor: opt.bg,
+                fill: false,
+                tension: 0.3,
+                yAxisID: 'y' + idx,
+                spanGaps: true
+            }))
+            const scales = {}
+            selected.forEach((opt, idx) => {
+                const axisId = 'y' + idx
+                scales[axisId] = {
+                    position: idx % 2 === 0 ? 'left' : 'right',
+                    display: false,
+                    grid: { display: false },
+                    ticks: { display: false },
+                    beginAtZero: true
+                }
+            })
+            scales['x'] = { title: { display: true, text: 'Дата' } }
+            this.metricsChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: this.metrics.map(m => this.formatChartDate(m.order_date)),
+                    datasets
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: { display: true },
+                        title: { display: true, text: 'Метрики кампании' }
+                    },
+                    animation: false,
+                    scales
+                }
+            })
+            this.isRenderingChart = false
+        },
+    },
+    created() {
+        this.debouncedRenderMetricsChart = debounce(this.renderMetricsChart, 200)
     },
     async mounted() {
-        // Replace individual fetches with the combined loading method
         await this.loadAllData()
+        await this.loadMetrics()
+        this.$nextTick(this.renderMetricsChart)
     }
 }
 </script> 
