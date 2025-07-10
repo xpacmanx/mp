@@ -225,7 +225,7 @@
                                     <div v-else class="space-y-3">
                                         <div v-for="ad in ads" :key="ad.id" class="flex justify-between items-center">
                                             <div class="flex items-center space-x-2">
-                                                <span class="text-sm"><router-link :to="`/ads/${ad.id}`" class="text-blue-500 dark:text-blue-400">{{ ad.id }}</router-link></span>
+                                                <span class="text-sm"><router-link :to="`/adv/${ad.id}`" class="text-blue-500 dark:text-blue-400">{{ ad.id }}</router-link></span>
                                                 <!-- <span class="text-sm">{{ ad.name }}</span> -->
                                                 <span :class="getAdStatusClass(ad.status_id)" 
                                                       class="px-2 py-0.5 text-xs font-medium rounded-full">
