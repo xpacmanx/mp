@@ -25,14 +25,35 @@
                 <!-- Metrics Chart (moved up) -->
                 <div class="mt-4 mx-6">
                     <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-3">Метрики по WB</h3>
+                                          <div class="flex justify-between items-center mb-4">
+                          <div class="flex items-center space-x-4">
+                            <span>Период</span>
+                                <div class="relative">
+                                    <VueDatePicker
+                                      v-model="dateRange"
+                                      range
+                                      :enable-time-picker="false"
+                                      auto-apply
+                                      :max-date="new Date()"
+                                      :clearable="false"
+                                      :hide-input-icon="true"
+                                      locale="ru"
+                                      placeholder="Выберите период"
+                                      input-class-name="!w-80 !h-10 !px-4 !py-2 !text-sm !border !border-gray-300 !rounded-lg !bg-white dark:!bg-gray-700 dark:!border-gray-600 dark:!text-white focus:!ring-2 focus:!ring-blue-500 focus:!border-blue-500"
+                                      menu-class-name="!border !border-gray-200 !rounded-lg !shadow-lg"
+                                      @update:model-value="handleDateRangeChange"
+                                  />
+                                </div>
+                          </div>
+                      </div>
+                    <div v-if="loadingMetrics" class="w-full h-48 bg-gray-100 dark:bg-gray-700 animate-pulse rounded"></div>
+                    <canvas v-else ref="metricsChart" height="80"></canvas>
                     <div class="flex flex-wrap gap-4 mb-4">
                         <label v-for="opt in metricsOptions" :key="opt.key" class="flex items-center space-x-2 cursor-pointer">
                             <input type="checkbox" v-model="opt.checked" @change="debouncedRenderMetricsChart" :disabled="isRenderingChart" />
                             <span :style="{ color: opt.color }">{{ opt.label }}</span>
                         </label>
                     </div>
-                    <div v-if="loadingMetrics" class="w-full h-48 bg-gray-100 dark:bg-gray-700 animate-pulse rounded"></div>
-                    <canvas v-else ref="metricsChart" height="80"></canvas>
                 </div>
 
                 <!-- Content -->
@@ -336,10 +357,53 @@
 </div>
 </template>
 
+<style scoped>
+/* Кастомные стили для VueDatePicker */
+:deep(.dp__input) {
+  width: 320px !important;
+  height: 40px !important;
+  padding: 8px 16px !important;
+  font-size: 14px !important;
+  border: 1px solid #d1d5db !important;
+  border-radius: 8px !important;
+  background-color: white !important;
+}
+
+:deep(.dark .dp__input) {
+  background-color: #374151 !important;
+  border-color: #4b5563 !important;
+  color: white !important;
+}
+
+:deep(.dp__input:focus) {
+  ring: 2px !important;
+  ring-color: #3b82f6 !important;
+  border-color: #3b82f6 !important;
+  outline: none !important;
+}
+
+
+
+:deep(.dp__menu) {
+  border: 1px solid #e5e7eb !important;
+  border-radius: 8px !important;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05) !important;
+}
+
+:deep(.dark .dp__menu) {
+  background-color: #1f2937 !important;
+  border-color: #374151 !important;
+}
+</style>
+
 <script>
 import { useProductStore } from '@/store/productStore'
 import mpr from '@/tools/mpr'
 import Chart from 'chart.js/auto'
+import { defineComponent } from 'vue'
+
+import VueDatePicker from '@vuepic/vue-datepicker'
+import '@vuepic/vue-datepicker/dist/main.css'
 
 function debounce(fn, delay) {
   let timeout
@@ -350,6 +414,9 @@ function debounce(fn, delay) {
 }
 
 export default {
+    components: {
+        VueDatePicker
+    },
     data() {
         return {
             product: null,
@@ -368,15 +435,19 @@ export default {
             metricsOptions: [
                 { key: 'total_orders_per_day', label: 'Кол-во заказов в день', color: '#6B7280', bg: 'rgba(107, 114, 128, 0.15)', checked: true }, // серый
                 { key: 'total_amount_per_day', label: 'Выручка в день', color: '#60A5FA', bg: 'rgba(96, 165, 250, 0.15)', checked: false }, // голубой
-                { key: 'average_price_per_order', label: 'Ср. цена заказа', color: '#A78BFA', bg: 'rgba(167, 139, 250, 0.15)', checked: false }, // сиреневый
-                { key: 'marketing_amount_per_day', label: 'Маркетинг (₽/день)', color: '#FBBF24', bg: 'rgba(251, 191, 36, 0.15)', checked: false }, // желтый
-                { key: 'marketing_percent', label: '% на маркетинг', color: '#F472B6', bg: 'rgba(244, 114, 182, 0.15)', checked: false }, // розовый
+                { key: 'average_price_per_order', label: 'Ср. цена', color: '#A78BFA', bg: 'rgba(167, 139, 250, 0.15)', checked: false }, // сиреневый
                 { key: 'average_spp_percent', label: 'Средняя СПП', color: '#34D399', bg: 'rgba(52, 211, 153, 0.15)', checked: false }, // мятный
+                { key: 'marketing_amount_per_day', label: 'Маркетинг (₽/день)', color: '#FBBF24', bg: 'rgba(251, 191, 36, 0.15)', checked: false }, // желтый
+                { key: 'marketing_percent', label: '% на маркетинг', color: '#F472B6', bg: 'rgba(244, 114, 182, 0.15)', checked: true }, // розовый
                 { key: 'profit_amount_per_day', label: 'Марж. прибыль', color: '#FCA5A5', bg: 'rgba(252, 165, 165, 0.15)', checked: false }, // светло-красный
-                { key: 'profit_margin', label: 'Рентабельность', color: '#C4B5FD', bg: 'rgba(196, 181, 253, 0.15)', checked: false } // светло-сиреневый
+                { key: 'profit_margin', label: 'Рентабельность', color: '#C4B5FD', bg: 'rgba(196, 181, 253, 0.15)', checked: true } // светло-сиреневый
             ],
             loadingMetrics: true,
             isRenderingChart: false,
+            dateRange: [
+                new Date(new Date().setDate(new Date().getDate() - 8)), // последние 30 дней по умолчанию
+                new Date(new Date().setDate(new Date().getDate() - 1)),
+            ]
         }
     },
     created() {
@@ -504,7 +575,15 @@ export default {
         },
         async loadMetrics() {
             try {
-                const response = await mpr({ url: `/products/${this.$route.params.id}/metrics` })
+                const startDate = this.dateRange[0].toISOString().split('T')[0]
+                const endDate = this.dateRange[1].toISOString().split('T')[0]
+                const response = await mpr({ 
+                    url: `/products/${this.$route.params.id}/metrics`,
+                    params: {
+                        from: startDate,
+                        to: endDate
+                    }
+                })
                 this.metrics = response.data.result
                 this.loadingMetrics = false
             } catch (error) {
@@ -560,7 +639,7 @@ export default {
                     beginAtZero: true
                 }
             })
-            scales['x'] = { title: { display: true, text: 'Дата' } }
+            scales['x'] = { title: { display: true, text: 'Дата'} }
             this.metricsChart = new Chart(ctx, {
                 type: 'line',
                 data: {
@@ -571,7 +650,7 @@ export default {
                     responsive: true,
                     plugins: {
                         legend: { display: true },
-                        title: { display: true, text: 'Динамика по выбранным метрикам' }
+                        title: { display: false, text: 'Динамика по выбранным метрикам' }
                     },
                     animation: false,
                     scales
@@ -683,6 +762,11 @@ export default {
             const day = String(d.getDate()).padStart(2, '0')
             const month = String(d.getMonth() + 1).padStart(2, '0')
             return `${day}.${month}`
+        },
+        async handleDateRangeChange() {
+            this.loadingMetrics = true
+            await this.loadMetrics()
+            this.$nextTick(this.renderMetricsChart)
         },
     },
     computed: {
