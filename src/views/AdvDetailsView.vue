@@ -187,6 +187,27 @@
                     <!-- Metrics Chart (Campaign) -->
                     <div class="bg-white dark:bg-gray-800 shadow rounded-lg p-4 mt-4 mb-8">
                         <h3 class="font-medium text-gray-900 dark:text-white mb-3">Метрики товара</h3>
+                        <div class="flex justify-between items-center mb-4">
+                            <div class="flex items-center space-x-4">
+                                <span class="text-gray-700 dark:text-gray-300">Период</span>
+                                <div class="relative">
+                                    <VueDatePicker
+                                        v-model="dateRange"
+                                        range
+                                        :enable-time-picker="false"
+                                        auto-apply
+                                        :max-date="new Date()"
+                                        :clearable="false"
+                                        :hide-input-icon="true"
+                                        locale="ru"
+                                        placeholder="Выберите период"
+                                        input-class-name="!w-80 !h-10 !px-4 !py-2 !text-sm !border !border-gray-300 !rounded-lg !bg-white dark:!bg-gray-700 dark:!border-gray-600 dark:!text-white focus:!ring-2 focus:!ring-blue-500 focus:!border-blue-500"
+                                        menu-class-name="!border !border-gray-200 !rounded-lg !shadow-lg"
+                                        @update:model-value="handleDateRangeChange"
+                                    />
+                                </div>
+                            </div>
+                        </div>
                         <div class="flex flex-wrap gap-4 mb-4">
                             <label v-for="opt in metricsOptions" :key="opt.key" class="flex items-center space-x-2 cursor-pointer">
                                 <input type="checkbox" v-model="opt.checked" @change="debouncedRenderMetricsChart" :disabled="isRenderingChart" />
@@ -920,6 +941,8 @@ import Header from '@/components/navigation/Header.vue'
 import LoadingBar from '@/components/LoadingBar.vue'
 import Chart from 'chart.js/auto'
 import mpr from './../tools/mpr'
+import VueDatePicker from '@vuepic/vue-datepicker'
+import '@vuepic/vue-datepicker/dist/main.css'
 
 function debounce(fn, delay) {
   let timeout
@@ -933,7 +956,8 @@ export default {
     name: 'AdvDetailsView',
     components: {
         Header,
-        LoadingBar
+        LoadingBar,
+        VueDatePicker
     },
     data() {
         return {
@@ -985,6 +1009,10 @@ export default {
             ],
             loadingMetrics: true,
             isRenderingChart: false,
+            dateRange: [
+                new Date(new Date().setDate(new Date().getDate() - 8)), // последние 8 дней по умолчанию
+                new Date(new Date().setDate(new Date().getDate() - 1))
+            ]
         }
     },
     computed: {
@@ -1665,13 +1693,32 @@ export default {
                     this.metrics = []
                     return
                 }
-                const response = await mpr({ url: `/products/${this.adData.product_id}/metrics` })
+                const startDate = this.formatDateForAPI(this.dateRange[0])
+                const endDate = this.formatDateForAPI(this.dateRange[1])
+                const response = await mpr({ 
+                    url: `/products/${this.adData.product_id}/metrics`,
+                    params: {
+                        from: startDate,
+                        to: endDate
+                    }
+                })
                 this.metrics = response.data.result
             } catch (error) {
                 console.error('Error loading metrics:', error)
             } finally {
                 this.loadingMetrics = false
             }
+        },
+        formatDateForAPI(date) {
+            const year = date.getFullYear()
+            const month = String(date.getMonth() + 1).padStart(2, '0')
+            const day = String(date.getDate()).padStart(2, '0')
+            return `${year}-${month}-${day}`
+        },
+        async handleDateRangeChange() {
+            this.loadingMetrics = true
+            await this.loadMetrics()
+            this.$nextTick(this.renderMetricsChart)
         },
         formatChartDate(date) {
             if (!date) return ''
@@ -1752,4 +1799,41 @@ export default {
         this.$nextTick(this.renderMetricsChart)
     }
 }
-</script> 
+</script>
+
+<style scoped>
+/* Кастомные стили для VueDatePicker */
+:deep(.dp__input) {
+  width: 320px !important;
+  height: 40px !important;
+  padding: 8px 16px !important;
+  font-size: 14px !important;
+  border: 1px solid #d1d5db !important;
+  border-radius: 8px !important;
+  background-color: white !important;
+}
+
+:deep(.dark .dp__input) {
+  background-color: #374151 !important;
+  border-color: #4b5563 !important;
+  color: white !important;
+}
+
+:deep(.dp__input:focus) {
+  ring: 2px !important;
+  ring-color: #3b82f6 !important;
+  border-color: #3b82f6 !important;
+  outline: none !important;
+}
+
+:deep(.dp__menu) {
+  border: 1px solid #e5e7eb !important;
+  border-radius: 8px !important;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05) !important;
+}
+
+:deep(.dark .dp__menu) {
+  background-color: #1f2937 !important;
+  border-color: #374151 !important;
+}
+</style> 

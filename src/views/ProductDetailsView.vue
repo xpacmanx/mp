@@ -575,8 +575,8 @@ export default {
         },
         async loadMetrics() {
             try {
-                const startDate = this.dateRange[0].toISOString().split('T')[0]
-                const endDate = this.dateRange[1].toISOString().split('T')[0]
+                const startDate = this.formatDateForAPI(this.dateRange[0])
+                const endDate = this.formatDateForAPI(this.dateRange[1])
                 const response = await mpr({ 
                     url: `/products/${this.$route.params.id}/metrics`,
                     params: {
@@ -590,6 +590,12 @@ export default {
                 console.error('Error loading metrics:', error)
                 this.loadingMetrics = false
             }
+        },
+        formatDateForAPI(date) {
+            const year = date.getFullYear()
+            const month = String(date.getMonth() + 1).padStart(2, '0')
+            const day = String(date.getDate()).padStart(2, '0')
+            return `${year}-${month}-${day}`
         },
         renderMetricsChart() {
             this.isRenderingChart = true
