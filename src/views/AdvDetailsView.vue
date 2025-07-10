@@ -189,22 +189,23 @@
                         <h3 class="font-medium text-gray-900 dark:text-white mb-3">Метрики товара</h3>
                         <div class="flex justify-between items-center mb-4">
                             <div class="flex items-center space-x-4">
-                                <span class="text-gray-700 dark:text-gray-300">Период</span>
+                                <span class="text-gray-700 dark:text-gray-300">Период:</span>
                                 <div class="relative">
-                                    <VueDatePicker
-                                        v-model="dateRange"
-                                        range
-                                        :enable-time-picker="false"
-                                        auto-apply
-                                        :max-date="new Date()"
-                                        :clearable="false"
-                                        :hide-input-icon="true"
-                                        locale="ru"
-                                        placeholder="Выберите период"
-                                        input-class-name="!w-80 !h-10 !px-4 !py-2 !text-sm !border !border-gray-300 !rounded-lg !bg-white dark:!bg-gray-700 dark:!border-gray-600 dark:!text-white focus:!ring-2 focus:!ring-blue-500 focus:!border-blue-500"
-                                        menu-class-name="!border !border-gray-200 !rounded-lg !shadow-lg"
-                                        @update:model-value="handleDateRangeChange"
-                                    />
+                                                                         <VueDatePicker
+                                         v-model="dateRange"
+                                         range
+                                         :enable-time-picker="false"
+                                         auto-apply
+                                         :max-date="new Date()"
+                                         :clearable="false"
+                                         :hide-input-icon="true"
+                                         locale="ru"
+                                         format="dd.MM.yyyy"
+                                         placeholder="Выберите период"
+                                         input-class-name="!w-80 !h-10 !px-4 !py-2 !text-sm !border !border-gray-300 !rounded-lg !bg-white dark:!bg-gray-700 dark:!border-gray-600 dark:!text-white focus:!ring-2 focus:!ring-blue-500 focus:!border-blue-500"
+                                         menu-class-name="!border !border-gray-200 !rounded-lg !shadow-lg"
+                                         @update:model-value="handleDateRangeChange"
+                                     />
                                 </div>
                             </div>
                         </div>

@@ -27,7 +27,7 @@
                     <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-3">Метрики по WB</h3>
                                           <div class="flex justify-between items-center mb-4">
                           <div class="flex items-center space-x-4">
-                            <span>Период</span>
+                            <span>Период:</span>
                                 <div class="relative">
                                     <VueDatePicker
                                       v-model="dateRange"
@@ -38,6 +38,7 @@
                                       :clearable="false"
                                       :hide-input-icon="true"
                                       locale="ru"
+                                      format="dd.MM.yyyy"
                                       placeholder="Выберите период"
                                       input-class-name="!w-80 !h-10 !px-4 !py-2 !text-sm !border !border-gray-300 !rounded-lg !bg-white dark:!bg-gray-700 dark:!border-gray-600 dark:!text-white focus:!ring-2 focus:!ring-blue-500 focus:!border-blue-500"
                                       menu-class-name="!border !border-gray-200 !rounded-lg !shadow-lg"
