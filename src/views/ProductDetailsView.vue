@@ -23,8 +23,8 @@
                     </div>
                 </div>
                 <!-- Metrics Chart (moved up) -->
-                <div class="bg-white dark:bg-gray-800 shadow rounded-lg p-4 mt-4 mx-6">
-                    <h3 class="font-medium text-gray-900 dark:text-white mb-3">Метрики</h3>
+                <div class="mt-4 mx-6">
+                    <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-3">Метрики по WB</h3>
                     <div class="flex flex-wrap gap-4 mb-4">
                         <label v-for="opt in metricsOptions" :key="opt.key" class="flex items-center space-x-2 cursor-pointer">
                             <input type="checkbox" v-model="opt.checked" @change="debouncedRenderMetricsChart" :disabled="isRenderingChart" />
@@ -84,328 +84,116 @@
                                     Ваш браузер не поддерживает видео.
                                 </video>
                             </div>
+
+                            <!-- Dimensions -->
+                            <div class="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg my-4">
+                                <h3 class="font-medium text-gray-900 dark:text-white mb-3">Размеры и логистика</h3>
+                                <div class="grid grid-cols-1 gap-3 text-sm">
+                                    <div class="flex justify-between">
+                                        <span class="text-gray-600 dark:text-gray-400">Размеры (Д×Ш×В):</span>
+                                        <span class="text-gray-900 dark:text-white">
+                                            {{ product.dimensions?.length }}×{{ product.dimensions?.width }}×{{ product.dimensions?.height }} см
+                                        </span>
+                                    </div>
+                                    <div class="flex justify-between">
+                                        <span class="text-gray-600 dark:text-gray-400">Объем:</span>
+                                        <span class="text-gray-900 dark:text-white">{{ product.volume }} л</span>
+                                    </div>
+                                    <div class="flex justify-between">
+                                        <span class="text-gray-600 dark:text-gray-400">Вес брутто:</span>
+                                        <span class="text-gray-900 dark:text-white">{{ product.dimensions?.weightBrutto || product.weight }} кг</span>
+                                    </div>
+                                    <div class="flex justify-between">
+                                        <span class="text-gray-600 dark:text-gray-400">Дней до готовности:</span>
+                                        <span class="text-gray-900 dark:text-white">{{ product.days_to_ready }}</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Dates -->
+                            <div class="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg">
+                                <h3 class="font-medium text-gray-900 dark:text-white mb-3">Даты</h3>
+                                <div class="grid grid-cols-1 gap-3 text-sm">
+                                    <div class="flex justify-between">
+                                        <span class="text-gray-600 dark:text-gray-400">Создано:</span>
+                                        <span class="text-gray-900 dark:text-white">{{ formatDate(product.created_on) }}</span>
+                                    </div>
+                                    <div class="flex justify-between">
+                                        <span class="text-gray-600 dark:text-gray-400">Обновлено:</span>
+                                        <span class="text-gray-900 dark:text-white">{{ formatDate(product.updated_on) }}</span>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
 
                         <!-- Right Column - Product Info -->
                         <div class="lg:col-span-2">
-                            <h2 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Информация о товаре</h2>
+                            <h2 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Общая информация о товаре</h2>
                             
                             <!-- Basic Info -->
                             <div class="space-y-4">
-                                <div class="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg">
-                                    <h3 class="font-medium text-gray-900 dark:text-white mb-3">Основная информация</h3>
-                                    <div class="grid grid-cols-1 gap-3 text-sm">
-                                        <div class="flex justify-between">
-                                            <span class="text-gray-600 dark:text-gray-400">Мастер:</span>
-                                            <span class="text-gray-900 dark:text-white font-medium">{{ product.master }}</span>
-                                        </div>
-                                        <div class="flex justify-between">
-                                            <span class="text-gray-600 dark:text-gray-400">Тип товара:</span>
-                                            <span class="text-gray-900 dark:text-white">{{ product.product_type }}</span>
-                                        </div>
-                                        <div class="flex justify-between">
-                                            <span class="text-gray-600 dark:text-gray-400">Семейство:</span>
-                                            <span class="text-gray-900 dark:text-white">{{ product.family || '-' }}</span>
-                                        </div>
-                                        <div class="flex justify-between">
-                                            <span class="text-gray-600 dark:text-gray-400">Штрихкод:</span>
-                                            <span class="text-gray-900 dark:text-white font-mono">{{ product.barcode }}</span>
-                                        </div>
-                                        <div class="flex justify-between">
-                                            <span class="text-gray-600 dark:text-gray-400">Вес:</span>
-                                            <span class="text-gray-900 dark:text-white">{{ product.weight }} кг</span>
-                                        </div>
+                                <!-- Метрики карточки -->
+                                <div class="grid grid-cols-1 sm:grid-cols-3 gap-6 mb-6">
+
+                                    <div class="border bg-white dark:bg-gray-800 rounded-lg p-4 flex flex-col">
+                                        <span class="text-sm font-medium text-gray-500 dark:text-gray-400 mb-2">Мастер</span>
+                                        <span class="text-medium font-bold text-gray-900 dark:text-white">{{ product.master || 'Нет' }}</span>
+                                    </div>
+                                    <div class="border bg-white dark:bg-gray-800 rounded-lg p-4 flex flex-col">
+                                        <span class="text-sm font-medium text-gray-500 dark:text-gray-400 mb-2">Семейство</span>
+                                        <span class="text-medium font-bold text-gray-900 dark:text-white">{{ product.family || '-' }}</span>
+                                    </div>
+                                    <div class="border bg-white dark:bg-gray-800 rounded-lg p-4 flex flex-col">
+                                        <span class="text-sm font-medium text-gray-500 dark:text-gray-400 mb-2">Штрихкод</span>
+                                        <span class="text-medium font-bold text-gray-900 dark:text-white">{{ product.barcode || '-' }}</span>
                                     </div>
                                 </div>
 
-                                <!-- WB Info -->
-                                <div class="bg-purple-50 dark:bg-purple-900/20 p-4 rounded-lg">
-                                    <h3 class="font-medium text-purple-900 dark:text-purple-100 mb-3">Wildberries</h3>
-                                    <div class="grid grid-cols-1 gap-3 text-sm">
-                                        <div class="flex justify-between">
-                                            <span class="text-purple-700 dark:text-purple-300">Артикул WB:</span>
-                                            <span class="text-purple-900 dark:text-purple-100 font-medium">{{ product.wbid }}</span>
-                                        </div>
-                                        <div class="flex justify-between">
-                                            <span class="text-purple-700 dark:text-purple-300">Цена:</span>
-                                            <span class="text-purple-900 dark:text-purple-100 font-medium">{{ formatCurrency(product.wb_price) }}</span>
-                                        </div>
-                                        <div class="flex justify-between">
-                                            <span class="text-purple-700 dark:text-purple-300">Цена на МП:</span>
-                                            <span class="text-purple-900 dark:text-purple-100">{{ formatCurrency(product.wb_mp_price / 100) }}</span>
-                                        </div>
-                                        <div class="flex justify-between">
-                                            <span class="text-purple-700 dark:text-purple-300">API цена:</span>
-                                            <span class="text-purple-900 dark:text-purple-100">{{ formatCurrency(product.wb_api_price) }}</span>
-                                        </div>
-                                        <div class="flex justify-between">
-                                            <span class="text-purple-700 dark:text-purple-300">Рейтинг:</span>
-                                            <span class="text-purple-900 dark:text-purple-100 font-medium">{{ formatRating(product.wb_rating) }}</span>
-                                        </div>
-                                        <div class="flex justify-between">
-                                            <span class="text-purple-700 dark:text-purple-300">Отзывы:</span>
-                                            <span class="text-purple-900 dark:text-purple-100">{{ product.wb_feedbacks || 0 }}</span>
-                                        </div>
-                                        <div class="flex justify-between">
-                                            <span class="text-purple-700 dark:text-purple-300">Рентабельность:</span>
-                                            <span class="text-purple-900 dark:text-purple-100 font-medium">{{ formatPercentage(product.wb_profitability) }}</span>
-                                        </div>
-                                        <div class="flex justify-between">
-                                            <span class="text-purple-700 dark:text-purple-300">Продажи 7д:</span>
-                                            <span class="text-purple-900 dark:text-purple-100">{{ product.wb_sales7 || 0 }}</span>
-                                        </div>
-                                        <div class="flex justify-between">
-                                            <span class="text-purple-700 dark:text-purple-300">Продажи 30д:</span>
-                                            <span class="text-purple-900 dark:text-purple-100">{{ product.wb_sales30 || 0 }}</span>
-                                        </div>
+                                <h2 class="text-medium font-semibold text-gray-900 dark:text-white mb-4">Информация по Wildberries <span class="bg-gray-100 dark:bg-gray-800 rounded-lg p-1 text-sm text-gray-500 dark:text-gray-400 ml-2">{{ product.wbid }}</span></h2>
+                                <div class="grid grid-cols-1 sm:grid-cols-3 gap-6 mb-6">
+
+                                    <div class="border bg-white dark:bg-gray-800 rounded-lg p-4 flex flex-col">
+                                        <span class="text-sm font-medium text-gray-500 dark:text-gray-400 mb-2">Цена</span>
+                                        <span class="text-2xl font-bold text-gray-900 dark:text-white">{{ product.wb_api_price || '-' }} ₽</span>
                                     </div>
+                                    <div class="border bg-white dark:bg-gray-800 rounded-lg p-4 flex flex-col">
+                                        <span class="text-sm font-medium text-gray-500 dark:text-gray-400 mb-2">СПП</span>
+                                        <span class="text-2xl font-bold text-gray-900 dark:text-white">{{ wb_spp || '-' }}%</span>
+                                    </div>
+                                    <div class="border bg-white dark:bg-gray-800 rounded-lg p-4 flex flex-col">
+                                        <span class="text-sm font-medium text-gray-500 dark:text-gray-400 mb-2">Цена в МСК (СПП+Кошелек)</span>
+                                        <span class="text-2xl font-bold text-gray-900 dark:text-white">{{ wb_price_moscow || '-' }} ₽</span>
+                                    </div>
+
+                                    <div class="border bg-white dark:bg-gray-800 rounded-lg p-4 flex flex-col">
+                                        <span class="text-sm font-medium text-gray-500 dark:text-gray-400 mb-2">Рейтинг</span>
+                                        <span class="text-2xl font-bold text-gray-900 dark:text-white">{{ formatRating(product.wb_rating) }}</span>
+                                    </div>
+                                    <div class="border bg-white dark:bg-gray-800 rounded-lg p-4 flex flex-col">
+                                        <span class="text-sm font-medium text-gray-500 dark:text-gray-400 mb-2">Отзывы</span>
+                                        <span class="text-2xl font-bold text-gray-900 dark:text-white">{{ product.wb_feedbacks || '-' }}</span>
+                                    </div>
+
                                 </div>
-
-                                <!-- Ozon Info -->
-                                <div class="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg">
-                                    <h3 class="font-medium text-blue-900 dark:text-blue-100 mb-3">Ozon</h3>
-                                    <div class="grid grid-cols-1 gap-3 text-sm">
-                                        <div class="flex justify-between">
-                                            <span class="text-blue-700 dark:text-blue-300">Артикул Ozon:</span>
-                                            <span class="text-blue-900 dark:text-blue-100 font-medium">{{ product.ozonid || '-' }}</span>
-                                        </div>
-                                        <div class="flex justify-between">
-                                            <span class="text-blue-700 dark:text-blue-300">SKU:</span>
-                                            <span class="text-blue-900 dark:text-blue-100">{{ product.ozonsku || '-' }}</span>
-                                        </div>
-                                        <div class="flex justify-between">
-                                            <span class="text-blue-700 dark:text-blue-300">Цена:</span>
-                                            <span class="text-blue-900 dark:text-blue-100 font-medium">{{ formatCurrency(product.ozon_price) }}</span>
-                                        </div>
-                                        <div class="flex justify-between">
-                                            <span class="text-blue-700 dark:text-blue-300">Рентабельность:</span>
-                                            <span class="text-blue-900 dark:text-blue-100 font-medium">{{ formatPercentage(product.ozon_profitability) }}</span>
-                                        </div>
-                                        <div class="flex justify-between">
-                                            <span class="text-blue-700 dark:text-blue-300">Продажи 7д:</span>
-                                            <span class="text-blue-900 dark:text-blue-100">{{ product.ozon_sales7 || 0 }}</span>
-                                        </div>
-                                        <div class="flex justify-between">
-                                            <span class="text-blue-700 dark:text-blue-300">Продажи 30д:</span>
-                                            <span class="text-blue-900 dark:text-blue-100">{{ product.ozon_sales30 || 0 }}</span>
-                                        </div>
+                                <h2 class="text-medium font-semibold text-gray-900 dark:text-white mb-4">Данные по Wildberries</h2>
+                                <div class="grid grid-cols-1 sm:grid-cols-3 gap-6 mb-6">
+                                    <div class="border bg-white dark:bg-gray-800 rounded-lg p-4 flex flex-col">
+                                        <span class="text-sm font-medium text-gray-500 dark:text-gray-400 mb-2">Продажи за 7 дней</span>
+                                        <span class="text-2xl font-bold text-gray-900 dark:text-white">{{ product.wb_sales7 || '-' }} шт</span>
                                     </div>
-                                </div>
-
-                                <!-- Dimensions -->
-                                <div class="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg">
-                                    <h3 class="font-medium text-gray-900 dark:text-white mb-3">Размеры и логистика</h3>
-                                    <div class="grid grid-cols-1 gap-3 text-sm">
-                                        <div class="flex justify-between">
-                                            <span class="text-gray-600 dark:text-gray-400">Размеры (Д×Ш×В):</span>
-                                            <span class="text-gray-900 dark:text-white">
-                                                {{ product.dimensions?.length }}×{{ product.dimensions?.width }}×{{ product.dimensions?.height }} см
-                                            </span>
-                                        </div>
-                                        <div class="flex justify-between">
-                                            <span class="text-gray-600 dark:text-gray-400">Объем:</span>
-                                            <span class="text-gray-900 dark:text-white">{{ product.volume }} л</span>
-                                        </div>
-                                        <div class="flex justify-between">
-                                            <span class="text-gray-600 dark:text-gray-400">Вес брутто:</span>
-                                            <span class="text-gray-900 dark:text-white">{{ product.dimensions?.weightBrutto || product.weight }} кг</span>
-                                        </div>
-                                        <div class="flex justify-between">
-                                            <span class="text-gray-600 dark:text-gray-400">Дней до готовности:</span>
-                                            <span class="text-gray-900 dark:text-white">{{ product.days_to_ready }}</span>
-                                        </div>
+                                    <div class="border bg-white dark:bg-gray-800 rounded-lg p-4 flex flex-col">
+                                        <span class="text-sm font-medium text-gray-500 dark:text-gray-400 mb-2">Продажи за 30 дней</span>
+                                        <span class="text-2xl font-bold text-gray-900 dark:text-white">{{ product.wb_sales30 || '-' }} шт</span>
                                     </div>
-                                </div>
-
-                                <!-- Dates -->
-                                <div class="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg">
-                                    <h3 class="font-medium text-gray-900 dark:text-white mb-3">Даты</h3>
-                                    <div class="grid grid-cols-1 gap-3 text-sm">
-                                        <div class="flex justify-between">
-                                            <span class="text-gray-600 dark:text-gray-400">Создано:</span>
-                                            <span class="text-gray-900 dark:text-white">{{ formatDate(product.created_on) }}</span>
-                                        </div>
-                                        <div class="flex justify-between">
-                                            <span class="text-gray-600 dark:text-gray-400">Обновлено:</span>
-                                            <span class="text-gray-900 dark:text-white">{{ formatDate(product.updated_on) }}</span>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <!-- Stocks -->
-                                <div class="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg">
-                                    <h3 class="font-medium text-gray-900 dark:text-white mb-3">Остатки на складах</h3>
-                                    <div v-if="loadingStocks" class="flex justify-center py-4">
-                                        <div class="animate-spin rounded-full h-6 w-6 border-b-2 border-gray-900 dark:border-white"></div>
-                                    </div>
-                                    <div v-else-if="stocks.length === 0" class="text-sm text-gray-500 dark:text-gray-400">
-                                        Нет данных о складах
-                                    </div>
-                                    <div v-else class="space-y-6">
-                                        <!-- Wildberries -->
-                                        <div v-if="Object.keys(groupedStocks.wb).length > 0">
-                                            <div class="flex items-center space-x-2 mb-2">
-                                                <span class="text-sm font-medium text-purple-900 dark:text-purple-100">Wildberries</span>
-                                            </div>
-                                            <div class="space-y-3 pl-4">
-                                                <div v-for="(regionData, region) in groupedStocks.wb" :key="region" class="space-y-2">
-                                                    <div class="flex justify-between items-center">
-                                                        <span class="text-sm font-medium">{{ region }}</span>
-                                                        <span class="text-sm font-medium">Всего: {{ regionData.total }} шт.</span>
-                                                    </div>
-                                                    <div class="space-y-1 pl-4">
-                                                        <div v-for="warehouse in regionData.warehouses" :key="warehouse.warehouse_id" 
-                                                             class="flex justify-between items-center text-sm">
-                                                            <span class="text-gray-600 dark:text-gray-400">{{ warehouse.warehouse_name }}</span>
-                                                            <span>{{ warehouse.qty }} шт.</span>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-
-                                        <!-- Ozon -->
-                                        <div v-if="Object.keys(groupedStocks.ozon).length > 0">
-                                            <div class="flex items-center space-x-2 mb-2">
-                                                <span class="text-sm font-medium text-blue-900 dark:text-blue-100">Ozon</span>
-                                            </div>
-                                            <div class="space-y-3 pl-4">
-                                                <div v-for="(regionData, region) in groupedStocks.ozon" :key="region" class="space-y-2">
-                                                    <div class="flex justify-between items-center">
-                                                        <span class="text-sm font-medium">{{ region }}</span>
-                                                        <span class="text-sm font-medium">Всего: {{ regionData.total }} шт.</span>
-                                                    </div>
-                                                    <div class="space-y-1 pl-4">
-                                                        <div v-for="warehouse in regionData.warehouses" :key="warehouse.warehouse_id" 
-                                                             class="flex justify-between items-center text-sm">
-                                                            <span class="text-gray-600 dark:text-gray-400">{{ warehouse.warehouse_name }}</span>
-                                                            <span>{{ warehouse.qty }} шт.</span>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-
-                                        <!-- MS -->
-                                        <div v-if="Object.keys(groupedStocks.ms).length > 0">
-                                            <div class="flex items-center space-x-2 mb-2">
-                                                <span class="text-sm font-medium text-green-900 dark:text-green-100">MS</span>
-                                            </div>
-                                            <div class="space-y-3 pl-4">
-                                                <div v-for="(regionData, region) in groupedStocks.ms" :key="region" class="space-y-2">
-                                                    <div class="flex justify-between items-center">
-                                                        <span class="text-sm font-medium">{{ region }}</span>
-                                                        <span class="text-sm font-medium">Всего: {{ regionData.total }} шт.</span>
-                                                    </div>
-                                                    <div class="space-y-1 pl-4">
-                                                        <div v-for="warehouse in regionData.warehouses" :key="warehouse.warehouse_id" 
-                                                             class="flex justify-between items-center text-sm">
-                                                            <span class="text-gray-600 dark:text-gray-400">{{ warehouse.warehouse_name }}</span>
-                                                            <span>{{ warehouse.qty }} шт.</span>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <!-- Goals -->
-                                <div class="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg">
-                                    <h3 class="font-medium text-gray-900 dark:text-white mb-3">Цели продаж</h3>
-                                    <div v-if="loadingGoals" class="flex justify-center py-4">
-                                        <div class="animate-spin rounded-full h-6 w-6 border-b-2 border-gray-900 dark:border-white"></div>
-                                    </div>
-                                    <div v-else-if="goals.length === 0" class="text-sm text-gray-500 dark:text-gray-400">
-                                        Нет данных о целях продаж
-                                    </div>
-                                    <div v-else class="space-y-6">
-                                        <!-- Wildberries -->
-                                        <div v-if="Object.keys(groupedGoals.wb).length > 0">
-                                            <div class="flex items-center space-x-2 mb-2">
-                                                <span class="text-sm font-medium text-purple-900 dark:text-purple-100">Wildberries</span>
-                                            </div>
-                                            <div class="space-y-3 pl-4">
-                                                <div v-for="(regionData, region) in groupedGoals.wb" :key="region" class="space-y-2">
-                                                    <div class="flex justify-between items-center">
-                                                        <span class="text-sm font-medium">{{ region }}</span>
-                                                        <span class="text-sm font-medium">Всего: {{ regionData.total }} шт.</span>
-                                                    </div>
-                                                    <div class="space-y-1 pl-4">
-                                                        <div v-for="warehouse in regionData.warehouses" :key="warehouse.warehouse_id" 
-                                                             class="flex justify-between items-center text-sm">
-                                                            <div class="flex flex-col">
-                                                                <span class="text-gray-600 dark:text-gray-400">{{ warehouse.warehouse_name }}</span>
-                                                                <span class="text-xs text-gray-500 dark:text-gray-400">
-                                                                    на {{ warehouse.goal_days }} дн.
-                                                                </span>
-                                                            </div>
-                                                            <span>{{ warehouse.sales_goal }} шт.</span>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-
-                                        <!-- Ozon -->
-                                        <div v-if="Object.keys(groupedGoals.ozon).length > 0">
-                                            <div class="flex items-center space-x-2 mb-2">
-                                                <span class="text-sm font-medium text-blue-900 dark:text-blue-100">Ozon</span>
-                                            </div>
-                                            <div class="space-y-3 pl-4">
-                                                <div v-for="(regionData, region) in groupedGoals.ozon" :key="region" class="space-y-2">
-                                                    <div class="flex justify-between items-center">
-                                                        <span class="text-sm font-medium">{{ region }}</span>
-                                                        <span class="text-sm font-medium">Всего: {{ regionData.total }} шт.</span>
-                                                    </div>
-                                                    <div class="space-y-1 pl-4">
-                                                        <div v-for="warehouse in regionData.warehouses" :key="warehouse.warehouse_id" 
-                                                             class="flex justify-between items-center text-sm">
-                                                            <div class="flex flex-col">
-                                                                <span class="text-gray-600 dark:text-gray-400">{{ warehouse.warehouse_name }}</span>
-                                                                <span class="text-xs text-gray-500 dark:text-gray-400">
-                                                                    на {{ warehouse.goal_days }} дн.
-                                                                </span>
-                                                            </div>
-                                                            <span>{{ warehouse.sales_goal }} шт.</span>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-
-                                        <!-- MS -->
-                                        <div v-if="Object.keys(groupedGoals.ms).length > 0">
-                                            <div class="flex items-center space-x-2 mb-2">
-                                                <span class="text-sm font-medium text-green-900 dark:text-green-100">MS</span>
-                                            </div>
-                                            <div class="space-y-3 pl-4">
-                                                <div v-for="(regionData, region) in groupedGoals.ms" :key="region" class="space-y-2">
-                                                    <div class="flex justify-between items-center">
-                                                        <span class="text-sm font-medium">{{ region }}</span>
-                                                        <span class="text-sm font-medium">Всего: {{ regionData.total }} шт.</span>
-                                                    </div>
-                                                    <div class="space-y-1 pl-4">
-                                                        <div v-for="warehouse in regionData.warehouses" :key="warehouse.warehouse_id" 
-                                                             class="flex justify-between items-center text-sm">
-                                                            <div class="flex flex-col">
-                                                                <span class="text-gray-600 dark:text-gray-400">{{ warehouse.warehouse_name }}</span>
-                                                                <span class="text-xs text-gray-500 dark:text-gray-400">
-                                                                    на {{ warehouse.goal_days }} дн.
-                                                                </span>
-                                                            </div>
-                                                            <span>{{ warehouse.sales_goal }} шт.</span>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
+                                    <div class="border bg-white dark:bg-gray-800 rounded-lg p-4 flex flex-col">
+                                        <span class="text-sm font-medium text-gray-500 dark:text-gray-400 mb-2">Рентабельность</span>
+                                        <span class="text-2xl font-bold text-gray-900 dark:text-white">{{ formatPercentage(product.wb_profitability) }}</span>
                                     </div>
                                 </div>
 
                                 <!-- Ads -->
-                                <div class="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg">
-                                    <h3 class="font-medium text-gray-900 dark:text-white mb-3">Реклама</h3>
+                                <div class="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg mt-6">
+                                    <h3 class="font-bold text-gray-900 dark:text-white mb-3">Реклама</h3>
                                     <div v-if="loadingAds" class="flex justify-center py-4">
                                         <div class="animate-spin rounded-full h-6 w-6 border-b-2 border-gray-900 dark:border-white"></div>
                                     </div>
@@ -415,15 +203,19 @@
                                     <div v-else class="space-y-3">
                                         <div v-for="ad in ads" :key="ad.id" class="flex justify-between items-center">
                                             <div class="flex items-center space-x-2">
-                                                <span class="text-sm">{{ ad.name }}</span>
-                                                <span class="text-sm">{{ ad.id }}</span>
+                                                <span class="text-sm"><router-link :to="`/ads/${ad.id}`" class="text-blue-500 dark:text-blue-400">{{ ad.id }}</router-link></span>
+                                                <!-- <span class="text-sm">{{ ad.name }}</span> -->
                                                 <span :class="getAdStatusClass(ad.status_id)" 
                                                       class="px-2 py-0.5 text-xs font-medium rounded-full">
                                                     {{ getAdStatusText(ad.status_id) }}
-                                                </span><br/>
-                                                <span class="text-xs text-gray-500 dark:text-gray-400">
-                                                    {{ formatDate(ad.created_at) }}
                                                 </span>
+                                                <span class="px-2 py-0.5 text-xs font-medium rounded-full bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 ml-2">
+                                                    {{ getCampaignStatusText(ad.step_date, ad.profitability) }}
+                                                </span>
+                                                <!-- <br/>
+                                                <span class="text-xs text-gray-500 dark:text-gray-400">
+                                                    {{ formatDate(ad.step_date) }}
+                                                </span> -->
                                             </div>
                                             <div class="text-right">
                                                 <div class="text-sm font-medium">{{ formatPercentage(ad.drr) }}</div>
@@ -435,143 +227,100 @@
                                     </div>
                                 </div>
 
-                                <!-- Supply Tasks -->
-                                <div class="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg">
-                                    <h3 class="font-medium text-gray-900 dark:text-white mb-3">Поставки</h3>
-                                    <div v-if="loadingSupplyTasks" class="flex justify-center py-4">
-                                        <div class="animate-spin rounded-full h-6 w-6 border-b-2 border-gray-900 dark:border-white"></div>
-                                    </div>
-                                    <div v-else-if="supplyTasks.length === 0" class="text-sm text-gray-500 dark:text-gray-400">
-                                        Нет активных поставок
-                                    </div>
-                                    <div v-else class="space-y-3">
-                                        <div v-for="task in supplyTasks" :key="task.id" class="flex justify-between items-center">
-                                            <div class="flex items-center space-x-2">
-                                                <span :class="getSupplyTaskStatusClass(task.status_id)" 
-                                                      class="px-2 py-0.5 text-xs font-medium rounded-full">
-                                                    {{ getSupplyTaskStatusText(task.status_id) }}
-                                                </span>
-                                                <span class="text-sm">{{ task.warehouse_name }}</span>
-                                            </div>
-                                            <div class="text-right">
-                                                <div class="text-sm font-medium">{{ task.qty }} шт.</div>
-                                                <div class="text-xs text-gray-500 dark:text-gray-400">
-                                                    до {{ formatDate(task.estimated_date) }}
-                                                </div>
-                                            </div>
-                                        </div>
+                                <h2 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Информация по Ozon <span class="bg-gray-100 dark:bg-gray-800 rounded-lg p-1 text-sm text-gray-500 dark:text-gray-400 ml-2">{{ product.ozonid }}</span></h2>
+                                <div class="grid grid-cols-1 sm:grid-cols-3 gap-6 mb-6">
+                                    <div class="border bg-white dark:bg-gray-800 rounded-lg p-4 flex flex-col">
+                                        <span class="text-sm font-medium text-gray-500 dark:text-gray-400 mb-2">Цена</span>
+                                        <span class="text-2xl font-bold text-gray-900 dark:text-white">{{ product.ozon_price || '-' }} ₽</span>
                                     </div>
                                 </div>
+
+                                <h2 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Данные по Ozon</h2>
+                                <div class="grid grid-cols-1 sm:grid-cols-3 gap-6 mb-6">
+                                    <div class="border bg-white dark:bg-gray-800 rounded-lg p-4 flex flex-col">
+                                        <span class="text-sm font-medium text-gray-500 dark:text-gray-400 mb-2">Продажи за 7 дней</span>
+                                        <span class="text-2xl font-bold text-gray-900 dark:text-white">{{ product.ozon_sales7 || '-' }}  ₽</span>
+                                    </div>
+
+
+                                    <div class="border bg-white dark:bg-gray-800 rounded-lg p-4 flex flex-col">
+                                        <span class="text-sm font-medium text-gray-500 dark:text-gray-400 mb-2">Продажи за 30 дней</span>
+                                        <span class="text-2xl font-bold text-gray-900 dark:text-white">{{ product.ozon_sales30 || '-' }} шт</span>
+                                    </div>
+                                    <div class="border bg-white dark:bg-gray-800 rounded-lg p-4 flex flex-col">
+                                        <span class="text-sm font-medium text-gray-500 dark:text-gray-400 mb-2">Рентабельность</span>
+                                        <span class="text-2xl font-bold text-gray-900 dark:text-white">{{ formatPercentage(product.ozon_profitability) }}</span>
+                                    </div>
+
+                                </div>
+
+                                
 
                                 <!-- Combined Stocks and Goals -->
                                 <div class="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg">
                                     <h3 class="font-medium text-gray-900 dark:text-white mb-3">Остатки и цели</h3>
-                                    <div v-if="loadingStocks || loadingGoals" class="flex justify-center py-4">
-                                        <div class="animate-spin rounded-full h-6 w-6 border-b-2 border-gray-900 dark:border-white"></div>
-                                    </div>
-                                    <div v-else-if="stocks.length === 0 && goals.length === 0" class="text-sm text-gray-500 dark:text-gray-400">
-                                        Нет данных об остатках и целях
-                                    </div>
-                                    <div v-else class="space-y-6">
-                                        <!-- Wildberries -->
-                                        <div v-if="Object.keys(combinedWarehouseData.wb).length > 0">
-                                            <div class="flex items-center space-x-2 mb-2">
-                                                <span class="text-sm font-medium text-purple-900 dark:text-purple-100">Wildberries</span>
-                                            </div>
-                                            <div class="space-y-3 pl-4">
-                                                <div v-for="(regionData, region) in combinedWarehouseData.wb" :key="region" class="space-y-2">
-                                                    <div class="flex justify-between items-center bg-gray-100 dark:bg-gray-600 p-2 rounded">
-                                                        <span class="text-sm font-medium">{{ region }}</span>
-                                                        <div class="flex space-x-4">
-                                                            <span class="text-sm">Остатки: {{ regionData.totalStocks }} шт.</span>
-                                                            <span class="text-sm">Цели: {{ regionData.totalGoals }} шт.</span>
-                                                        </div>
-                                                    </div>
-                                                    <div class="space-y-1 pl-4">
-                                                        <div v-for="(warehouse, id) in regionData.warehouses" :key="id" 
-                                                             class="flex justify-between items-center text-sm border-b border-gray-200 dark:border-gray-600 py-1">
-                                                            <div class="flex flex-col">
-                                                                <span class="text-gray-600 dark:text-gray-400">{{ warehouse.name }}</span>
-                                                                <span v-if="warehouse.goalDays" class="text-xs text-gray-500 dark:text-gray-400">
-                                                                    на {{ warehouse.goalDays }} дн.
-                                                                </span>
-                                                            </div>
-                                                            <div class="flex space-x-4">
-                                                                <span class="text-gray-600 dark:text-gray-400">{{ warehouse.stocks }} шт.</span>
-                                                                <span class="text-gray-600 dark:text-gray-400">{{ warehouse.goals }} шт.</span>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
+                                    <template v-if="loadingStocks || loadingGoals">
+                                        <div class="flex justify-center py-4">
+                                            <div class="animate-spin rounded-full h-6 w-6 border-b-2 border-gray-900 dark:border-white"></div>
                                         </div>
-
-                                        <!-- Ozon -->
-                                        <div v-if="Object.keys(combinedWarehouseData.ozon).length > 0">
-                                            <div class="flex items-center space-x-2 mb-2">
-                                                <span class="text-sm font-medium text-blue-900 dark:text-blue-100">Ozon</span>
-                                            </div>
-                                            <div class="space-y-3 pl-4">
-                                                <div v-for="(regionData, region) in combinedWarehouseData.ozon" :key="region" class="space-y-2">
-                                                    <div class="flex justify-between items-center bg-gray-100 dark:bg-gray-600 p-2 rounded">
-                                                        <span class="text-sm font-medium">{{ region }}</span>
-                                                        <div class="flex space-x-4">
-                                                            <span class="text-sm">Остатки: {{ regionData.totalStocks }} шт.</span>
-                                                            <span class="text-sm">Цели: {{ regionData.totalGoals }} шт.</span>
-                                                        </div>
-                                                    </div>
-                                                    <div class="space-y-1 pl-4">
-                                                        <div v-for="(warehouse, id) in regionData.warehouses" :key="id" 
-                                                             class="flex justify-between items-center text-sm border-b border-gray-200 dark:border-gray-600 py-1">
-                                                            <div class="flex flex-col">
-                                                                <span class="text-gray-600 dark:text-gray-400">{{ warehouse.name }}</span>
-                                                                <span v-if="warehouse.goalDays" class="text-xs text-gray-500 dark:text-gray-400">
-                                                                    на {{ warehouse.goalDays }} дн.
-                                                                </span>
-                                                            </div>
-                                                            <div class="flex space-x-4">
-                                                                <span class="text-gray-600 dark:text-gray-400">{{ warehouse.stocks }} шт.</span>
-                                                                <span class="text-gray-600 dark:text-gray-400">{{ warehouse.goals }} шт.</span>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
+                                    </template>
+                                    <template v-else-if="stocks.length === 0 && goals.length === 0">
+                                        <div class="text-sm text-gray-500 dark:text-gray-400">
+                                            Нет данных об остатках и целях
                                         </div>
-
-                                        <!-- MS -->
-                                        <div v-if="Object.keys(combinedWarehouseData.ms).length > 0">
-                                            <div class="flex items-center space-x-2 mb-2">
-                                                <span class="text-sm font-medium text-green-900 dark:text-green-100">MS</span>
-                                            </div>
-                                            <div class="space-y-3 pl-4">
-                                                <div v-for="(regionData, region) in combinedWarehouseData.ms" :key="region" class="space-y-2">
-                                                    <div class="flex justify-between items-center bg-gray-100 dark:bg-gray-600 p-2 rounded">
-                                                        <span class="text-sm font-medium">{{ region }}</span>
-                                                        <div class="flex space-x-4">
-                                                            <span class="text-sm">Остатки: {{ regionData.totalStocks }} шт.</span>
-                                                            <span class="text-sm">Цели: {{ regionData.totalGoals }} шт.</span>
-                                                        </div>
-                                                    </div>
-                                                    <div class="space-y-1 pl-4">
-                                                        <div v-for="(warehouse, id) in regionData.warehouses" :key="id" 
-                                                             class="flex justify-between items-center text-sm border-b border-gray-200 dark:border-gray-600 py-1">
-                                                            <div class="flex flex-col">
-                                                                <span class="text-gray-600 dark:text-gray-400">{{ warehouse.name }}</span>
-                                                                <span v-if="warehouse.goalDays" class="text-xs text-gray-500 dark:text-gray-400">
-                                                                    на {{ warehouse.goalDays }} дн.
-                                                                </span>
-                                                            </div>
-                                                            <div class="flex space-x-4">
-                                                                <span class="text-gray-600 dark:text-gray-400">{{ warehouse.stocks }} шт.</span>
-                                                                <span class="text-gray-600 dark:text-gray-400">{{ warehouse.goals }} шт.</span>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
+                                    </template>
+                                    <template v-else>
+                                        <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-600">
+                                            <thead class="bg-gray-100 dark:bg-gray-600">
+                                                <tr>
+                                                    <th class="px-2 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">Регион</th>
+                                                    <!-- <th class="px-2 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">Склад</th> -->
+                                                    <th class="px-2 py-2 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">Остатки</th>
+                                                    <th class="px-2 py-2 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">Цели</th>
+                                                    <th class="px-2 py-2 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">Дней</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <template v-for="mp in ['wb', 'ozon']">
+                                                    <tr>
+                                                        <td :colspan="5" class="bg-gray-200 dark:bg-gray-800 text-lg font-semibold py-2 px-2 border-t border-b border-gray-300 dark:border-gray-600 text-center"
+                                                            :class="mp === 'wb' ? 'text-purple-700 dark:text-purple-300' : 'text-blue-700 dark:text-blue-300'">
+                                                            {{ mp === 'wb' ? 'Wildberries' : 'Ozon' }}
+                                                        </td>
+                                                    </tr>
+                                                    <template v-for="(regionData, region) in (combinedWarehouseData[mp] || {})" :key="mp + '-' + region">
+                                                        <tr class="bg-gray-100 dark:bg-gray-700">
+                                                            <td class="px-2 py-1 text-sm font-bold">{{ region }}</td>
+                                                            <td class="px-2 py-1 text-sm text-right font-bold">{{ regionData.totalStocks }}</td>
+                                                            <td class="px-2 py-1 text-sm text-right font-bold">{{ regionData.totalGoals }}</td>
+                                                            <td class="px-2 py-1 text-sm text-right">&nbsp;</td>
+                                                        </tr>
+                                                        <template v-for="(warehouse, id) in regionData.warehouses" :key="mp + '-' + region + '-' + id">
+                                                            <tr>
+                                                                <!-- <td class="px-2 py-1 text-sm">&nbsp;</td> -->
+                                                                <td class="px-2 py-1 text-sm">{{ warehouse.name }}</td>
+                                                                <td class="px-2 py-1 text-sm text-right">{{ warehouse.stocks }}</td>
+                                                                <td class="px-2 py-1 text-sm text-right">{{ warehouse.goals }}</td>
+                                                                <td class="px-2 py-1 text-sm text-right">{{ warehouse.goalDays || '-' }}</td>
+                                                            </tr>
+                                                            <tr v-if="filteredSupplyTasks(warehouse.name).length > 0">
+                                                                <td colspan="4" class="px-2 pb-2 pt-0">
+                                                                    <div class="flex flex-wrap gap-2">
+                                                                        <span class="inline-flex items-center text-xs font-medium text-blue-800 dark:text-blue-100">🚚 В пути:</span>
+                                                                        <template v-for="task in filteredSupplyTasks(warehouse.name)" :key="task.id">
+                                                                            <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-800 dark:text-blue-100">
+                                                                                {{ task.qty }} шт. до {{ formatShortDate(task.estimated_date) }}
+                                                                            </span>
+                                                                        </template>
+                                                                    </div>
+                                                                </td>
+                                                            </tr>
+                                                        </template>
+                                                    </template>
+                                                </template>
+                                            </tbody>
+                                        </table>
+                                    </template>
                                 </div>
                             </div>
                         </div>
@@ -591,6 +340,7 @@
 import { useProductStore } from '@/store/productStore'
 import mpr from '@/tools/mpr'
 import Chart from 'chart.js/auto'
+
 function debounce(fn, delay) {
   let timeout
   return function(...args) {
@@ -871,6 +621,32 @@ export default {
                     return 'Неизвестно'
             }
         },
+        getCampaignStatusText(createdAt, profitability) {
+            if (!createdAt) return '-'
+            const createdDate = new Date(createdAt)
+            const now = new Date()
+            const diffTime = Math.abs(now - createdDate)
+            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
+            const weeks = Math.floor(diffDays / 7)
+
+            if (weeks < 4) return 'Разгон'
+            if (weeks < 8) return 'Оптимизация'
+            if (profitability < 0.4) return 'Спасение'
+            return 'Стабильная'
+        },
+        getCampaignStatusClass(createdAt, profitability) {
+            if (!createdAt) return 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300'
+            const createdDate = new Date(createdAt)
+            const now = new Date()
+            const diffTime = Math.abs(now - createdDate)
+            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
+            const weeks = Math.floor(diffDays / 7)
+
+            if (weeks < 4) return 'bg-green-100 text-green-800 dark:bg-green-800 dark:text-green-100'
+            if (weeks < 8) return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-800 dark:text-yellow-100'
+            if (profitability < 0.4) return 'bg-red-100 text-red-800 dark:bg-red-800 dark:text-red-100'
+            return 'bg-blue-100 text-blue-800 dark:bg-blue-800 dark:text-blue-100'
+        },
         getSupplyTaskStatusClass(status) {
             switch (status) {
                 case 1: // в работе
@@ -894,7 +670,20 @@ export default {
                 default:
                     return 'Неизвестно'
             }
-        }
+        },
+        filteredSupplyTasks(warehouseName) {
+            // Возвращает supplyTasks для склада с совпадающим именем и статусом != 10, отсортированные по дате
+            return (this.supplyTasks || [])
+                .filter(task => task.warehouse_name === warehouseName && task.status_id !== 10)
+                .sort((a, b) => new Date(a.estimated_date) - new Date(b.estimated_date))
+        },
+        formatShortDate(date) {
+            if (!date) return '-'
+            const d = new Date(date)
+            const day = String(d.getDate()).padStart(2, '0')
+            const month = String(d.getMonth() + 1).padStart(2, '0')
+            return `${day}.${month}`
+        },
     },
     computed: {
         groupedStocks() {
@@ -946,63 +735,66 @@ export default {
             return grouped
         },
         combinedWarehouseData() {
-            const combined = {
-                wb: {},
-                ozon: {},
-                ms: {}
-            }
+            // Гарантируем, что всегда возвращаем объект с wb и ozon
+            const combined = { wb: {}, ozon: {} }
 
-            // Initialize with stocks data
-            this.stocks.forEach(stock => {
-                const marketplace = stock.warehouse_type
-                const region = stock.warehouse_region || 'Не указан'
-                
-                if (!combined[marketplace][region]) {
-                    combined[marketplace][region] = {
-                        totalStocks: 0,
-                        totalGoals: 0,
-                        warehouses: {}
+            if (Array.isArray(this.stocks)) {
+                this.stocks.forEach(stock => {
+                    const marketplace = stock.warehouse_type
+                    if (!['wb', 'ozon'].includes(marketplace)) return
+                    const region = stock.warehouse_region || 'Не указан'
+                    if (!combined[marketplace][region]) {
+                        combined[marketplace][region] = {
+                            totalStocks: 0,
+                            totalGoals: 0,
+                            warehouses: {}
+                        }
                     }
-                }
-                
-                combined[marketplace][region].totalStocks += stock.qty
-                combined[marketplace][region].warehouses[stock.warehouse_id] = {
-                    name: stock.warehouse_name,
-                    stocks: stock.qty,
-                    goals: 0,
-                    goalDays: 0
-                }
-            })
-
-            // Add goals data
-            this.goals.forEach(goal => {
-                const marketplace = goal.warehouse_type
-                const region = goal.warehouse_region || 'Не указан'
-                
-                if (!combined[marketplace][region]) {
-                    combined[marketplace][region] = {
-                        totalStocks: 0,
-                        totalGoals: 0,
-                        warehouses: {}
-                    }
-                }
-                
-                combined[marketplace][region].totalGoals += goal.sales_goal
-                
-                if (!combined[marketplace][region].warehouses[goal.warehouse_id]) {
-                    combined[marketplace][region].warehouses[goal.warehouse_id] = {
-                        name: goal.warehouse_name,
-                        stocks: 0,
+                    combined[marketplace][region].totalStocks += stock.qty
+                    combined[marketplace][region].warehouses[stock.warehouse_id] = {
+                        name: stock.warehouse_name,
+                        stocks: stock.qty,
                         goals: 0,
                         goalDays: 0
                     }
-                }
-                
-                combined[marketplace][region].warehouses[goal.warehouse_id].goals = goal.sales_goal
-                combined[marketplace][region].warehouses[goal.warehouse_id].goalDays = goal.goal_days
-            })
+                })
+            }
 
+            if (Array.isArray(this.goals)) {
+                this.goals.forEach(goal => {
+                    const marketplace = goal.warehouse_type
+                    if (!['wb', 'ozon'].includes(marketplace)) return
+                    const region = goal.warehouse_region || 'Не указан'
+                    if (!combined[marketplace][region]) {
+                        combined[marketplace][region] = {
+                            totalStocks: 0,
+                            totalGoals: 0,
+                            warehouses: {}
+                        }
+                    }
+                    combined[marketplace][region].totalGoals += goal.sales_goal
+                    if (!combined[marketplace][region].warehouses[goal.warehouse_id]) {
+                        combined[marketplace][region].warehouses[goal.warehouse_id] = {
+                            name: goal.warehouse_name,
+                            stocks: 0,
+                            goals: 0,
+                            goalDays: 0
+                        }
+                    }
+                    combined[marketplace][region].warehouses[goal.warehouse_id].goals = goal.sales_goal
+                    combined[marketplace][region].warehouses[goal.warehouse_id].goalDays = goal.goal_days
+                })
+            }
             return combined
+        },
+        wb_spp() {
+            if (!this.product || !this.product.wb_mp_price || !this.product.wb_api_price) return 0
+            return Math.ceil(100 - (this.product.wb_mp_price / this.product.wb_api_price))
+        },
+        wb_price_moscow() {
+            if (!this.product || !this.product.wb_api_price) return 0
+            const spp = this.wb_spp / 100
+            return Math.floor(Math.floor(this.product.wb_api_price * (1 - spp)) * (1 - 0.02))
         }
     }
 }
