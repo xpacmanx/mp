@@ -1734,7 +1734,7 @@ export default {
                     responsive: true,
                     plugins: {
                         legend: { display: true },
-                        title: { display: true, text: 'Метрики кампании' }
+                        title: { display: true, text: 'Метрики товара' }
                     },
                     animation: false,
                     scales
