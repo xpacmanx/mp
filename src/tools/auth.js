@@ -129,7 +129,7 @@ export async function loginUser(username, password) {
             firstName: user.first_name,
             lastName: user.last_name,
             id: user.id,
-            photo_url: user.photo_url
+            photo: user.photo // <--- только photo!
         });
         
         return { success: true };

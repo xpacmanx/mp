@@ -7,8 +7,8 @@ import mpr from './mpr'
 const isAuthenticated = ref(false)
 const username = ref('')
 const role = ref('')
-const photo_url = ref('')
 const userData = ref(null)
+const photo = ref('')
 let refreshPromise = null;
 
 // Function to check if token is about to expire (within 1 hour)
@@ -99,7 +99,8 @@ function updateUserState(user) {
         isAuthenticated.value = true
         username.value = user.username || ''
         role.value = user.role || 'Пользователь'
-        photo_url.value = user.photo_url || ''
+        // Используем только photo
+        photo.value = user.photo || ''
         
         userData.value = {
             id: user.id,
@@ -108,7 +109,7 @@ function updateUserState(user) {
             firstName: user.firstName || user.first_name,
             lastName: user.lastName || user.last_name,
             role: user.role,
-            photo_url: user.photo_url
+            photo: user.photo || ''
         }
         // Store in localStorage for persistence
         localStorage.setItem('userData', JSON.stringify(userData.value))
@@ -123,7 +124,7 @@ function clearUserState() {
     username.value = ''
     role.value = ''
     userData.value = null
-    photo_url.value = ''
+    photo.value = ''
     localStorage.removeItem('userData')
 }
 
@@ -140,7 +141,6 @@ function initializeUserState() {
             if (storedUser) {
                 const user = JSON.parse(storedUser)
                 username.value = user.username || decoded.username || ''
-                photo_url.value = user.photo_url || ''
                 role.value = user.role || 'Пользователь'
                 userData.value = user
             } else {
@@ -165,7 +165,6 @@ export {
     username,
     role,
     userData,
-    photo_url,
     updateUserState,
     clearUserState,
     isTokenAboutToExpire,

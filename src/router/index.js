@@ -4,6 +4,7 @@ import GoalsByProductView from '../views/GoalsByProductView.vue'
 import GoalsByWarehouseView from '../views/GoalsByWarehouseView.vue'
 import NewSupplyTaskView from '../views/NewSupplyTaskView.vue'
 import NewSupplyTaskView2 from '../views/NewSupplyTaskView2.vue'
+import ImageCropperDemo from '../views/ImageCropperDemo.vue'
 import ConnectionsView from '../views/ConnectionsView.vue'
 import WarehousesView from '../views/WarehousesView.vue'
 import SupplytaskView from '../views/SupplytaskView.vue'
@@ -215,6 +216,34 @@ const routes = [
 		meta: {
 			title: 'Пользователи',
 			requiresAuth: true
+		}
+	},
+	{
+		path: '/image-demo',
+		name: 'image-demo',
+		component: ImageCropperDemo,
+		meta: {
+			title: 'Демо редактора изображений',
+			requiresAuth: false
+		}
+	},
+
+	{
+		path: '/canvas-cropper',
+		name: 'canvas-cropper',
+		component: () => import('../components/CanvasCropper.vue'),
+		meta: {
+			title: 'Canvas Image Cropper',
+			requiresAuth: false
+		}
+	},
+	{
+		path: '/profile-image-test',
+		name: 'profile-image-test',
+		component: () => import('../views/ProfileImageTest.vue'),
+		meta: {
+			title: 'Тест редактора фото профиля',
+			requiresAuth: false
 		}
 	},
 	{

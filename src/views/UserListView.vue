@@ -15,7 +15,7 @@
           <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
             <div v-for="user in group" :key="user.id" class="relative p-0 flex flex-col border border-teal-300 text-teal-300 transition-all duration-300 ease-out hover:scale-105">
 
-              <img v-if="user.photo_url" :src="user.photo_url || placeholderUrl" alt="Фото" class="w-full object-cover object-center" />
+              <img v-if="user.photo" :src="user.photo || placeholderUrl" alt="Фото" class="w-full object-cover object-center" />
               <div v-else class="w-full h-48 bg-teal-300 flex items-center justify-center">
                 <img :src="placeholderUrl" class="w-1/3 object-cover object-center opacity-70" />
               </div>
@@ -142,46 +142,65 @@ async function fetchUsers() {
   }
 }
 
-async function handleAddUser(form) {
+async function handleAddUser(formData) {
   try {
-    const data = {}
-    for (const key in form) {
-      const val = form[key]
-      if (val !== null && val !== '' && typeof val !== 'undefined') {
-        data[key] = val
+    // FormData уже содержит все необходимые поля включая файл изображения
+    // Передаем его напрямую в mpr без преобразований
+    await mpr({ 
+      url: '/users/', 
+      method: 'post', 
+      data: formData,
+      headers: {
+        'Content-Type': 'multipart/form-data'
       }
-    }
-    await mpr({ url: '/users/', method: 'post', data })
+    })
     closeAddUserModal()
     await fetchUsers()
   } catch (e) {
-    // TODO: обработка ошибок
+    console.error('Ошибка создания пользователя:', e)
+    // TODO: показать ошибку пользователю
   }
 }
 
-async function handleEditUser(form) {
+async function handleEditUser(formData) {
   try {
     if (!editUserData.value || !editUserData.value.id) return
-    const changed = {}
-    for (const key in form) {
-      if (key === 'password' || key === 'password2') continue
-      const oldVal = editUserData.value[key]
-      const newVal = form[key]
-      const isEmpty = v => v === null || v === '' || typeof v === 'undefined'
-      if (isEmpty(oldVal) && isEmpty(newVal)) continue
-      if (oldVal !== newVal) {
-        changed[key] = newVal
+    
+    // Если получили FormData (с файлом изображения), отправляем как есть
+    if (formData instanceof FormData) {
+      await mpr({ 
+        url: `/users/${editUserData.value.id}/`, 
+        method: 'patch', 
+        data: formData,
+        headers: {
+          'Content-Type': 'multipart/form-data'
+        }
+      })
+    } else {
+      // Если получили обычный объект, обрабатываем как раньше
+      const changed = {}
+      for (const key in formData) {
+        if (key === 'password' || key === 'password2' || key === 'photo_file') continue
+        const oldVal = editUserData.value[key]
+        const newVal = formData[key]
+        const isEmpty = v => v === null || v === '' || typeof v === 'undefined'
+        if (isEmpty(oldVal) && isEmpty(newVal)) continue
+        if (oldVal !== newVal) {
+          changed[key] = newVal
+        }
       }
+      if (Object.keys(changed).length === 0) {
+        closeEditUserModal()
+        return
+      }
+      await mpr({ url: `/users/${editUserData.value.id}/`, method: 'patch', data: changed })
     }
-    if (Object.keys(changed).length === 0) {
-      closeEditUserModal()
-      return
-    }
-    await mpr({ url: `/users/${editUserData.value.id}/`, method: 'patch', data: changed })
+    
     closeEditUserModal()
     await fetchUsers()
   } catch (e) {
-    // TODO: обработка ошибок
+    console.error('Ошибка редактирования пользователя:', e)
+    // TODO: показать ошибку пользователю
   }
 }
 

@@ -45,3 +45,5 @@ a,
     padding: 0 2rem;
   }
 } */
+
+/* Удалены CSS фиксы для vue-modern-cropper - теперь используем vanilla cropperjs */
