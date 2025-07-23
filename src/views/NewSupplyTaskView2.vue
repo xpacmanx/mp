@@ -238,6 +238,8 @@
 								</th>
 								<th scope="col">{{current_warehouse.type.toUpperCase()}} Текущая доходность</th>
 								<th scope="col">{{current_warehouse.type.toUpperCase()}} Планируем ли и дальше продавать
+									<Sorting :filters="filters" :sorting="sorting" :name="current_warehouse.type+'_active_for_sell'"
+										@onSort="onSort" />
 								</th>
 								<th scope="col">{{current_warehouse.type.toUpperCase()}} Кол-во продаж за 7 дней</th>
 								<th scope="col">{{current_warehouse.type.toUpperCase()}} Кол-во продаж за 30 дней</th>
