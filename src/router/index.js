@@ -325,10 +325,17 @@ router.beforeEach(async (to, from, next) => {
 			if (!token || !refreshToken) {
 				console.log('No tokens for protected route');
 				localStorage.clear();
-				return next({
-					path: '/login',
-					query: { backUrl: to.fullPath }
-				});
+				// Показываем модальное окно логина только если пользователь был авторизован ранее
+				const hadToken = localStorage.getItem('hadToken') === 'true';
+				if (hadToken) {
+					console.log('User was authenticated before, showing login modal');
+					setTimeout(() => {
+						authEvents.emit('tokenExpired');
+					}, 100);
+				} else {
+					console.log('First time user, not showing login modal');
+				}
+				return next(); // Разрешаем навигацию
 			}
 
 			const isExpired = checkTokenExpiration(token);
@@ -347,10 +354,12 @@ router.beforeEach(async (to, from, next) => {
 				}
 				
 				localStorage.clear();
-				return next({
-					path: '/login',
-					query: { backUrl: to.fullPath }
-				});
+				// Показываем модальное окно логина при потере токена
+				console.log('Token lost, showing login modal');
+				setTimeout(() => {
+					authEvents.emit('tokenExpired');
+				}, 100);
+				return next(); // Разрешаем навигацию, но показываем модальное окно
 			}
 		}
 
@@ -365,10 +374,15 @@ router.beforeEach(async (to, from, next) => {
 	} catch (error) {
 		console.error('Navigation guard error:', error);
 		localStorage.clear();
-		return next({
-			path: '/login',
-			query: { backUrl: to.fullPath }
-		});
+		// Показываем модальное окно логина только если пользователь был авторизован ранее
+		const hadToken = localStorage.getItem('hadToken') === 'true';
+		if (hadToken) {
+			console.log('Navigation error, user was authenticated before, showing login modal');
+			setTimeout(() => {
+				authEvents.emit('tokenExpired');
+			}, 100);
+		}
+		return next(); // Разрешаем навигацию
 	}
 });
 

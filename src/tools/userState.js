@@ -9,6 +9,7 @@ const username = ref('')
 const role = ref('')
 const userData = ref(null)
 const photo = ref('')
+const wasAuthenticated = ref(false) // Флаг для отслеживания был ли пользователь авторизован
 let refreshPromise = null;
 
 // Function to check if token is about to expire (within 1 hour)
@@ -97,6 +98,7 @@ async function refreshToken() {
 function updateUserState(user) {
     if (user) {
         isAuthenticated.value = true
+        wasAuthenticated.value = true // Пользователь был авторизован
         username.value = user.username || ''
         role.value = user.role || 'Пользователь'
         // Используем только photo
@@ -125,6 +127,7 @@ function clearUserState() {
     role.value = ''
     userData.value = null
     photo.value = ''
+    // НЕ сбрасываем wasAuthenticated при выходе, чтобы знать что пользователь был авторизован
     localStorage.removeItem('userData')
 }
 
@@ -133,19 +136,39 @@ function initializeUserState() {
     const token = localStorage.getItem('authToken')
     const storedUser = localStorage.getItem('userData')
     
+    // Проверяем, был ли пользователь авторизован ранее
+    const hadToken = localStorage.getItem('hadToken') === 'true'
+    wasAuthenticated.value = hadToken
+    
     if (token) {
         try {
             const decoded = jwtDecode(token)
-            isAuthenticated.value = true
+            const currentTime = DateTime.now().toSeconds()
             
-            if (storedUser) {
-                const user = JSON.parse(storedUser)
-                username.value = user.username || decoded.username || ''
-                role.value = user.role || 'Пользователь'
-                userData.value = user
+            // Проверяем, не истек ли токен
+            if (decoded.exp && decoded.exp > currentTime) {
+                isAuthenticated.value = true
+                wasAuthenticated.value = true
+                
+                if (storedUser) {
+                    const user = JSON.parse(storedUser)
+                    username.value = user.username || decoded.username || ''
+                    role.value = user.role || 'Пользователь'
+                    photo.value = user.photo || ''
+                    userData.value = user
+                } else {
+                    username.value = decoded.username || ''
+                    role.value = 'Пользователь'
+                    photo.value = ''
+                    userData.value = {
+                        username: decoded.username || '',
+                        role: 'Пользователь',
+                        photo: ''
+                    }
+                }
             } else {
-                username.value = decoded.username || ''
-                role.value = 'Пользователь'
+                console.log('Token expired during initialization')
+                clearUserState()
             }
         } catch (error) {
             console.error('Failed to decode token:', error)
@@ -165,6 +188,7 @@ export {
     username,
     role,
     userData,
+    wasAuthenticated,
     updateUserState,
     clearUserState,
     isTokenAboutToExpire,

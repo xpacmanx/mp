@@ -1,44 +1,67 @@
 <template>
   <div id="app">
-    <AuthManager />
-    <router-view></router-view>
-    <LoginModal 
-      :show="showLoginModal" 
-      @close="showLoginModal = false"
-      @success="handleLoginSuccess"
-    />
+    <div v-if="isLoading" class="loading-screen">
+      <div class="loading-spinner"></div>
+      <p>Загрузка...</p>
+    </div>
+    <div v-else>
+      <AuthManager />
+      <AuthGuard>
+        <router-view></router-view>
+      </AuthGuard>
+    </div>
   </div>
 </template>
 
 <script>
-import LoginModal from './components/LoginModal.vue'
-import { authEvents } from './router'
+import { ref, onMounted } from 'vue'
 import AuthManager from '@/components/auth/AuthManager.vue'
+import AuthGuard from '@/components/auth/AuthGuard.vue'
+import Header from '@/components/navigation/Header.vue'
+import { authEvents } from '@/router'
+import { wasAuthenticated } from '@/tools/userState'
 
 export default {
   name: 'App',
   components: {
-    LoginModal,
-    AuthManager
+    AuthManager,
+    AuthGuard,
+    Header
   },
-  data() {
-    return {
-      showLoginModal: false
-    }
-  },
-  created() {
-    // Listen for auth events
-    authEvents.on((event) => {
-      if (event === 'tokenExpired') {
-        this.showLoginModal = true;
+  setup() {
+    const isLoading = ref(true)
+
+    onMounted(() => {
+      console.log('App mounted, starting loading timer')
+      
+      // Проверяем токены при загрузке
+      const token = localStorage.getItem('authToken')
+      const refreshToken = localStorage.getItem('refreshToken')
+      
+      console.log('App initial auth check:', { 
+        hasToken: !!token, 
+        hasRefreshToken: !!refreshToken,
+        wasAuthenticated: wasAuthenticated.value 
+      })
+      
+      // Показываем модальное окно логина только если пользователь был авторизован ранее
+      // или если токен истек (потеря токена)
+      if ((!token || !refreshToken) && wasAuthenticated.value) {
+        console.log('User was authenticated before, showing login modal')
+        setTimeout(() => {
+          authEvents.emit('tokenExpired')
+        }, 200) // Даем время AuthManager инициализироваться
       }
-    });
-  },
-  methods: {
-    handleLoginSuccess() {
-      this.showLoginModal = false;
-      // Retry the last failed request or reload the current page
-      window.location.reload();
+      
+      // Имитируем загрузку для предотвращения мерцания
+      setTimeout(() => {
+        console.log('App loading completed')
+        isLoading.value = false
+      }, 100)
+    })
+
+    return {
+      isLoading
     }
   }
 }
@@ -49,6 +72,18 @@ export default {
   
 #app {
 	font-family: Rubik, sans-serif;
+}
+
+.loading-screen {
+  @apply fixed inset-0 bg-gray-900 flex items-center justify-center z-50;
+}
+
+.loading-spinner {
+  @apply w-8 h-8 border-4 border-lime-300 border-t-transparent rounded-full animate-spin;
+}
+
+.loading-screen p {
+  @apply text-lime-300 mt-4 text-lg;
 }
 
 a {

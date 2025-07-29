@@ -87,6 +87,11 @@ export default {
       isLoading,
       signin
     }
+  },
+  watch: {
+    show(newVal) {
+      console.log('LoginModal show prop changed:', newVal)
+    }
   }
 }
 </script>

@@ -120,6 +120,7 @@ export async function loginUser(username, password) {
         
         localStorage.setItem('authToken', access);
         localStorage.setItem('refreshToken', refresh);
+        localStorage.setItem('hadToken', 'true'); // Устанавливаем флаг что пользователь был авторизован
         
         // Update user state with the complete user object
         updateUserState({
@@ -143,12 +144,23 @@ export async function loginUser(username, password) {
     }
 }
 
-export async function logoutUser() {
+export async function logoutUser(router) {
     try {
+        isLoggingOut = true;
         handleLogout();
+        
+        // Показываем модальное окно логина при выходе
+        setLoginModalVisibility(true);
+        
+        // Перенаправляем на главную страницу, если не на странице логина
+        if (router && router.currentRoute.value.path !== '/login') {
+            router.push('/');
+        }
     } catch (error) {
         console.error('Logout failed:', error);
         handleLogout();
+    } finally {
+        isLoggingOut = false;
     }
 }
 
