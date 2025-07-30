@@ -199,7 +199,8 @@ export default {
       birthDate: '',
       email: '',
       role: '',
-      photo: ''
+      photo: '',
+      photo_file: null
     })
 
     const originalData = ref({})
@@ -221,6 +222,7 @@ export default {
         profileData.email = userData.email || ''
         profileData.role = userData.role || ''
         profileData.photo = userData.photo || ''
+        profileData.photo_file = null
 
         // Сохраняем оригинальные данные для сравнения
         originalData.value = { ...profileData }
@@ -236,6 +238,7 @@ export default {
         profileData.email = userData.value?.email || username.value || ''
         profileData.role = role.value || ''
         profileData.photo = userData.value?.photo || ''
+        profileData.photo_file = null
 
         originalData.value = { ...profileData }
       } finally {
@@ -252,7 +255,27 @@ export default {
     }
 
     const handleImageCropped = (croppedImageData) => {
-      profileData.photo = croppedImageData
+      // Конвертируем DataURL в Blob для отправки на сервер
+      fetch(croppedImageData)
+        .then(res => res.blob())
+        .then(blob => {
+          // Создаем File объект из Blob
+          const timestamp = Date.now()
+          const file = new File([blob], `profile_photo_${timestamp}.jpg`, { 
+            type: 'image/jpeg',
+            lastModified: timestamp
+          })
+          
+          // Устанавливаем URL для предварительного просмотра
+          profileData.photo = croppedImageData
+          profileData.photo_file = file
+          
+          console.log('✅ Фото профиля готово к сохранению:', file.size, 'bytes')
+        })
+        .catch(error => {
+          console.error('❌ Ошибка конвертации изображения:', error)
+        })
+      
       closeImageCropper()
     }
 
@@ -296,40 +319,70 @@ export default {
       isSaving.value = true
       
       try {
-        // Создаем объект с только измененными данными
-        const changedData = {}
-        
-        // Проверяем, изменились ли данные по сравнению с оригинальными
-        if (profileData.firstName.trim() !== originalData.value.firstName) {
-          changedData.first_name = profileData.firstName.trim()
-        }
-        if (profileData.lastName.trim() !== originalData.value.lastName) {
-          changedData.last_name = profileData.lastName.trim()
-        }
-        if (profileData.birthDate !== originalData.value.birthDate) {
-          changedData.birthdate = profileData.birthDate
-        }
-        if (profileData.photo !== originalData.value.photo) {
-          changedData.photo = profileData.photo
-        }
-        
-        // Если нет изменений, просто выходим
-        if (Object.keys(changedData).length === 0) {
-          alert('Нет изменений для сохранения')
-          return
-        }
-        
         // Получаем ID пользователя из userData
         const userId = userData.value?.id
         if (!userId) {
           throw new Error('ID пользователя не найден')
         }
         
-        const response = await mpr({
-          url: `/users/${userId}/`,
-          method: 'patch',
-          data: changedData
-        })
+        // Проверяем, есть ли изменения
+        const hasChanges = 
+          profileData.firstName.trim() !== originalData.value.firstName ||
+          profileData.lastName.trim() !== originalData.value.lastName ||
+          profileData.birthDate !== originalData.value.birthDate ||
+          profileData.photo !== originalData.value.photo
+        
+        if (!hasChanges) {
+          alert('Нет изменений для сохранения')
+          return
+        }
+        
+        // Если есть файл фото, используем FormData
+        if (profileData.photo_file) {
+          const formData = new FormData()
+          
+          // Добавляем только измененные поля
+          if (profileData.firstName.trim() !== originalData.value.firstName) {
+            formData.append('first_name', profileData.firstName.trim())
+          }
+          if (profileData.lastName.trim() !== originalData.value.lastName) {
+            formData.append('last_name', profileData.lastName.trim())
+          }
+          if (profileData.birthDate !== originalData.value.birthDate) {
+            formData.append('birthdate', profileData.birthDate)
+          }
+          
+          // Добавляем файл фото
+          formData.append('photo', profileData.photo_file)
+          
+          const response = await mpr({
+            url: `/users/${userId}/`,
+            method: 'patch',
+            data: formData,
+            headers: {
+              'Content-Type': 'multipart/form-data'
+            }
+          })
+        } else {
+          // Если нет файла фото, отправляем обычный объект
+          const changedData = {}
+          
+          if (profileData.firstName.trim() !== originalData.value.firstName) {
+            changedData.first_name = profileData.firstName.trim()
+          }
+          if (profileData.lastName.trim() !== originalData.value.lastName) {
+            changedData.last_name = profileData.lastName.trim()
+          }
+          if (profileData.birthDate !== originalData.value.birthDate) {
+            changedData.birthdate = profileData.birthDate
+          }
+          
+          const response = await mpr({
+            url: `/users/${userId}/`,
+            method: 'patch',
+            data: changedData
+          })
+        }
 
         // Обновляем данные в userState
         Object.assign(userData.value, {
@@ -354,6 +407,8 @@ export default {
     const resetForm = () => {
       // Восстанавливаем оригинальные данные
       Object.assign(profileData, originalData.value)
+      // Сбрасываем файл фото
+      profileData.photo_file = null
     }
 
     onMounted(async () => {
