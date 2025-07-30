@@ -118,6 +118,13 @@ function getAge(birthdate) {
 function groupTitle(role) {
   if (role === 'admin') return 'Администраторы'
   if (role === 'user') return 'Пользователи'
+  if (role === 'top') return 'Топ-менеджеры'
+  if (role === 'logistics') return 'Логисты'
+  if (role === 'masters') return 'Мастера'
+  if (role === 'marketing') return 'Маркетинг'
+  if (role === 'production') return 'Производство'
+  if (role === 'packers') return 'Упаковщики'
+
   return role || 'Без роли'
 }
 const groupedUsers = computed(() => {

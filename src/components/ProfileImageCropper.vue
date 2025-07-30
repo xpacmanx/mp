@@ -105,7 +105,7 @@
 <script setup>
 import { ref, reactive, computed, nextTick } from 'vue'
 
-const emit = defineEmits(['photo-cropped', 'photo-cancelled'])
+const emit = defineEmits(['image-cropped', 'cancel'])
 
 const fileInput = ref(null)
 const canvas = ref(null)
@@ -652,7 +652,7 @@ const saveImage = () => {
   if (!croppedImage.value) return
   
   // Передаем обрезанное изображение родительскому компоненту
-  emit('photo-cropped', croppedImage.value)
+  emit('image-cropped', croppedImage.value)
   console.log('✅ Фото профиля сохранено')
 }
 
@@ -664,7 +664,7 @@ const cancelCrop = () => {
     fileInput.value.value = ''
   }
   
-  emit('photo-cancelled')
+  emit('cancel')
   console.log('❌ Редактирование фото отменено')
 }
 </script>

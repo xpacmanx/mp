@@ -11,6 +11,7 @@ import SupplytaskView from '../views/SupplytaskView.vue'
 import AdvView from '../views/AdvView.vue'
 import ProductView from '../views/ProductView.vue'
 import UserListView from '../views/UserListView.vue'
+import ProfileView from '../views/ProfileView.vue'
 
 import SupplytasksDashboardView from '../views/SupplytasksDashboardView.vue'
 import { jwtDecode } from "jwt-decode";
@@ -215,6 +216,15 @@ const routes = [
 		component: UserListView,
 		meta: {
 			title: 'Пользователи',
+			requiresAuth: true
+		}
+	},
+	{
+		path: '/profile',
+		name: 'profile',
+		component: ProfileView,
+		meta: {
+			title: 'Профиль пользователя',
 			requiresAuth: true
 		}
 	},

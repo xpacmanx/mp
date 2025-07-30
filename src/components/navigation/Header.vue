@@ -14,7 +14,7 @@
                   поставок</router-link>
                 <router-link to="/products" active-class="bg-lime-300 hover:text-gray-600 visited:text-gray-950">Товары</router-link>
                 <router-link to="/adv" active-class="bg-lime-300 hover:text-gray-600 visited:text-gray-950">Реклама</router-link>
-                <router-link v-if="role === 'admin'" to="/users" active-class="bg-lime-300 hover:text-gray-600 visited:text-gray-950">HR</router-link>
+                <router-link v-if="role === 'admin' || role === 'top'" to="/users" active-class="bg-lime-300 hover:text-gray-600 visited:text-gray-950">HR</router-link>
               </div>
             </div>
           </div>
@@ -34,15 +34,12 @@
               <!-- Dropdown menu -->
               <div v-if="isDropdownOpen" class="absolute right-0 mt-2 w-48 bg-gray-800 rounded-md shadow-lg py-1 z-50">
                 <div class="px-4 py-2 border-b border-gray-700">
-                  <div class="text-sm font-medium text-white">{{ username }}</div>
-                  <div class="text-xs text-lime-300 font-semibold">{{ role }}</div>
+                  <div class="text-sm font-medium text-white">{{ userData.firstName }} {{ userData.lastName }}</div>
+                  <div class="text-xs text-lime-300 font-semibold">{{ groupTitle(role) }}</div>
                 </div>
-                <!-- <router-link to="/profile" class="block px-4 py-2 text-sm text-gray-300 hover:bg-gray-700">
-                  Профиль
+                <router-link to="/profile" class="block px-4 py-2 text-sm text-gray-300 hover:bg-gray-700">
+                  Редактировать
                 </router-link>
-                <router-link to="/settings" class="block px-4 py-2 text-sm text-gray-300 hover:bg-gray-700">
-                  Настройки
-                </router-link> -->
                 <div class="border-t border-gray-700"></div>
                 <button @click="logout" class="block w-full text-left px-4 py-2 text-sm text-gray-300 hover:bg-gray-700">
                   Выйти
@@ -155,6 +152,18 @@ export default {
   methods: {
     async logout(){
       await logoutUser(this.$router);
+    },
+    groupTitle(role) {
+      if (role === 'admin') return 'Администратор'
+      if (role === 'user') return 'Пользовател'
+      if (role === 'top') return 'Топ-менеджер'
+      if (role === 'logistics') return 'Логист'
+      if (role === 'masters') return 'Мастер'
+      if (role === 'marketing') return 'Маркетинг'
+      if (role === 'production') return 'Производство'
+      if (role === 'packers') return 'Упаковщик'
+
+      return role || 'Без роли'
     }
   },
   computed: {
