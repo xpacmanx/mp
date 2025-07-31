@@ -114,6 +114,7 @@ export async function loginUser(username, password) {
             username,
             password
         });
+
         console.log('Login response:', response.data);
 
         const { access, refresh, user } = response.data;
@@ -137,9 +138,28 @@ export async function loginUser(username, password) {
     } catch (error) {
         console.error('Login failed:', error);
         console.error('Error response:', error.response?.data);
+        
+        let errorMessage = 'Ошибка авторизации';
+        
+        if (error.response?.data?.detail) {
+            // Обрабатываем специфичные ошибки от бэкенда
+            const detail = error.response.data.detail;
+            if (detail === "No active account found with the given credentials") {
+                errorMessage = 'Неверный логин или пароль';
+            } else {
+                errorMessage = detail;
+            }
+        } else if (error.response?.status === 401) {
+            errorMessage = 'Неверный логин или пароль';
+        } else if (error.response?.status === 500) {
+            errorMessage = 'Ошибка сервера. Попробуйте позже.';
+        } else if (error.code === 'NETWORK_ERROR') {
+            errorMessage = 'Ошибка сети. Проверьте подключение к интернету.';
+        }
+        
         return { 
             success: false, 
-            message: error.response?.data?.detail || 'Ошибка авторизации' 
+            message: errorMessage
         };
     }
 }

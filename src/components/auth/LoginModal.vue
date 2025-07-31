@@ -39,7 +39,7 @@
 </template>
 
 <script>
-import { ref } from 'vue'
+import { ref, watch } from 'vue'
 import { loginUser } from '@/tools/auth'
 
 export default {
@@ -68,17 +68,31 @@ export default {
       
       try {
         const result = await loginUser(login.value, password.value)
+
         if (result.success) {
           emit('login-success')
           login.value = ''
           password.value = ''
+        } else {
+          errorMessage.value = result.message || 'Ошибка авторизации'
         }
       } catch (error) {
-        errorMessage.value = error.message
+        errorMessage.value = error.message || 'Ошибка авторизации'
       } finally {
         isLoading.value = false
       }
     }
+
+    // Watch for show prop changes
+    watch(() => props.show, (newVal) => {
+      console.log('LoginModal show prop changed:', newVal)
+      if (newVal) {
+        // Очищаем ошибки при открытии модального окна
+        errorMessage.value = ''
+        login.value = ''
+        password.value = ''
+      }
+    })
 
     return {
       login,
@@ -86,11 +100,6 @@ export default {
       errorMessage,
       isLoading,
       signin
-    }
-  },
-  watch: {
-    show(newVal) {
-      console.log('LoginModal show prop changed:', newVal)
     }
   }
 }
