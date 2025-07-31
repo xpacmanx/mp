@@ -6,6 +6,7 @@
     </div>
     <div v-else>
       <AuthManager />
+      <OnboardingManager />
       <AuthGuard>
         <router-view></router-view>
       </AuthGuard>
@@ -17,6 +18,7 @@
 import { ref, onMounted } from 'vue'
 import AuthManager from '@/components/auth/AuthManager.vue'
 import AuthGuard from '@/components/auth/AuthGuard.vue'
+import OnboardingManager from '@/components/OnboardingManager.vue'
 import Header from '@/components/navigation/Header.vue'
 import { authEvents } from '@/router'
 import { wasAuthenticated } from '@/tools/userState'
@@ -26,6 +28,7 @@ export default {
   components: {
     AuthManager,
     AuthGuard,
+    OnboardingManager,
     Header
   },
   setup() {
