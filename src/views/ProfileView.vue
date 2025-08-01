@@ -85,6 +85,7 @@
               id="birthDate"
               v-model="profileData.birthDate"
               type="date"
+              lang="ru"
               :class="[
                 'w-full px-3 py-2 bg-gray-700 border rounded-md text-white focus:outline-none focus:ring-2 focus:ring-lime-500 focus:border-transparent',
                 errors.birthDate ? 'border-red-500' : 'border-gray-600'
@@ -180,6 +181,7 @@ import { userData, username, role } from '@/tools/userState'
 import ProfileImageCropper from '@/components/ProfileImageCropper.vue'
 import Header from '@/components/navigation/Header.vue'
 import mpr from '@/tools/mpr'
+import { formatDateToISO } from '@/tools/dateUtils'
 
 export default {
   name: 'ProfileView',
@@ -349,7 +351,9 @@ export default {
             formData.append('last_name', profileData.lastName.trim())
           }
           if (profileData.birthDate !== originalData.value.birthDate) {
-            formData.append('birthdate', profileData.birthDate)
+            // Форматируем дату в ISO формат (YYYY-MM-DD) для бэкенда
+            const formattedBirthDate = formatDateToISO(profileData.birthDate)
+            formData.append('birthdate', formattedBirthDate)
           }
           
           // Добавляем файл фото
@@ -374,7 +378,9 @@ export default {
             changedData.last_name = profileData.lastName.trim()
           }
           if (profileData.birthDate !== originalData.value.birthDate) {
-            changedData.birthdate = profileData.birthDate
+            // Форматируем дату в ISO формат (YYYY-MM-DD) для бэкенда
+            const formattedBirthDate = formatDateToISO(profileData.birthDate)
+            changedData.birthdate = formattedBirthDate
           }
           
           const response = await mpr({
@@ -388,7 +394,7 @@ export default {
         Object.assign(userData.value, {
           firstName: profileData.firstName.trim(),
           lastName: profileData.lastName.trim(),
-          birthDate: profileData.birthDate,
+          birthDate: profileData.birthDate, // Сохраняем оригинальный формат для отображения
           photo: profileData.photo
         })
 

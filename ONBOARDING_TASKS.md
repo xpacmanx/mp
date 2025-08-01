@@ -30,6 +30,7 @@
 - [x] Добавить кнопку сброса onboarding для разработки
 - [x] Интегрировать все компоненты в приложение
 - [x] Упростить логику - убрать флаг onboardingCompleted, проверять только по дате рождения
+- [x] Исправить форматирование даты - добавить конвертацию в ISO формат для бэкенда
 
 ## In Progress Tasks
 
@@ -85,6 +86,8 @@
 - `src/tools/userState.js` - ✅ Интеграция с состоянием пользователя
 - `src/components/ProfileImageCropper.vue` - ✅ Используется для загрузки фото
 - `src/views/OnboardingTestView.vue` - ✅ Тестовая страница для проверки
+- `src/tools/dateUtils.js` - ✅ Утилиты для форматирования даты
+- `src/views/ProfileView.vue` - ✅ Обновлен для правильного форматирования даты
 
 ### API Endpoints
 

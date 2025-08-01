@@ -148,9 +148,11 @@
                 id="birthDate"
                 v-model="personalData.birthDate"
                 type="date"
+                lang="ru"
                 class="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-lime-500 focus:border-transparent"
                 required
               >
+              <p class="text-xs text-gray-500 mt-1">Дата будет сохранена в стандартном формате</p>
             </div>
 
             <div class="flex space-x-3 pt-4">
@@ -316,6 +318,7 @@ import { ref, reactive, onMounted } from 'vue'
 import { userData } from '@/tools/userState'
 import ProfileImageCropper from '@/components/ProfileImageCropper.vue'
 import mpr from '@/tools/mpr'
+import { formatDateToISO } from '@/tools/dateUtils'
 
 export default {
   name: 'OnboardingModal',
@@ -393,13 +396,18 @@ export default {
           throw new Error('ID пользователя не найден')
         }
 
+        // Форматируем дату в ISO формат (YYYY-MM-DD) для бэкенда
+        const formattedBirthDate = formatDateToISO(personalData.birthDate)
+
+        console.log('Отправляем дату в формате ISO:', formattedBirthDate)
+
         await mpr({
           url: `/users/${userId}/`,
           method: 'patch',
           data: {
             first_name: personalData.firstName.trim(),
             last_name: personalData.lastName.trim(),
-            birthdate: personalData.birthDate
+            birthdate: formattedBirthDate
           }
         })
 
@@ -407,7 +415,7 @@ export default {
         Object.assign(userData.value, {
           firstName: personalData.firstName.trim(),
           lastName: personalData.lastName.trim(),
-          birthDate: personalData.birthDate
+          birthDate: formattedBirthDate
         })
 
         alert('Данные успешно сохранены!')
