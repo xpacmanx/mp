@@ -156,6 +156,30 @@
                                         </div>
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="flex flex-col space-y-1">
+                                            <div class="flex items-center">
+                                                <div class="h-3 bg-gray-200 dark:bg-gray-700 rounded w-4 mr-1"></div>
+                                                <div class="h-3 bg-gray-200 dark:bg-gray-700 rounded w-16"></div>
+                                            </div>
+                                            <div class="flex items-center">
+                                                <div class="h-3 bg-gray-200 dark:bg-gray-700 rounded w-8 mr-1"></div>
+                                                <div class="h-3 bg-gray-200 dark:bg-gray-700 rounded w-16"></div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="flex flex-col space-y-1">
+                                            <div class="flex items-center">
+                                                <div class="h-3 bg-gray-200 dark:bg-gray-700 rounded w-4 mr-1"></div>
+                                                <div class="h-3 bg-gray-200 dark:bg-gray-700 rounded w-12"></div>
+                                            </div>
+                                            <div class="flex items-center">
+                                                <div class="h-3 bg-gray-200 dark:bg-gray-700 rounded w-8 mr-1"></div>
+                                                <div class="h-3 bg-gray-200 dark:bg-gray-700 rounded w-12"></div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
                                         <div class="flex items-center">
                                             <div class="h-3 bg-gray-200 dark:bg-gray-700 rounded w-4 mr-1"></div>
                                             <div class="h-3 bg-gray-200 dark:bg-gray-700 rounded w-8"></div>
@@ -205,7 +229,7 @@
                                         </div>
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-300">{{ product.master }}</td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+                                    <!-- <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
                                         <div class="flex flex-col space-y-1">
                                             <div class="flex items-center">
                                                 <span class="text-xs text-gray-400 dark:text-gray-500 mr-1">WB:</span>
@@ -222,6 +246,30 @@
                                             <div class="flex items-center">
                                                 <span class="text-xs text-gray-400 dark:text-gray-500 mr-1">Ozon на сайте:</span>
                                                 <span>{{ formatCurrency(product.ozon_mp_price) }}</span>
+                                            </div>
+                                        </div>
+                                    </td> -->
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+                                        <div class="flex flex-col space-y-1">
+                                            <div class="flex items-center">
+                                                <span class="text-xs text-gray-400 dark:text-gray-500 mr-1">WB:</span>
+                                                <span>{{ formatCurrency(product.wb_revenue30) }}</span>
+                                            </div>
+                                            <div class="flex items-center">
+                                                <span class="text-xs text-gray-400 dark:text-gray-500 mr-1">Ozon:</span>
+                                                <span>{{ formatCurrency(product.ozon_revenue30) }}</span>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+                                        <div class="flex flex-col space-y-1">
+                                            <div class="flex items-center">
+                                                <span class="text-xs text-gray-400 dark:text-gray-500 mr-1">WB:</span>
+                                                <span>{{ formatPercentage(product.wb_profitability) }}</span>
+                                            </div>
+                                            <div class="flex items-center">
+                                                <span class="text-xs text-gray-400 dark:text-gray-500 mr-1">Ozon:</span>
+                                                <span>{{ formatPercentage(product.ozon_profitability) }}</span>
                                             </div>
                                         </div>
                                     </td>
@@ -341,8 +389,8 @@ export default {
             totalItems: 0,
             totalPages: 0,
             sortConfig: {
-                key: 'name',
-                direction: 'asc'
+                key: 'wb_revenue30',
+                direction: 'desc'
             },
             filters: {
                 master: '',
@@ -357,7 +405,9 @@ export default {
                 { key: 'image', label: 'Изображение', sortable: false },
                 { key: 'name', label: 'Товар', sortable: true },
                 { key: 'master', label: 'Мастер', sortable: true },
-                { key: 'prices', label: 'Цены', sortable: false },
+                // { key: 'prices', label: 'Цены', sortable: false },
+                { key: 'revenue', label: 'Выручка 30 дней', sortable: false },
+                { key: 'profitability', label: 'Рентабельность', sortable: false },
                 { key: 'wb_rating', label: 'Рейтинг', sortable: true }
             ]
         }
@@ -548,6 +598,13 @@ export default {
             return value.toFixed(1)
         },
         
+        formatPercentage(value) {
+            if (!value && value !== 0) return '-'
+            // Конвертируем доли в проценты (умножаем на 100)
+            const percentage = value * 100
+            return percentage.toFixed(1) + '%'
+        },
+        
         truncateName(name) {
             if (!name) return '-'
             if (name.length <= 30) return name
@@ -588,8 +645,8 @@ export default {
             
             if (this.currentPage > 1) query.page = this.currentPage
             if (this.search) query.search = this.search
-            if (this.sortConfig.key !== 'name') query.sort_by = this.sortConfig.key
-            if (this.sortConfig.direction !== 'asc') query.sort_order = this.sortConfig.direction
+            if (this.sortConfig.key !== 'wb_revenue30') query.sort_by = this.sortConfig.key
+            if (this.sortConfig.direction !== 'desc') query.sort_order = this.sortConfig.direction
             if (this.filters.master) query.master = this.filters.master
             if (this.filters.product_type) query.product_type = this.filters.product_type
             if (this.filters.price_min) query.price_min = this.filters.price_min
