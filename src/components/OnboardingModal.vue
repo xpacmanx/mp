@@ -402,8 +402,8 @@ export default {
         console.log('Отправляем дату в формате ISO:', formattedBirthDate)
 
         await mpr({
-          url: `/users/${userId}/`,
-          method: 'patch',
+          url: `/users/me/`,
+          method: 'put',
           data: {
             first_name: personalData.firstName.trim(),
             last_name: personalData.lastName.trim(),
@@ -469,8 +469,8 @@ export default {
         formData.append('photo', profilePhotoFile.value)
 
         await mpr({
-          url: `/users/${userId}/`,
-          method: 'patch',
+          url: `/users/me/`,
+          method: 'put',
           data: formData,
           headers: {
             'Content-Type': 'multipart/form-data'
