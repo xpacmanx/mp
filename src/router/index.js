@@ -102,6 +102,15 @@ const routes = [
 			component: () => import('../views/ProductListView.vue')
 		  },
 		  {
+			path: 'my', // /products/my
+			name: 'my-products',
+			component: () => import('../views/MyProductsView.vue'),
+			meta: {
+			  title: 'Мои продукты',
+			  requiresAuth: true
+			}
+		  },
+		  {
 			path: ':id', // /products/:id
 			name: 'product-details',
 			component: () => import('../views/ProductDetailsView.vue'),

@@ -20,6 +20,15 @@
 			
       <div class="">
 				<Notifications />
+
+        <div v-if="isLoading" class="flex items-center gap-2 mb-4 text-sm text-blue-700 dark:text-blue-300">
+          <span class="inline-flex h-3 w-3 animate-pulse rounded-full bg-blue-500"></span>
+          <span>Формируем данные по поставкам, пожалуйста подождите… (попытка {{ retryCount }} из {{ maxRetries }})</span>
+        </div>
+
+        <div v-if="statusMessage && !isLoading" class="mb-4 text-sm text-yellow-700 dark:text-yellow-300">
+          {{ statusMessage }}
+        </div>
 				
 				<table class="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400">
 					<thead class="text-xs text-gray-950 bg-gray-200 dark:bg-gray-700 dark:text-gray-400">
@@ -72,9 +81,12 @@ export default {
 	data() {
 		return {
 			days_to_ready: 2,
-			data: {
-				
-			},
+			data: [],
+      isLoading: false,
+      retryCount: 0,
+      maxRetries: 10,
+      pollTimeoutId: null,
+      statusMessage: '',
 		}
 	},
 	methods: {
@@ -85,8 +97,15 @@ export default {
 		toPercent(num){
 			return (num*10).toFixed(2) + '%'
 		},
-		
-		getData() {
+    
+    clearPollTimeout() {
+      if (this.pollTimeoutId) {
+        clearTimeout(this.pollTimeoutId);
+        this.pollTimeoutId = null;
+      }
+    },
+
+		getData(isRetry = false) {
 			// const data = {
 			// 		"result": {
 			// 				"days_to_ready": 2,
@@ -113,20 +132,60 @@ export default {
 			// this.data = data.result.data;
 			// this.days_to_ready = data.result.days_to_ready;
 			// return true;
-			
+      
+      if (!isRetry) {
+        this.retryCount = 0;
+        this.statusMessage = '';
+      }
+
+      this.isLoading = true;
+      this.clearPollTimeout();
+
 			mpr({
 				url: '/supplytasks/dashboard',
 				params: {
 					days_to_ready: this.days_to_ready
 				},
 			}).then(res => {
-				if (res.status == 200) {
-					this.data = res.data.result.data;
-					this.days_to_ready = res.data.result.days_to_ready;
+				if (res.status === 200) {
+          const result = res.data && res.data.result ? res.data.result : res.data;
+
+          if (result && result.status === 'updating') {
+            if (this.retryCount < this.maxRetries) {
+              this.retryCount += 1;
+              this.statusMessage = 'Сервер обновляет данные, повторяем запрос…';
+              this.pollTimeoutId = setTimeout(() => {
+                this.getData(true);
+              }, 20000);
+            } else {
+              this.isLoading = false;
+              this.statusMessage = '';
+              this.addNotification('error', 'Данные по поставкам не успели сформироваться. Попробуйте позже.');
+            }
+          } else if (result && result.status === 'error') {
+            this.isLoading = false;
+            this.statusMessage = '';
+            this.addNotification('error', 'Ошибка при формировании данных по поставкам.');
+          } else if (result && result.data) {
+            this.data = result.data;
+            if (typeof result.days_to_ready !== 'undefined') {
+              this.days_to_ready = result.days_to_ready;
+            }
+            this.isLoading = false;
+            this.statusMessage = '';
+          } else {
+            this.isLoading = false;
+            this.statusMessage = '';
+            this.addNotification('error', 'Некорректный ответ от сервера.');
+          }
 				} else {
-					this.addNotification('error', 'Что-то пошло не так - вот ошибка' + JSON.stringify(error));
+          this.isLoading = false;
+          this.statusMessage = '';
+					this.addNotification('error', 'Что-то пошло не так - вот ошибка ' + JSON.stringify(res));
 				}
 			}).catch(error => {
+        this.isLoading = false;
+        this.statusMessage = '';
 				this.addNotification('error', 'Что-то пошло не так - вот ошибка' + JSON.stringify(error));
 			});
 		},
@@ -134,8 +193,9 @@ export default {
 	mounted() {
 		this.getData();
 	},
-	created() {
-  }
+  beforeUnmount() {
+    this.clearPollTimeout();
+  },
 }
 </script>
 

@@ -10,11 +10,60 @@
 
             <div class="hidden md:block">
               <div class="menu2-list space-x-4" v-if="isAuthenticated">
-                <router-link to="/" class="ml-5" active-class="bg-lime-300 hover:text-gray-600 visited:text-gray-950">Сервис
+                <router-link 
+                  to="/" 
+                  class="ml-5" 
+                  active-class="bg-lime-300 hover:text-gray-600 visited:text-gray-950"
+                  @mouseenter="closeProductsDropdown"
+                >Сервис
                   поставок</router-link>
-                <router-link to="/products" active-class="bg-lime-300 hover:text-gray-600 visited:text-gray-950">Товары</router-link>
-                <router-link to="/adv" active-class="bg-lime-300 hover:text-gray-600 visited:text-gray-950">Реклама</router-link>
-                <router-link v-if="role === 'admin' || role === 'top'" to="/users" active-class="bg-lime-300 hover:text-gray-600 visited:text-gray-950">HR</router-link>
+                
+                <!-- Products dropdown -->
+                <div class="relative">
+                  <button 
+                    @mouseenter="openProductsDropdown"
+                    class="flex items-center rounded-md px-3 py-2 text-sm font-medium text-gray-300 hover:bg-lime-300 hover:text-gray-950 focus:outline-none"
+                    :class="{ 'bg-lime-300 text-gray-950': isProductsDropdownOpen || $route.path.startsWith('/products') }"
+                  >
+                    Товары
+                  </button>
+
+                  <!-- Products dropdown menu -->
+                  <div 
+                    v-if="isProductsDropdownOpen" 
+                    @mouseleave="closeProductsDropdown"
+                    class="absolute left-0 mt-2 w-64 bg-gray-800 rounded-md shadow-lg py-1 z-50"
+                  >
+                    <router-link 
+                      to="/products" 
+                      class="block px-4 py-3 text-sm text-gray-300 hover:bg-gray-700"
+                      @click="closeProductsDropdown"
+                    >
+                      <div class="font-medium">Все продукты</div>
+                      <div class="text-xs text-gray-400 mt-1">Просмотр всех доступных товаров</div>
+                    </router-link>
+                    <router-link 
+                      to="/products/my" 
+                      class="block px-4 py-3 text-sm text-gray-300 hover:bg-gray-700"
+                      @click="closeProductsDropdown"
+                    >
+                      <div class="font-medium">Мои продукты</div>
+                      <div class="text-xs text-gray-400 mt-1">Товары, которые вы создали</div>
+                    </router-link>
+                  </div>
+                </div>
+                
+                <router-link 
+                  to="/adv" 
+                  active-class="bg-lime-300 hover:text-gray-600 visited:text-gray-950"
+                  @mouseenter="closeProductsDropdown"
+                >Реклама</router-link>
+                <router-link 
+                  v-if="role === 'admin' || role === 'top'" 
+                  to="/users" 
+                  active-class="bg-lime-300 hover:text-gray-600 visited:text-gray-950"
+                  @mouseenter="closeProductsDropdown"
+                >HR</router-link>
               </div>
             </div>
           </div>
@@ -125,9 +174,18 @@ export default {
   name: 'Header',
   setup() {
     const isDropdownOpen = ref(false)
+    const isProductsDropdownOpen = ref(false)
 
     const toggleDropdown = () => {
       isDropdownOpen.value = !isDropdownOpen.value
+    }
+
+    const openProductsDropdown = () => {
+      isProductsDropdownOpen.value = true
+    }
+
+    const closeProductsDropdown = () => {
+      isProductsDropdownOpen.value = false
     }
 
     // Close dropdown when clicking outside
@@ -137,8 +195,16 @@ export default {
       }
     }
 
+    // Close products dropdown when clicking outside
+    const closeProductsDropdownOutside = (event) => {
+      if (!event.target.closest('.relative')) {
+        isProductsDropdownOpen.value = false
+      }
+    }
+
     // Add click event listener to close dropdown
     document.addEventListener('click', closeDropdown)
+    document.addEventListener('click', closeProductsDropdownOutside)
 
     return {
       isAuthenticated,
@@ -146,7 +212,10 @@ export default {
       role,
       userData,
       isDropdownOpen,
-      toggleDropdown
+      toggleDropdown,
+      isProductsDropdownOpen,
+      openProductsDropdown,
+      closeProductsDropdown
     }
   },
   methods: {
@@ -174,6 +243,7 @@ export default {
   },
   beforeUnmount() {
     document.removeEventListener('click', this.closeDropdown)
+    document.removeEventListener('click', this.closeProductsDropdownOutside)
   }
 }
 </script>

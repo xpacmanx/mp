@@ -417,6 +417,12 @@ export default {
 					title: 'Обновление остатков в старом подсорте',
 					status: 'Ожидание',
 				},
+				{
+					id: 4,
+					url: '/supplytask/updatesuggestions',
+					title: 'Обновление предложений подсорта в дешборде',
+					status: 'Ожидание',
+				},
 			],
 			fromDate: '',
 			suggestionsDate: 0,
