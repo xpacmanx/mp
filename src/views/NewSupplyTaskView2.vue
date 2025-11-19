@@ -459,10 +459,10 @@ export default {
 			return 0;
 		},
 		process_status() {
-			return this.process.filter(step => step.status == 'Ожидание').length == 3
+			return this.process.filter(step => step.status == 'Ожидание').length == 4
 		},
 		process_success() {
-			return this.process.filter(step => step.status == 'Готово').length == 3
+			return this.process.filter(step => step.status == 'Готово').length == 4
 		},
 		positions() {
 			const arr = [];
