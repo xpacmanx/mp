@@ -417,12 +417,12 @@ export default {
 					title: 'Обновление остатков в старом подсорте',
 					status: 'Ожидание',
 				},
-				{
-					id: 4,
-					url: '/supplytask/updatesuggestions',
-					title: 'Обновление предложений подсорта в дешборде',
-					status: 'Ожидание',
-				},
+				// {
+				// 	id: 4,
+				// 	url: '/supplytask/updatesuggestions',
+				// 	title: 'Обновление предложений подсорта в дешборде',
+				// 	status: 'Ожидание',
+				// },
 			],
 			fromDate: '',
 			suggestionsDate: 0,
@@ -459,10 +459,10 @@ export default {
 			return 0;
 		},
 		process_status() {
-			return this.process.filter(step => step.status == 'Ожидание').length == 4
+			return this.process.filter(step => step.status == 'Ожидание').length == 3
 		},
 		process_success() {
-			return this.process.filter(step => step.status == 'Готово').length == 4
+			return this.process.filter(step => step.status == 'Готово').length == 3
 		},
 		positions() {
 			const arr = [];
