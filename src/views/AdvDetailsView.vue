@@ -616,6 +616,72 @@
                         </div>
                     </div>
 
+                    <!-- Cluster Stats Section -->
+                    <div class="mb-8 bg-white dark:bg-gray-800 shadow rounded-lg" v-if="clusterStats && clusterStats.length > 0">
+                        <div class="p-6">
+                            <h2 class="text-lg font-medium text-gray-900 dark:text-white mb-4">Статистика кластеров</h2>
+                            
+                            <div class="overflow-x-auto">
+                                <div class="max-h-[600px] overflow-y-auto relative">
+                                    <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                                        <thead class="bg-gray-50 dark:bg-gray-700 sticky top-0 z-10">
+                                            <tr>
+                                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                                                    Кластер
+                                                </th>
+                                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                                                    Просмотры
+                                                </th>
+                                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                                                    Клики
+                                                </th>
+                                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                                                    CTR
+                                                </th>
+                                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                                                    Заказы
+                                                </th>
+                                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                                                    Ср. позиция
+                                                </th>
+                                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                                                    CPM
+                                                </th>
+                                            </tr>
+                                        </thead>
+                                        <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+                                            <template v-for="group in clusterStats" :key="group.advert_id">
+                                                <tr v-for="stat in group.stats" :key="stat.norm_query" class="hover:bg-gray-50 dark:hover:bg-gray-700">
+                                                    <td class="px-6 py-4 text-sm text-gray-900 dark:text-gray-300">
+                                                        {{ stat.norm_query }}
+                                                    </td>
+                                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+                                                        {{ (stat.views || 0).toLocaleString() }}
+                                                    </td>
+                                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+                                                        {{ (stat.clicks || 0).toLocaleString() }}
+                                                    </td>
+                                                    <td class="px-6 py-4 whitespace-nowrap text-sm" :class="getCtrClass(stat.ctr / 100)">
+                                                        {{ stat.ctr }}%
+                                                    </td>
+                                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+                                                        {{ (stat.orders || 0).toLocaleString() }}
+                                                    </td>
+                                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+                                                        {{ stat.avg_pos }}
+                                                    </td>
+                                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+                                                        {{ formatCurrency(stat.cpm) }}
+                                                    </td>
+                                                </tr>
+                                            </template>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
                     <!-- Words Tables -->
                     <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
                         <!-- Minus Words - Make it take 2/3 of the space -->
@@ -963,6 +1029,7 @@ export default {
     data() {
         return {
             adData: null,
+            clusterStats: [],
             stats: [],
             comments: [],
             relatedCampaigns: [],
@@ -1311,6 +1378,10 @@ export default {
                 // Fetch related campaigns
                 this.loading.progress = 80
                 await this.fetchRelatedCampaigns()
+
+                // Fetch cluster stats
+                this.loading.progress = 90
+                await this.fetchClusterStats()
                 
                 this.loading.progress = 100
             } catch (error) {
@@ -1377,6 +1448,17 @@ export default {
             } catch (error) {
                 console.error('Failed to fetch related campaigns:', error)
                 this.relatedCampaigns = []
+            }
+        },
+        async fetchClusterStats() {
+            try {
+                const response = await mpr({
+                    url: `/wbadv/${this.$route.params.id}/cluster_stats`
+                })
+                this.clusterStats = response.data.stats || []
+            } catch (error) {
+                console.error('Failed to fetch cluster stats:', error)
+                this.clusterStats = []
             }
         },
         async changeMinCtr() {
