@@ -292,6 +292,11 @@
 										{{position.suggestion.reason}}
 										{{position.debug}}
 									</p>
+									<div v-if="position.suggestion.first_moscow_supply" class="mb-1">
+										<span class="inline-block bg-purple-100 text-purple-800 text-xs font-medium px-2 py-0.5 rounded dark:bg-purple-900 dark:text-purple-300 whitespace-nowrap">
+											Поставки в Москву не было
+										</span>
+									</div>
 									<a v-if="position.suggestion.result > 0" href="javascript://"
 										@click="suggest(position);">⬅️</a>
 									{{Math.floor(position.suggest)}}
