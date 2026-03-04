@@ -20,6 +20,7 @@
     "express": "latest",
     "express-basic-auth": "^1.2.1",
     "jwt-decode": "^4.0.0",
+    "lucide-vue-next": "^0.555.0",
     "luxon": "^3.6.1",
     "moment": "^2.29.4",
     "pinia": "^3.0.2",

@@ -46,6 +46,31 @@ const routes = [
 		component: () => import('../views/LoginView.vue'),
 		meta: { title: 'Login' }
 	},
+	// Midnight Shepard Design System Routes
+	{
+		path: '/hr',
+		name: 'ПЕРСОНАЛ',
+		component: () => import('../views/design_examples/HRView.vue'),
+		meta: { requiresAuth: true, title: 'Персонал' }
+	},
+	{
+		path: '/supply',
+		name: 'ПОСТАВКИ',
+		component: () => import('../views/design_examples/SupplyView.vue'),
+		meta: { requiresAuth: true, title: 'Поставки' }
+	},
+	{
+		path: '/system-health',
+		name: 'СИСТЕМА',
+		component: () => import('../views/design_examples/SystemHealthView.vue'),
+		meta: { requiresAuth: true, title: 'Система' }
+	},
+	{
+		path: '/design-system',
+		name: 'DESIGN_SYS',
+		component: () => import('../views/design_examples/DesignSystemView.vue'),
+		meta: { requiresAuth: true, title: 'Design System' }
+	},
 	// {
 	// 	path: '/adv',
 	// 	name: 'adv',
@@ -68,57 +93,57 @@ const routes = [
 		path: '/adv',
 		component: AdvView, // родитель
 		meta: {
-		  title: 'Реклама',
-		  requiresAuth: true
+			title: 'Реклама',
+			requiresAuth: true
 		},
 		children: [
-		  {
-			path: '', // /adv
-			name: 'adv',
-			component: () => import('../views/AdvListView.vue')
-		  },
-		  {
-			path: ':id', // /adv/:id
-			name: 'adv-details',
-			component: () => import('../views/AdvDetailsView.vue'),
-			meta: {
-			  title: 'Детали рекламы',
-			  requiresAuth: true
+			{
+				path: '', // /adv
+				name: 'adv',
+				component: () => import('../views/AdvListView.vue')
+			},
+			{
+				path: ':id', // /adv/:id
+				name: 'adv-details',
+				component: () => import('../views/AdvDetailsView.vue'),
+				meta: {
+					title: 'Детали рекламы',
+					requiresAuth: true
+				}
 			}
-		  }
 		]
 	},
 	{
 		path: '/products',
 		component: ProductView, // родитель
 		meta: {
-		  title: 'Товары',
-		  requiresAuth: true
+			title: 'Товары',
+			requiresAuth: true
 		},
 		children: [
-		  {
-			path: '', // /products
-			name: 'products',
-			component: () => import('../views/ProductListView.vue')
-		  },
-		  {
-			path: 'my', // /products/my
-			name: 'my-products',
-			component: () => import('../views/MyProductsView.vue'),
-			meta: {
-			  title: 'Мои продукты',
-			  requiresAuth: true
+			{
+				path: '', // /products
+				name: 'products',
+				component: () => import('../views/ProductListView.vue')
+			},
+			{
+				path: 'my', // /products/my
+				name: 'my-products',
+				component: () => import('../views/MyProductsView.vue'),
+				meta: {
+					title: 'Мои продукты',
+					requiresAuth: true
+				}
+			},
+			{
+				path: ':id', // /products/:id
+				name: 'product-details',
+				component: () => import('../views/ProductDetailsView.vue'),
+				meta: {
+					title: 'Аналитика товара',
+					requiresAuth: true
+				}
 			}
-		  },
-		  {
-			path: ':id', // /products/:id
-			name: 'product-details',
-			component: () => import('../views/ProductDetailsView.vue'),
-			meta: {
-			  title: 'Аналитика товара',
-			  requiresAuth: true
-			}
-		  }
 		]
 	},
 	{
@@ -295,12 +320,12 @@ const router = createRouter({
 
 router.beforeEach(async (to, from, next) => {
 	console.log('Navigation guard triggered:', { to: to.path, from: from.path });
-	
+
 	const token = localStorage.getItem('authToken');
 	const refreshToken = localStorage.getItem('refreshToken');
-	
-	console.log('Auth state:', { 
-		hasToken: !!token, 
+
+	console.log('Auth state:', {
+		hasToken: !!token,
 		hasRefreshToken: !!refreshToken,
 		requiresAuth: to.meta.requiresAuth
 	});
@@ -381,7 +406,7 @@ router.beforeEach(async (to, from, next) => {
 				} catch (error) {
 					console.error('Token refresh failed for protected route:', error);
 				}
-				
+
 				localStorage.clear();
 				// Показываем модальное окно логина при потере токена
 				console.log('Token lost, showing login modal');

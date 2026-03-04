@@ -8,7 +8,7 @@
       <AuthManager />
       <OnboardingManager />
       <AuthGuard>
-        <router-view></router-view>
+        <AppLayout />
       </AuthGuard>
     </div>
   </div>
@@ -19,7 +19,7 @@ import { ref, onMounted } from 'vue'
 import AuthManager from '@/components/auth/AuthManager.vue'
 import AuthGuard from '@/components/auth/AuthGuard.vue'
 import OnboardingManager from '@/components/OnboardingManager.vue'
-import Header from '@/components/navigation/Header.vue'
+import AppLayout from '@/components/AppLayout.vue'
 import { authEvents } from '@/router'
 import { wasAuthenticated } from '@/tools/userState'
 
@@ -29,7 +29,7 @@ export default {
     AuthManager,
     AuthGuard,
     OnboardingManager,
-    Header
+    AppLayout
   },
   setup() {
     const isLoading = ref(true)

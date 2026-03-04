@@ -1,85 +1,99 @@
 <template>
-  <Header />
-  <div class="bg-slate-950">
-    <div class="container mx-auto py-8">
-      <h1 class="text-2xl font-bold mb-6 text-yellow-300">Пользователи</h1>
-      <div class="flex justify-end mb-4">
-        <button class="bg-yellow-300 hover:bg-yellow-200 font-bold py-2 px-4" @click="openAddUserModal">
-          Добавить пользователя
-        </button>
+  <div class="hr-container">
+    <div class="toolbar mb-6 flex-between">
+      <div class="flex items-center gap-4">
+        <h2 class="page-title">ПЕРСОНАЛ <span class="jp-title">人事</span></h2>
+        <div class="search-box">
+          <input v-model="searchQuery" type="text" placeholder="ПОИСК СОТРУДНИКА..." class="tactical-input" />
+        </div>
       </div>
-      <div v-if="loading" class="text-center py-8">Загрузка...</div>
-      <div v-else>
-        <div v-for="(group, role) in groupedUsers" :key="role" class="mb-10">
-          <h2 class="text-yellow-300 text-xl font-bold mb-4">{{ groupTitle(role) }}</h2>
-          <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-            <div v-for="user in group" :key="user.id" class="relative p-0 flex flex-col border border-teal-300 text-teal-300 transition-all duration-300 ease-out hover:scale-105">
+      <div class="filters flex gap-2">
+        <TacticalButton 
+          variant="outline" 
+          size="sm" 
+          @click="openAddUserModal"
+        >
+          + ДОБАВИТЬ
+        </TacticalButton>
+      </div>
+    </div>
 
-              <img v-if="user.photo" :src="user.photo || placeholderUrl" alt="Фото" class="w-full object-cover object-center" />
-              <div v-else class="w-full h-48 bg-teal-300 flex items-center justify-center">
-                <img :src="placeholderUrl" class="w-1/3 object-cover object-center opacity-70" />
-              </div>
+    <div v-if="loading" class="loading-state">
+      <div class="loading-spinner"></div>
+      <span>ЗАГРУЗКА ДАННЫХ...</span>
+    </div>
 
-              <div class="flex-1 flex flex-col">
-                <div class="bg-yellow-300 text-slate-950 uppercase font-bold text-lg px-4 w-full">{{ formatFullName(user.first_name, user.last_name) }}</div>
-                <div class="p-4">
-                  <div class="text-sm mb-2" v-if="user.telegram_nick">
-                    <span class="font-bold uppercase">Telegram</span><br />
-                    <a v-if="user.telegram_nick" :href="`https://t.me/${user.telegram_nick.replace(/^@/, '')}`" target="_blank" class="hover:underline">@{{ user.telegram_nick.replace(/^@/, '') }}</a>
-                    <span v-else class="text-gray-400">—</span>
-                  </div>
-                  <div class="text-sm mb-2" v-if="user.birthdate">
-                    <span class="font-bold uppercase">День рождения</span><br/>
-                    <span>
-                      {{ formatBirthday(user.birthdate) }}
-                      <span v-if="user.birthdate"> ({{ getAge(user.birthdate) }})</span>
-                    </span>
-                  </div>
-                  <div class="text-sm mb-2">
-                    <span class="font-bold uppercase">Email</span><br/>
-                    {{ user.email }}
-                  </div>
-                </div>
-              </div>
-              <div class="absolute top-2 right-2 flex flex-col items-end gap-2">
-                <button class="icon-btn" @click="openEditUserModal(user)" title="Редактировать">
-                  <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536M9 13h3l8-8a2.828 2.828 0 10-4-4l-8 8v3z" /></svg>
-                </button>
-                <button class="icon-btn" @click="deleteUser(user)" title="Удалить">
-                  <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
-                </button>
-              </div>
+    <div v-else class="employee-grid">
+      <div v-for="user in filteredUsers" :key="user.id" class="employee-card">
+        <div class="card-header flex-between">
+          <span class="id-tag">ID: {{ user.id }}</span>
+          <TacticalBadge :variant="getRoleVariant(user.role)" outline>{{ getRoleName(user.role) }}</TacticalBadge>
+        </div>
+        
+        <div class="card-body">
+          <div class="avatar-placeholder">
+            <img v-if="user.photo" :src="user.photo" class="avatar-img" />
+            <span v-else class="initials">{{ getInitials(user) }}</span>
+            <div class="status-indicator bg-success"></div>
+          </div>
+          
+          <div class="info">
+            <h3 class="name">{{ formatFullName(user.first_name, user.last_name) }}</h3>
+            <div class="role">{{ user.username }}</div>
+            <div class="clearance" v-if="user.telegram_nick">
+              TG: <a :href="`https://t.me/${user.telegram_nick.replace(/^@/, '')}`" target="_blank" class="text-accent hover:underline">@{{ user.telegram_nick.replace(/^@/, '') }}</a>
             </div>
           </div>
         </div>
-        <div v-if="!Object.keys(groupedUsers).length" class="text-center text-gray-500 py-8">Нет пользователей</div>
-      </div>
-      <!-- Модальные окна -->
-      <div v-if="showAddModal" class="modal-overlay">
-        <div class="modal-content">
-          <h2 class="text-xl font-bold mb-4">Добавить пользователя</h2>
-          <UserForm @submit="handleAddUser" @cancel="closeAddUserModal" />
+
+        <div class="card-footer">
+          <div class="stat">
+            <span class="label">EMAIL</span>
+            <span class="value text-xs">{{ user.email }}</span>
+          </div>
+          <div class="actions flex gap-2">
+            <button class="icon-btn" @click="openEditUserModal(user)" title="Редактировать">
+              <Edit size="16" />
+            </button>
+            <button class="icon-btn text-danger" @click="deleteUser(user)" title="Удалить">
+              <Trash2 size="16" />
+            </button>
+          </div>
         </div>
-      </div>
-      <div v-if="showEditModal" class="modal-overlay">
-        <div class="modal-content">
-          <h2 class="text-xl font-bold mb-4">Редактировать пользователя</h2>
-          <UserForm :user="editUserData" :isEdit="true" @submit="handleEditUser" @cancel="closeEditUserModal" />
-        </div>
+        
+        <!-- Decorators -->
+        <div class="corner top-right"></div>
+        <div class="corner bottom-left"></div>
       </div>
     </div>
+
+    <div v-if="!loading && filteredUsers.length === 0" class="empty-state">
+      НЕТ ДАННЫХ
+    </div>
+
+    <!-- Modals -->
+    <TacticalModal v-model="showAddModal" title="ДОБАВИТЬ СОТРУДНИКА">
+      <UserForm @submit="handleAddUser" @cancel="closeAddUserModal" />
+    </TacticalModal>
+
+    <TacticalModal v-model="showEditModal" title="РЕДАКТИРОВАТЬ ДАННЫЕ">
+      <UserForm :user="editUserData" :isEdit="true" @submit="handleEditUser" @cancel="closeEditUserModal" />
+    </TacticalModal>
   </div>
 </template>
 
 <script setup>
 import { ref, onMounted, computed } from 'vue'
 import mpr from '@/tools/mpr'
-import Header from '@/components/navigation/Header.vue'
 import UserForm from '@/components/UserForm.vue'
+import TacticalButton from '@/components/TacticalButton.vue'
+import TacticalBadge from '@/components/TacticalBadge.vue'
+import TacticalModal from '@/components/TacticalModal.vue'
+import { Edit, Trash2 } from 'lucide-vue-next'
 
 const users = ref([])
 const loading = ref(true)
-const placeholderUrl = '/src/assets/placeholder.png'
+const searchQuery = ref('')
 
 const showAddModal = ref(false)
 const showEditModal = ref(false)
@@ -89,52 +103,52 @@ function openAddUserModal() { showAddModal.value = true }
 function closeAddUserModal() { showAddModal.value = false }
 function openEditUserModal(user) { editUserData.value = { ...user }; showEditModal.value = true }
 function closeEditUserModal() { showEditModal.value = false; editUserData.value = null }
+
 function formatFullName(first, last) {
   const f = first ? first.trim() : ''
   const l = last ? last.trim() : ''
   if (f && l) return f + ' ' + l
   if (f) return f
   if (l) return l
-  return '-'
+  return 'UNNAMED'
 }
-function formatBirthday(birthdate) {
-  if (!birthdate) return '-'
-  try {
-    const date = new Date(birthdate)
-    return date.toLocaleDateString('ru-RU')
-  } catch {
-    return birthdate
-  }
-}
-function getAge(birthdate) {
-  if (!birthdate) return ''
-  const d = new Date(birthdate)
-  const now = new Date()
-  let age = now.getFullYear() - d.getFullYear()
-  const m = now.getMonth() - d.getMonth()
-  if (m < 0 || (m === 0 && now.getDate() < d.getDate())) age--
-  return age
-}
-function groupTitle(role) {
-  if (role === 'admin') return 'Администраторы'
-  if (role === 'user') return 'Пользователи'
-  if (role === 'top') return 'Топ-менеджеры'
-  if (role === 'logistics') return 'Логисты'
-  if (role === 'masters') return 'Мастера'
-  if (role === 'marketing') return 'Маркетинг'
-  if (role === 'production') return 'Производство'
-  if (role === 'packers') return 'Упаковщики'
 
-  return role || 'Без роли'
+function getInitials(user) {
+  const f = user.first_name ? user.first_name[0] : ''
+  const l = user.last_name ? user.last_name[0] : ''
+  return (f + l).toUpperCase() || '??'
 }
-const groupedUsers = computed(() => {
-  const groups = {}
-  for (const user of users.value) {
-    const role = user.role || 'other'
-    if (!groups[role]) groups[role] = []
-    groups[role].push(user)
+
+function getRoleName(role) {
+  const roles = {
+    'admin': 'АДМИН',
+    'user': 'ПОЛЬЗОВАТЕЛЬ',
+    'top': 'ТОП-МЕНЕДЖЕР',
+    'logistics': 'ЛОГИСТ',
+    'masters': 'МАСТЕР',
+    'marketing': 'МАРКЕТИНГ',
+    'production': 'ПРОИЗВОДСТВО',
+    'packers': 'УПАКОВЩИК'
   }
-  return groups
+  return roles[role] || role || 'НЕТ РОЛИ'
+}
+
+function getRoleVariant(role) {
+  if (role === 'admin' || role === 'top') return 'primary'
+  if (role === 'marketing') return 'warning'
+  if (role === 'production' || role === 'packers') return 'neutral'
+  return 'success'
+}
+
+const filteredUsers = computed(() => {
+  if (!searchQuery.value) return users.value
+  const query = searchQuery.value.toLowerCase()
+  return users.value.filter(user => {
+    const fullName = formatFullName(user.first_name, user.last_name).toLowerCase()
+    const username = (user.username || '').toLowerCase()
+    const email = (user.email || '').toLowerCase()
+    return fullName.includes(query) || username.includes(query) || email.includes(query)
+  })
 })
 
 async function fetchUsers() {
@@ -151,21 +165,16 @@ async function fetchUsers() {
 
 async function handleAddUser(formData) {
   try {
-    // FormData уже содержит все необходимые поля включая файл изображения
-    // Передаем его напрямую в mpr без преобразований
     await mpr({ 
       url: '/users/', 
       method: 'post', 
       data: formData,
-      headers: {
-        'Content-Type': 'multipart/form-data'
-      }
+      headers: { 'Content-Type': 'multipart/form-data' }
     })
     closeAddUserModal()
     await fetchUsers()
   } catch (e) {
-    console.error('Ошибка создания пользователя:', e)
-    // TODO: показать ошибку пользователю
+    console.error('Error creating user:', e)
   }
 }
 
@@ -173,18 +182,14 @@ async function handleEditUser(formData) {
   try {
     if (!editUserData.value || !editUserData.value.id) return
     
-    // Если получили FormData (с файлом изображения), отправляем как есть
     if (formData instanceof FormData) {
       await mpr({ 
         url: `/users/${editUserData.value.id}/`, 
         method: 'patch', 
         data: formData,
-        headers: {
-          'Content-Type': 'multipart/form-data'
-        }
+        headers: { 'Content-Type': 'multipart/form-data' }
       })
     } else {
-      // Если получили обычный объект, обрабатываем как раньше
       const changed = {}
       for (const key in formData) {
         if (key === 'password' || key === 'password2' || key === 'photo_file') continue
@@ -206,41 +211,239 @@ async function handleEditUser(formData) {
     closeEditUserModal()
     await fetchUsers()
   } catch (e) {
-    console.error('Ошибка редактирования пользователя:', e)
-    // TODO: показать ошибку пользователю
+    console.error('Error editing user:', e)
   }
 }
 
 function deleteUser(user) {
-  // TODO: реализовать удаление пользователя
+  if (confirm(`Вы уверены, что хотите удалить пользователя ${user.username}?`)) {
+    // TODO: Implement delete API call
+    console.log('Delete user', user.id)
+  }
 }
 
 onMounted(fetchUsers)
 </script>
 
 <style scoped>
-.container {
-  max-width: 1200px;
+.hr-container {
+  padding-bottom: 40px;
 }
-.icon-btn {
-  @apply p-1 hover:bg-gray-100 transition;
+
+.page-title {
+  font-family: var(--font-family-mono);
+  font-size: var(--font-size-lg);
+  font-weight: 700;
+  letter-spacing: 2px;
+  color: var(--color-text-primary);
 }
-.modal-overlay {
-  position: fixed;
-  top: 0; left: 0; right: 0; bottom: 0;
-  background: rgba(0,0,0,0.3);
+
+.jp-title {
+  font-family: 'Noto Sans JP', sans-serif;
+  font-size: 0.8em;
+  opacity: 0.6;
+  margin-left: var(--spacing-2);
+  font-weight: normal;
+}
+
+.tactical-input {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--color-border-strong);
+  color: var(--color-text-primary);
+  padding: var(--spacing-2) var(--spacing-4);
+  font-family: var(--font-family-mono);
+  font-size: var(--font-size-sm);
+  width: 300px;
+  outline: none;
+  border-radius: var(--border-radius-sm);
+}
+
+.tactical-input:focus {
+  border-color: var(--color-accent-primary);
+  box-shadow: 0 0 10px rgba(0, 240, 255, 0.1);
+}
+
+.employee-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: var(--spacing-6);
+}
+
+.employee-card {
+  background-color: var(--color-bg-panel);
+  border: 1px solid var(--color-border-subtle);
+  position: relative;
+  padding: var(--spacing-4);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.employee-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+  border-color: var(--color-border-strong);
+}
+
+.card-header {
+  margin-bottom: var(--spacing-4);
+}
+
+.id-tag {
+  font-family: var(--font-family-mono);
+  font-size: var(--font-size-xs);
+  color: var(--color-text-muted);
+  letter-spacing: 1px;
+}
+
+.card-body {
+  display: flex;
+  align-items: center;
+  margin-bottom: var(--spacing-6);
+}
+
+.avatar-placeholder {
+  width: 64px;
+  height: 64px;
+  background-color: var(--color-bg-tertiary);
+  border: 1px solid var(--color-border-strong);
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 50;
-}
-.modal-content {
-  background: #fff;
-  border-radius: 8px;
-  padding: 2rem;
-  min-width: 350px;
-  max-width: 95vw;
-  box-shadow: 0 2px 16px rgba(0,0,0,0.2);
+  margin-right: var(--spacing-4);
+  position: relative;
+  overflow: hidden;
 }
 
+.avatar-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.initials {
+  font-family: var(--font-family-mono);
+  font-size: var(--font-size-lg);
+  color: var(--color-text-secondary);
+}
+
+.status-indicator {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  width: 12px;
+  height: 12px;
+  border: 2px solid var(--color-bg-panel);
+}
+
+.bg-success { background-color: var(--color-accent-success); }
+
+.info {
+  flex: 1;
+  overflow: hidden;
+}
+
+.name {
+  font-size: var(--font-size-base);
+  font-weight: 600;
+  color: var(--color-text-primary);
+  margin-bottom: 2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.role {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-secondary);
+  text-transform: uppercase;
+  margin-bottom: var(--spacing-2);
+}
+
+.clearance {
+  font-family: var(--font-family-mono);
+  font-size: 0.7rem;
+  color: var(--color-text-muted);
+}
+
+.card-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-top: var(--spacing-4);
+  border-top: 1px solid var(--color-border-subtle);
+}
+
+.stat {
+  display: flex;
+  flex-direction: column;
+}
+
+.stat .label {
+  font-size: 0.6rem;
+  color: var(--color-text-muted);
+  margin-bottom: 2px;
+}
+
+.stat .value {
+  font-family: var(--font-family-mono);
+  font-size: var(--font-size-sm);
+  color: var(--color-text-primary);
+}
+
+.icon-btn {
+  background: none;
+  border: none;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  padding: 4px;
+  transition: color 0.2s;
+}
+
+.icon-btn:hover {
+  color: var(--color-text-primary);
+}
+
+.icon-btn.text-danger:hover {
+  color: var(--color-accent-danger);
+}
+
+.corner {
+  position: absolute;
+  width: 8px;
+  height: 8px;
+  border: 2px solid var(--color-accent-primary);
+  opacity: 0.5;
+}
+
+.top-right { top: -1px; right: -1px; border-bottom: none; border-left: none; }
+.bottom-left { bottom: -1px; left: -1px; border-top: none; border-right: none; }
+
+.loading-state, .empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px;
+  color: var(--color-text-muted);
+  font-family: var(--font-family-mono);
+}
+
+.loading-spinner {
+  width: 30px;
+  height: 30px;
+  border: 2px solid var(--color-accent-primary);
+  border-top-color: transparent;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-bottom: var(--spacing-4);
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.flex-between {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
 </style> 

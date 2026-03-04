@@ -1,399 +1,739 @@
 <template>
-<div class="min-h-full bg-gray-50 dark:bg-gray-900">
-    <div class="py-10">
-        <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-            <div v-if="loading" class="flex justify-center items-center h-64">
-                <div class="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-600"></div>
-            </div>
-            
-            <div v-else-if="product" class="bg-white dark:bg-gray-800 shadow rounded-lg overflow-hidden">
-                <!-- Header -->
-                <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
-                    <div class="flex items-center justify-between">
-                        <div>
-                            <h1 class="text-2xl font-bold text-gray-900 dark:text-white">{{ product.name }}</h1>
-                            <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">{{ product.code }}</p>
-                        </div>
-                        <router-link 
-                            to="/products" 
-                            class="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-md text-sm font-medium"
-                        >
-                            ← Назад к списку
-                        </router-link>
-                    </div>
-                </div>
-                <!-- Metrics Chart (moved up) -->
-                <div class="mt-4 mx-6">
-                    <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-3">Метрики по WB</h3>
-                                          <div class="flex justify-between items-center mb-4">
-                          <div class="flex items-center space-x-4">
-                            <span>Период:</span>
-                                <div class="relative">
-                                    <VueDatePicker
-                                      v-model="dateRange"
-                                      range
-                                      :enable-time-picker="false"
-                                      auto-apply
-                                      :max-date="new Date()"
-                                      :clearable="false"
-                                      :hide-input-icon="true"
-                                      locale="ru"
-                                      format="dd.MM.yyyy"
-                                      placeholder="Выберите период"
-                                      input-class-name="!w-80 !h-10 !px-4 !py-2 !text-sm !border !border-gray-300 !rounded-lg !bg-white dark:!bg-gray-700 dark:!border-gray-600 dark:!text-white focus:!ring-2 focus:!ring-blue-500 focus:!border-blue-500"
-                                      menu-class-name="!border !border-gray-200 !rounded-lg !shadow-lg"
-                                      @update:model-value="handleDateRangeChange"
-                                  />
-                                </div>
-                          </div>
-                      </div>
-                    <div v-if="loadingMetrics" class="w-full h-48 bg-gray-100 dark:bg-gray-700 animate-pulse rounded"></div>
-                    <canvas v-else ref="metricsChart" height="80"></canvas>
-                    <div class="flex flex-wrap gap-4 mb-4">
-                        <label v-for="opt in metricsOptions" :key="opt.key" class="flex items-center space-x-2 cursor-pointer">
-                            <input type="checkbox" v-model="opt.checked" @change="debouncedRenderMetricsChart" :disabled="isRenderingChart" />
-                            <span :style="{ color: opt.color }">{{ opt.label }}</span>
-                        </label>
-                    </div>
-                </div>
-
-                <!-- Content -->
-                <div class="p-6">
-                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                        <!-- Left Column - Images -->
-                        <div>
-                            <h2 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Фото товара</h2>
-                            <div v-if="product.pics && product.pics.length > 0" class="space-y-4">
-                                <!-- Main image -->
-                                <div class="aspect-[3/4] rounded-lg overflow-hidden bg-gray-100 dark:bg-gray-700">
-                                    <img 
-                                        :src="selectedImage" 
-                                        :alt="product.name"
-                                        class="w-full h-full object-cover"
-                                    />
-                                </div>
-                                
-                                <!-- Thumbnail grid -->
-                                <div class="grid grid-cols-5 gap-2">
-                                    <div 
-                                        v-for="(pic, index) in product.pics" 
-                                        :key="index"
-                                        @click="selectedImage = pic.big || pic.tm"
-                                        class="aspect-[3/4] rounded-lg overflow-hidden bg-gray-100 dark:bg-gray-700 cursor-pointer hover:ring-2 hover:ring-blue-500"
-                                        :class="{ 'ring-2 ring-blue-500': selectedImage === (pic.big ) }"
-                                    >
-                                        <img 
-                                            :src="pic.tm || pic.square" 
-                                            :alt="`${product.name} ${index + 1}`"
-                                            class="w-full h-full object-cover"
-                                        />
-                                    </div>
-                                </div>
-                            </div>
-                            <div v-else class="aspect-square rounded-lg bg-gray-100 dark:bg-gray-700 flex items-center justify-center">
-                                <span class="text-gray-400 dark:text-gray-500">Нет изображений</span>
-                            </div>
-                            
-                            <!-- Video if available -->
-                            <div v-if="product.video" class="mt-4">
-                                <h3 class="text-md font-semibold text-gray-900 dark:text-white mb-2">Видео</h3>
-                                <video 
-                                    :src="product.video" 
-                                    controls 
-                                    class="w-full rounded-lg"
-                                    preload="metadata"
-                                >
-                                    Ваш браузер не поддерживает видео.
-                                </video>
-                            </div>
-
-                            <!-- Dimensions -->
-                            <div class="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg my-4">
-                                <h3 class="font-medium text-gray-900 dark:text-white mb-3">Размеры и логистика</h3>
-                                <div class="grid grid-cols-1 gap-3 text-sm">
-                                    <div class="flex justify-between">
-                                        <span class="text-gray-600 dark:text-gray-400">Размеры (Д×Ш×В):</span>
-                                        <span class="text-gray-900 dark:text-white">
-                                            {{ product.dimensions?.length }}×{{ product.dimensions?.width }}×{{ product.dimensions?.height }} см
-                                        </span>
-                                    </div>
-                                    <div class="flex justify-between">
-                                        <span class="text-gray-600 dark:text-gray-400">Объем:</span>
-                                        <span class="text-gray-900 dark:text-white">{{ product.volume }} л</span>
-                                    </div>
-                                    <div class="flex justify-between">
-                                        <span class="text-gray-600 dark:text-gray-400">Вес брутто:</span>
-                                        <span class="text-gray-900 dark:text-white">{{ product.dimensions?.weightBrutto || product.weight }} кг</span>
-                                    </div>
-                                    <div class="flex justify-between">
-                                        <span class="text-gray-600 dark:text-gray-400">Дней до готовности:</span>
-                                        <span class="text-gray-900 dark:text-white">{{ product.days_to_ready }}</span>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- Dates -->
-                            <div class="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg">
-                                <h3 class="font-medium text-gray-900 dark:text-white mb-3">Даты</h3>
-                                <div class="grid grid-cols-1 gap-3 text-sm">
-                                    <div class="flex justify-between">
-                                        <span class="text-gray-600 dark:text-gray-400">Создано:</span>
-                                        <span class="text-gray-900 dark:text-white">{{ formatDate(product.created_on) }}</span>
-                                    </div>
-                                    <div class="flex justify-between">
-                                        <span class="text-gray-600 dark:text-gray-400">Обновлено:</span>
-                                        <span class="text-gray-900 dark:text-white">{{ formatDate(product.updated_on) }}</span>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Right Column - Product Info -->
-                        <div class="lg:col-span-2">
-                            <h2 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Общая информация о товаре</h2>
-                            
-                            <!-- Basic Info -->
-                            <div class="space-y-4">
-                                <!-- Метрики карточки -->
-                                <div class="grid grid-cols-1 sm:grid-cols-3 gap-6 mb-6">
-
-                                    <div class="border bg-white dark:bg-gray-800 rounded-lg p-4 flex flex-col">
-                                        <span class="text-sm font-medium text-gray-500 dark:text-gray-400 mb-2">Мастер</span>
-                                        <span class="text-medium font-bold text-gray-900 dark:text-white">{{ product.master || 'Нет' }}</span>
-                                    </div>
-                                    <div class="border bg-white dark:bg-gray-800 rounded-lg p-4 flex flex-col">
-                                        <span class="text-sm font-medium text-gray-500 dark:text-gray-400 mb-2">Семейство</span>
-                                        <span class="text-medium font-bold text-gray-900 dark:text-white">{{ product.family || '-' }}</span>
-                                    </div>
-                                    <div class="border bg-white dark:bg-gray-800 rounded-lg p-4 flex flex-col">
-                                        <span class="text-sm font-medium text-gray-500 dark:text-gray-400 mb-2">Штрихкод</span>
-                                        <span class="text-medium font-bold text-gray-900 dark:text-white">{{ product.barcode || '-' }}</span>
-                                    </div>
-                                </div>
-
-                                <h2 class="text-medium font-semibold text-gray-900 dark:text-white mb-4">Информация по Wildberries <span class="bg-gray-100 dark:bg-gray-800 rounded-lg p-1 text-sm text-gray-500 dark:text-gray-400 ml-2">{{ product.wbid }}</span></h2>
-                                <div class="grid grid-cols-1 sm:grid-cols-3 gap-6 mb-6">
-
-                                    <div class="border bg-white dark:bg-gray-800 rounded-lg p-4 flex flex-col">
-                                        <span class="text-sm font-medium text-gray-500 dark:text-gray-400 mb-2">Цена</span>
-                                        <span class="text-2xl font-bold text-gray-900 dark:text-white">{{ product.wb_api_price || '-' }} ₽</span>
-                                    </div>
-                                    <div class="border bg-white dark:bg-gray-800 rounded-lg p-4 flex flex-col">
-                                        <span class="text-sm font-medium text-gray-500 dark:text-gray-400 mb-2">СПП</span>
-                                        <span class="text-2xl font-bold text-gray-900 dark:text-white">{{ wb_spp || '-' }}%</span>
-                                    </div>
-                                    <div class="border bg-white dark:bg-gray-800 rounded-lg p-4 flex flex-col">
-                                        <span class="text-sm font-medium text-gray-500 dark:text-gray-400 mb-2">Цена в МСК (СПП+Кошелек)</span>
-                                        <span class="text-2xl font-bold text-gray-900 dark:text-white">{{ wb_price_moscow || '-' }} ₽</span>
-                                    </div>
-
-                                    <div class="border bg-white dark:bg-gray-800 rounded-lg p-4 flex flex-col">
-                                        <span class="text-sm font-medium text-gray-500 dark:text-gray-400 mb-2">Рейтинг</span>
-                                        <span class="text-2xl font-bold text-gray-900 dark:text-white">{{ formatRating(product.wb_rating) }}</span>
-                                    </div>
-                                    <div class="border bg-white dark:bg-gray-800 rounded-lg p-4 flex flex-col">
-                                        <span class="text-sm font-medium text-gray-500 dark:text-gray-400 mb-2">Отзывы</span>
-                                        <span class="text-2xl font-bold text-gray-900 dark:text-white">{{ product.wb_feedbacks || '-' }}</span>
-                                    </div>
-
-                                </div>
-                                <h2 class="text-medium font-semibold text-gray-900 dark:text-white mb-4">Данные по Wildberries</h2>
-                                <div class="grid grid-cols-1 sm:grid-cols-3 gap-6 mb-6">
-                                    <div class="border bg-white dark:bg-gray-800 rounded-lg p-4 flex flex-col">
-                                        <span class="text-sm font-medium text-gray-500 dark:text-gray-400 mb-2">Продажи за 7 дней</span>
-                                        <span class="text-2xl font-bold text-gray-900 dark:text-white">{{ product.wb_sales7 || '-' }} шт</span>
-                                    </div>
-                                    <div class="border bg-white dark:bg-gray-800 rounded-lg p-4 flex flex-col">
-                                        <span class="text-sm font-medium text-gray-500 dark:text-gray-400 mb-2">Продажи за 30 дней</span>
-                                        <span class="text-2xl font-bold text-gray-900 dark:text-white">{{ product.wb_sales30 || '-' }} шт</span>
-                                    </div>
-                                    <div class="border bg-white dark:bg-gray-800 rounded-lg p-4 flex flex-col">
-                                        <span class="text-sm font-medium text-gray-500 dark:text-gray-400 mb-2">Рентабельность</span>
-                                        <span class="text-2xl font-bold text-gray-900 dark:text-white">{{ formatPercentage(product.wb_profitability) }}</span>
-                                    </div>
-                                </div>
-
-                                <!-- Ads -->
-                                <div class="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg mt-6">
-                                    <h3 class="font-bold text-gray-900 dark:text-white mb-3">Реклама</h3>
-                                    <div v-if="loadingAds" class="flex justify-center py-4">
-                                        <div class="animate-spin rounded-full h-6 w-6 border-b-2 border-gray-900 dark:border-white"></div>
-                                    </div>
-                                    <div v-else-if="ads.length === 0" class="text-sm text-gray-500 dark:text-gray-400">
-                                        Нет активной рекламы
-                                    </div>
-                                    <div v-else class="space-y-3">
-                                        <div v-for="ad in ads" :key="ad.id" class="flex justify-between items-center">
-                                            <div class="flex items-center space-x-2">
-                                                <span class="text-sm"><router-link :to="`/adv/${ad.id}`" class="text-blue-500 dark:text-blue-400">{{ ad.id }}</router-link></span>
-                                                <!-- <span class="text-sm">{{ ad.name }}</span> -->
-                                                <span :class="getAdStatusClass(ad.status_id)" 
-                                                      class="px-2 py-0.5 text-xs font-medium rounded-full">
-                                                    {{ getAdStatusText(ad.status_id) }}
-                                                </span>
-                                                <span class="px-2 py-0.5 text-xs font-medium rounded-full bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 ml-2">
-                                                    {{ getCampaignStatusText(ad.step_date, ad.profitability) }}
-                                                </span>
-                                                <!-- <br/>
-                                                <span class="text-xs text-gray-500 dark:text-gray-400">
-                                                    {{ formatDate(ad.step_date) }}
-                                                </span> -->
-                                            </div>
-                                            <div class="text-right">
-                                                <div class="text-sm font-medium">{{ formatPercentage(ad.drr) }}</div>
-                                                <div class="text-xs text-gray-500 dark:text-gray-400">
-                                                    ДРР
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <h2 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Информация по Ozon <span class="bg-gray-100 dark:bg-gray-800 rounded-lg p-1 text-sm text-gray-500 dark:text-gray-400 ml-2">{{ product.ozonid }}</span></h2>
-                                <div class="grid grid-cols-1 sm:grid-cols-3 gap-6 mb-6">
-                                    <div class="border bg-white dark:bg-gray-800 rounded-lg p-4 flex flex-col">
-                                        <span class="text-sm font-medium text-gray-500 dark:text-gray-400 mb-2">Цена</span>
-                                        <span class="text-2xl font-bold text-gray-900 dark:text-white">{{ product.ozon_price || '-' }} ₽</span>
-                                    </div>
-                                </div>
-
-                                <h2 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Данные по Ozon</h2>
-                                <div class="grid grid-cols-1 sm:grid-cols-3 gap-6 mb-6">
-                                    <div class="border bg-white dark:bg-gray-800 rounded-lg p-4 flex flex-col">
-                                        <span class="text-sm font-medium text-gray-500 dark:text-gray-400 mb-2">Продажи за 7 дней</span>
-                                        <span class="text-2xl font-bold text-gray-900 dark:text-white">{{ product.ozon_sales7 || '-' }}  ₽</span>
-                                    </div>
-
-
-                                    <div class="border bg-white dark:bg-gray-800 rounded-lg p-4 flex flex-col">
-                                        <span class="text-sm font-medium text-gray-500 dark:text-gray-400 mb-2">Продажи за 30 дней</span>
-                                        <span class="text-2xl font-bold text-gray-900 dark:text-white">{{ product.ozon_sales30 || '-' }} шт</span>
-                                    </div>
-                                    <div class="border bg-white dark:bg-gray-800 rounded-lg p-4 flex flex-col">
-                                        <span class="text-sm font-medium text-gray-500 dark:text-gray-400 mb-2">Рентабельность</span>
-                                        <span class="text-2xl font-bold text-gray-900 dark:text-white">{{ formatPercentage(product.ozon_profitability) }}</span>
-                                    </div>
-
-                                </div>
-
-                                
-
-                                <!-- Combined Stocks and Goals -->
-                                <div class="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg">
-                                    <h3 class="font-medium text-gray-900 dark:text-white mb-3">Остатки и цели</h3>
-                                    <template v-if="loadingStocks || loadingGoals">
-                                        <div class="flex justify-center py-4">
-                                            <div class="animate-spin rounded-full h-6 w-6 border-b-2 border-gray-900 dark:border-white"></div>
-                                        </div>
-                                    </template>
-                                    <template v-else-if="stocks.length === 0 && goals.length === 0">
-                                        <div class="text-sm text-gray-500 dark:text-gray-400">
-                                            Нет данных об остатках и целях
-                                        </div>
-                                    </template>
-                                    <template v-else>
-                                        <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-600">
-                                            <thead class="bg-gray-100 dark:bg-gray-600">
-                                                <tr>
-                                                    <th class="px-2 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">Регион</th>
-                                                    <!-- <th class="px-2 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">Склад</th> -->
-                                                    <th class="px-2 py-2 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">Остатки</th>
-                                                    <th class="px-2 py-2 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">Цели</th>
-                                                    <th class="px-2 py-2 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">Дней</th>
-                                                </tr>
-                                            </thead>
-                                            <tbody>
-                                                <template v-for="mp in ['wb', 'ozon']">
-                                                    <tr>
-                                                        <td :colspan="5" class="bg-gray-200 dark:bg-gray-800 text-lg font-semibold py-2 px-2 border-t border-b border-gray-300 dark:border-gray-600 text-center"
-                                                            :class="mp === 'wb' ? 'text-purple-700 dark:text-purple-300' : 'text-blue-700 dark:text-blue-300'">
-                                                            {{ mp === 'wb' ? 'Wildberries' : 'Ozon' }}
-                                                        </td>
-                                                    </tr>
-                                                    <template v-for="(regionData, region) in (combinedWarehouseData[mp] || {})" :key="mp + '-' + region">
-                                                        <tr class="bg-gray-100 dark:bg-gray-700">
-                                                            <td class="px-2 py-1 text-sm font-bold">{{ region }}</td>
-                                                            <td class="px-2 py-1 text-sm text-right font-bold">{{ regionData.totalStocks }}</td>
-                                                            <td class="px-2 py-1 text-sm text-right font-bold">{{ regionData.totalGoals }}</td>
-                                                            <td class="px-2 py-1 text-sm text-right">&nbsp;</td>
-                                                        </tr>
-                                                        <template v-for="(warehouse, id) in regionData.warehouses" :key="mp + '-' + region + '-' + id">
-                                                            <tr>
-                                                                <!-- <td class="px-2 py-1 text-sm">&nbsp;</td> -->
-                                                                <td class="px-2 py-1 text-sm">{{ warehouse.name }}</td>
-                                                                <td class="px-2 py-1 text-sm text-right">{{ warehouse.stocks }}</td>
-                                                                <td class="px-2 py-1 text-sm text-right">{{ warehouse.goals }}</td>
-                                                                <td class="px-2 py-1 text-sm text-right">{{ warehouse.goalDays || '-' }}</td>
-                                                            </tr>
-                                                            <tr v-if="filteredSupplyTasks(warehouse.name).length > 0">
-                                                                <td colspan="4" class="px-2 pb-2 pt-0">
-                                                                    <div class="flex flex-wrap gap-2">
-                                                                        <span class="inline-flex items-center text-xs font-medium text-blue-800 dark:text-blue-100">🚚 В пути:</span>
-                                                                        <template v-for="task in filteredSupplyTasks(warehouse.name)" :key="task.id">
-                                                                            <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-800 dark:text-blue-100">
-                                                                                {{ task.qty }} шт. до {{ formatShortDate(task.estimated_date) }}
-                                                                            </span>
-                                                                        </template>
-                                                                    </div>
-                                                                </td>
-                                                            </tr>
-                                                        </template>
-                                                    </template>
-                                                </template>
-                                            </tbody>
-                                        </table>
-                                    </template>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            
-            <div v-else class="bg-white dark:bg-gray-800 shadow rounded-lg p-6">
-                <p class="text-gray-500 dark:text-gray-400">Товар не найден</p>
-            </div>
-        </div>
+  <div class="product-details-container">
+    <div v-if="loading" class="loading-state">
+      <div class="loading-spinner"></div>
     </div>
-</div>
+    
+    <div v-else-if="product" class="content-wrapper">
+      <!-- Header -->
+      <div class="page-header flex-between mb-6">
+        <div>
+          <h1 class="page-title">{{ product.name }}</h1>
+          <p class="page-subtitle">{{ product.code }}</p>
+        </div>
+        <router-link to="/products">
+          <TacticalButton variant="secondary" size="sm">
+            <ChevronLeft size="16" class="mr-1" /> НАЗАД К СПИСКУ
+          </TacticalButton>
+        </router-link>
+      </div>
+
+      <!-- Metrics Chart -->
+      <TacticalCard title="Метрики по WB" subtitle="ДИНАМИКА ПОКАЗАТЕЛЕЙ" class="mb-6">
+        <template #header-right>
+          <div class="date-picker-wrapper">
+            <VueDatePicker
+              v-model="dateRange"
+              range
+              :enable-time-picker="false"
+              auto-apply
+              :max-date="new Date()"
+              :clearable="false"
+              :hide-input-icon="true"
+              locale="ru"
+              format="dd.MM.yyyy"
+              placeholder="Выберите период"
+              dark
+              @update:model-value="handleDateRangeChange"
+            />
+          </div>
+        </template>
+        
+        <div class="chart-section">
+          <div v-if="loadingMetrics" class="loading-placeholder">
+            <div class="loading-spinner"></div>
+          </div>
+          <canvas v-else ref="metricsChart" height="80"></canvas>
+          
+          <div class="metrics-toggles mt-4">
+            <label v-for="opt in metricsOptions" :key="opt.key" class="metric-toggle">
+              <input type="checkbox" v-model="opt.checked" @change="debouncedRenderMetricsChart" :disabled="isRenderingChart" />
+              <span :style="{ color: opt.color }">{{ opt.label }}</span>
+            </label>
+          </div>
+        </div>
+      </TacticalCard>
+
+      <div class="grid-layout">
+        <!-- Left Column - Images & Info -->
+        <div class="left-column">
+          <TacticalCard title="Фото товара" subtitle="ГАЛЕРЕЯ" class="mb-6">
+            <div v-if="product.pics && product.pics.length > 0" class="gallery-container">
+              <!-- Main image -->
+              <div class="main-image">
+                <img :src="selectedImage" :alt="product.name" />
+              </div>
+              
+              <!-- Thumbnail grid -->
+              <div class="thumbnails-grid">
+                <div 
+                  v-for="(pic, index) in product.pics" 
+                  :key="index"
+                  @click="selectedImage = pic.big || pic.tm"
+                  class="thumbnail-item"
+                  :class="{ 'active': selectedImage === (pic.big) }"
+                >
+                  <img :src="pic.tm || pic.square" :alt="`${product.name} ${index + 1}`" />
+                </div>
+              </div>
+            </div>
+            <div v-else class="no-images">
+              <span>НЕТ ИЗОБРАЖЕНИЙ</span>
+            </div>
+            
+            <!-- Video if available -->
+            <div v-if="product.video" class="mt-4">
+              <h3 class="section-label mb-2">ВИДЕО</h3>
+              <video 
+                :src="product.video" 
+                controls 
+                class="product-video"
+                preload="metadata"
+              >
+                Ваш браузер не поддерживает видео.
+              </video>
+            </div>
+          </TacticalCard>
+
+          <!-- Dimensions -->
+          <TacticalCard title="Размеры и логистика" subtitle="ХАРАКТЕРИСТИКИ" class="mb-6">
+            <div class="info-list">
+              <div class="info-item">
+                <span class="label">Размеры (Д×Ш×В)</span>
+                <span class="value">{{ product.dimensions?.length }}×{{ product.dimensions?.width }}×{{ product.dimensions?.height }} см</span>
+              </div>
+              <div class="info-item">
+                <span class="label">Объем</span>
+                <span class="value">{{ product.volume }} л</span>
+              </div>
+              <div class="info-item">
+                <span class="label">Вес брутто</span>
+                <span class="value">{{ product.dimensions?.weightBrutto || product.weight }} кг</span>
+              </div>
+              <div class="info-item">
+                <span class="label">Дней до готовности</span>
+                <span class="value">{{ product.days_to_ready }}</span>
+              </div>
+            </div>
+          </TacticalCard>
+
+          <!-- Dates -->
+          <TacticalCard title="Даты" subtitle="ИСТОРИЯ" class="mb-6">
+            <div class="info-list">
+              <div class="info-item">
+                <span class="label">Создано</span>
+                <span class="value">{{ formatDate(product.created_on) }}</span>
+              </div>
+              <div class="info-item">
+                <span class="label">Обновлено</span>
+                <span class="value">{{ formatDate(product.updated_on) }}</span>
+              </div>
+            </div>
+          </TacticalCard>
+        </div>
+
+        <!-- Right Column - Product Info -->
+        <div class="right-column">
+          <TacticalCard title="Общая информация" subtitle="СВОДКА" class="mb-6">
+            <div class="metrics-grid">
+              <div class="metric-box">
+                <span class="metric-label">МАСТЕР</span>
+                <span class="metric-value">{{ product.master || 'Нет' }}</span>
+              </div>
+              <div class="metric-box">
+                <span class="metric-label">СЕМЕЙСТВО</span>
+                <span class="metric-value">{{ product.family || '-' }}</span>
+              </div>
+              <div class="metric-box">
+                <span class="metric-label">ШТРИХКОД</span>
+                <span class="metric-value">{{ product.barcode || '-' }}</span>
+              </div>
+            </div>
+          </TacticalCard>
+
+          <!-- Wildberries Info -->
+          <TacticalCard title="Wildberries" :subtitle="product.wbid" class="mb-6">
+            <template #header-right>
+              <div class="flex gap-2">
+                <TacticalBadge variant="primary">WB</TacticalBadge>
+              </div>
+            </template>
+            
+            <div class="metrics-grid mb-6">
+              <div class="metric-box">
+                <span class="metric-label">ЦЕНА</span>
+                <span class="metric-value">{{ product.wb_api_price || '-' }} ₽</span>
+              </div>
+              <div class="metric-box">
+                <span class="metric-label">СПП</span>
+                <span class="metric-value">{{ wb_spp || '-' }}%</span>
+              </div>
+              <div class="metric-box">
+                <span class="metric-label">ЦЕНА МСК</span>
+                <span class="metric-value">{{ wb_price_moscow || '-' }} ₽</span>
+              </div>
+              <div class="metric-box">
+                <span class="metric-label">РЕЙТИНГ</span>
+                <span class="metric-value">{{ formatRating(product.wb_rating) }}</span>
+              </div>
+              <div class="metric-box">
+                <span class="metric-label">ОТЗЫВЫ</span>
+                <span class="metric-value">{{ product.wb_feedbacks || '-' }}</span>
+              </div>
+            </div>
+
+            <h3 class="section-label mb-3">ПРОДАЖИ И ПРИБЫЛЬ</h3>
+            <div class="metrics-grid">
+              <div class="metric-box">
+                <span class="metric-label">7 ДНЕЙ</span>
+                <span class="metric-value">{{ product.wb_sales7 || '-' }} шт</span>
+              </div>
+              <div class="metric-box">
+                <span class="metric-label">30 ДНЕЙ</span>
+                <span class="metric-value">{{ product.wb_sales30 || '-' }} шт</span>
+              </div>
+              <div class="metric-box">
+                <span class="metric-label">РЕНТАБЕЛЬНОСТЬ</span>
+                <span class="metric-value" :class="getProfitabilityClass(product.wb_profitability)">
+                  {{ formatPercentage(product.wb_profitability) }}
+                </span>
+              </div>
+            </div>
+          </TacticalCard>
+
+          <!-- Ads -->
+          <TacticalCard title="Реклама" subtitle="КАМПАНИИ" class="mb-6">
+            <div v-if="loadingAds" class="loading-placeholder sm">
+              <div class="loading-spinner sm"></div>
+            </div>
+            <div v-else-if="ads.length === 0" class="empty-state">
+              Нет активной рекламы
+            </div>
+            <div v-else class="ads-list">
+              <div v-for="ad in ads" :key="ad.id" class="ad-item">
+                <div class="ad-info">
+                  <router-link :to="`/adv/${ad.id}`" class="ad-link">{{ ad.id }}</router-link>
+                  <TacticalBadge :variant="getAdStatusVariant(ad.status_id)" size="sm">
+                    {{ getAdStatusText(ad.status_id) }}
+                  </TacticalBadge>
+                  <TacticalBadge :variant="getCampaignStatusVariant(ad.step_date, ad.profitability)" size="sm">
+                    {{ getCampaignStatusText(ad.step_date, ad.profitability) }}
+                  </TacticalBadge>
+                </div>
+                <div class="ad-metrics">
+                  <span class="drr-value">{{ formatPercentage(ad.drr) }}</span>
+                  <span class="drr-label">ДРР</span>
+                </div>
+              </div>
+            </div>
+          </TacticalCard>
+
+          <!-- Ozon Info -->
+          <TacticalCard title="Ozon" :subtitle="product.ozonid" class="mb-6">
+            <template #header-right>
+              <div class="flex gap-2">
+                <TacticalBadge variant="info">OZON</TacticalBadge>
+              </div>
+            </template>
+            
+            <div class="metrics-grid mb-6">
+              <div class="metric-box">
+                <span class="metric-label">ЦЕНА</span>
+                <span class="metric-value">{{ product.ozon_price || '-' }} ₽</span>
+              </div>
+            </div>
+
+            <h3 class="section-label mb-3">ПРОДАЖИ И ПРИБЫЛЬ</h3>
+            <div class="metrics-grid">
+              <div class="metric-box">
+                <span class="metric-label">7 ДНЕЙ</span>
+                <span class="metric-value">{{ product.ozon_sales7 || '-' }} ₽</span>
+              </div>
+              <div class="metric-box">
+                <span class="metric-label">30 ДНЕЙ</span>
+                <span class="metric-value">{{ product.ozon_sales30 || '-' }} шт</span>
+              </div>
+              <div class="metric-box">
+                <span class="metric-label">РЕНТАБЕЛЬНОСТЬ</span>
+                <span class="metric-value" :class="getProfitabilityClass(product.ozon_profitability)">
+                  {{ formatPercentage(product.ozon_profitability) }}
+                </span>
+              </div>
+            </div>
+          </TacticalCard>
+
+          <!-- Stocks and Goals -->
+          <TacticalCard title="Остатки и цели" subtitle="СКЛАДЫ" class="mb-6">
+            <template v-if="loadingStocks || loadingGoals">
+              <div class="loading-placeholder sm">
+                <div class="loading-spinner sm"></div>
+              </div>
+            </template>
+            <template v-else-if="stocks.length === 0 && goals.length === 0">
+              <div class="empty-state">
+                Нет данных об остатках и целях
+              </div>
+            </template>
+            <template v-else>
+              <div class="stocks-table-wrapper">
+                <table class="tactical-table-simple">
+                  <thead>
+                    <tr>
+                      <th class="text-left">Регион</th>
+                      <th class="text-right">Остатки</th>
+                      <th class="text-right">Цели</th>
+                      <th class="text-right">Дней</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <template v-for="mp in ['wb', 'ozon']">
+                      <tr>
+                        <td colspan="4" class="mp-header" :class="mp">
+                          {{ mp === 'wb' ? 'Wildberries' : 'Ozon' }}
+                        </td>
+                      </tr>
+                      <template v-for="(regionData, region) in (combinedWarehouseData[mp] || {})" :key="mp + '-' + region">
+                        <tr class="region-row">
+                          <td class="font-bold">{{ region }}</td>
+                          <td class="text-right font-bold">{{ regionData.totalStocks }}</td>
+                          <td class="text-right font-bold">{{ regionData.totalGoals }}</td>
+                          <td></td>
+                        </tr>
+                        <template v-for="(warehouse, id) in regionData.warehouses" :key="mp + '-' + region + '-' + id">
+                          <tr class="warehouse-row">
+                            <td class="pl-4">{{ warehouse.name }}</td>
+                            <td class="text-right">{{ warehouse.stocks }}</td>
+                            <td class="text-right">{{ warehouse.goals }}</td>
+                            <td class="text-right">{{ warehouse.goalDays || '-' }}</td>
+                          </tr>
+                          <tr v-if="filteredSupplyTasks(warehouse.name).length > 0">
+                            <td colspan="4" class="supply-tasks-cell">
+                              <div class="supply-tasks-list">
+                                <span class="task-label">🚚 В пути:</span>
+                                <template v-for="task in filteredSupplyTasks(warehouse.name)" :key="task.id">
+                                  <span class="supply-task-badge">
+                                    {{ task.qty }} шт. до {{ formatShortDate(task.estimated_date) }}
+                                  </span>
+                                </template>
+                              </div>
+                            </td>
+                          </tr>
+                        </template>
+                      </template>
+                    </template>
+                  </tbody>
+                </table>
+              </div>
+            </template>
+          </TacticalCard>
+        </div>
+      </div>
+    </div>
+    
+    <div v-else class="error-state">
+      <TacticalCard>
+        <div class="text-center py-8">
+          <p class="text-muted">Товар не найден</p>
+          <router-link to="/products" class="mt-4 inline-block">
+            <TacticalButton variant="primary">ВЕРНУТЬСЯ К СПИСКУ</TacticalButton>
+          </router-link>
+        </div>
+      </TacticalCard>
+    </div>
+  </div>
 </template>
 
 <style scoped>
-/* Кастомные стили для VueDatePicker */
+.product-details-container {
+  padding: var(--spacing-6);
+  max-width: 1600px;
+  margin: 0 auto;
+}
+
+.loading-state, .error-state {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 400px;
+}
+
+.loading-spinner {
+  width: 40px;
+  height: 40px;
+  border: 3px solid var(--color-bg-tertiary);
+  border-top-color: var(--color-accent-primary);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+.loading-spinner.sm {
+  width: 24px;
+  height: 24px;
+  border-width: 2px;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.page-title {
+  font-family: var(--font-family-mono);
+  font-size: var(--font-size-2xl);
+  font-weight: 700;
+  color: var(--color-text-primary);
+  letter-spacing: 1px;
+  margin-bottom: 4px;
+}
+
+.page-subtitle {
+  font-family: var(--font-family-mono);
+  font-size: var(--font-size-sm);
+  color: var(--color-text-muted);
+}
+
+.grid-layout {
+  display: grid;
+  grid-template-columns: 1fr 2fr;
+  gap: var(--spacing-6);
+}
+
+@media (max-width: 1024px) {
+  .grid-layout {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Chart Section */
+.chart-section {
+  position: relative;
+  min-height: 300px;
+}
+
+.loading-placeholder {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 300px;
+  background: rgba(255, 255, 255, 0.02);
+  border-radius: var(--border-radius-md);
+}
+
+.loading-placeholder.sm {
+  height: 100px;
+}
+
+.metrics-toggles {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spacing-3);
+}
+
+.metric-toggle {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  font-family: var(--font-family-mono);
+  font-size: 0.75rem;
+  user-select: none;
+}
+
+/* Gallery */
+.gallery-container {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-4);
+}
+
+.main-image {
+  aspect-ratio: 3/4;
+  background-color: var(--color-bg-tertiary);
+  border-radius: var(--border-radius-md);
+  overflow: hidden;
+  border: 1px solid var(--color-border-subtle);
+}
+
+.main-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.thumbnails-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: var(--spacing-2);
+}
+
+.thumbnail-item {
+  aspect-ratio: 3/4;
+  background-color: var(--color-bg-tertiary);
+  border-radius: var(--border-radius-sm);
+  overflow: hidden;
+  cursor: pointer;
+  border: 1px solid var(--color-border-subtle);
+  transition: all 0.2s;
+}
+
+.thumbnail-item:hover, .thumbnail-item.active {
+  border-color: var(--color-accent-primary);
+  transform: translateY(-2px);
+}
+
+.thumbnail-item img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.no-images {
+  aspect-ratio: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--color-bg-tertiary);
+  border-radius: var(--border-radius-md);
+  color: var(--color-text-muted);
+  font-family: var(--font-family-mono);
+  font-size: 0.8rem;
+}
+
+.product-video {
+  width: 100%;
+  border-radius: var(--border-radius-md);
+  border: 1px solid var(--color-border-subtle);
+}
+
+/* Info List */
+.info-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-3);
+}
+
+.info-item {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.85rem;
+  padding-bottom: 8px;
+  border-bottom: 1px dashed rgba(255, 255, 255, 0.1);
+}
+
+.info-item:last-child {
+  border-bottom: none;
+}
+
+.info-item .label {
+  color: var(--color-text-muted);
+}
+
+.info-item .value {
+  color: var(--color-text-primary);
+  font-family: var(--font-family-mono);
+  text-align: right;
+}
+
+/* Metrics Grid */
+.metrics-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: var(--spacing-4);
+}
+
+.metric-box {
+  background-color: var(--color-bg-tertiary);
+  border: 1px solid var(--color-border-subtle);
+  border-radius: var(--border-radius-md);
+  padding: var(--spacing-3);
+  display: flex;
+  flex-direction: column;
+}
+
+.metric-label {
+  font-size: 0.65rem;
+  color: var(--color-text-muted);
+  text-transform: uppercase;
+  margin-bottom: 4px;
+  font-family: var(--font-family-mono);
+}
+
+.metric-value {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--color-text-primary);
+  font-family: var(--font-family-mono);
+}
+
+.section-label {
+  font-size: 0.75rem;
+  color: var(--color-text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  font-family: var(--font-family-mono);
+  margin-top: var(--spacing-2);
+}
+
+/* Ads List */
+.ads-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-3);
+}
+
+.ad-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px;
+  background-color: rgba(255, 255, 255, 0.02);
+  border-radius: var(--border-radius-sm);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.ad-info {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-3);
+}
+
+.ad-link {
+  font-family: var(--font-family-mono);
+  color: var(--color-accent-primary);
+  font-size: 0.85rem;
+  text-decoration: none;
+}
+
+.ad-link:hover {
+  text-decoration: underline;
+}
+
+.ad-metrics {
+  text-align: right;
+}
+
+.drr-value {
+  display: block;
+  font-family: var(--font-family-mono);
+  font-weight: 700;
+  font-size: 0.9rem;
+}
+
+.drr-label {
+  font-size: 0.65rem;
+  color: var(--color-text-muted);
+}
+
+.empty-state {
+  text-align: center;
+  padding: var(--spacing-4);
+  color: var(--color-text-muted);
+  font-size: 0.85rem;
+  font-style: italic;
+}
+
+/* Simple Table */
+.tactical-table-simple {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.85rem;
+}
+
+.tactical-table-simple th {
+  padding: 8px;
+  color: var(--color-text-muted);
+  font-weight: normal;
+  font-family: var(--font-family-mono);
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  border-bottom: 1px solid var(--color-border-subtle);
+}
+
+.tactical-table-simple td {
+  padding: 8px;
+  color: var(--color-text-primary);
+}
+
+.mp-header {
+  background-color: rgba(255, 255, 255, 0.05);
+  font-family: var(--font-family-mono);
+  font-weight: 700;
+  text-align: center;
+  padding: 6px !important;
+  font-size: 0.8rem;
+}
+
+.mp-header.wb { color: #a855f7; }
+.mp-header.ozon { color: #3b82f6; }
+
+.region-row td {
+  background-color: rgba(255, 255, 255, 0.02);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.warehouse-row td {
+  border-bottom: 1px dashed rgba(255, 255, 255, 0.05);
+  font-family: var(--font-family-mono);
+  font-size: 0.8rem;
+}
+
+.supply-tasks-cell {
+  padding: 4px 8px 12px 24px !important;
+}
+
+.supply-tasks-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+
+.task-label {
+  font-size: 0.75rem;
+  color: var(--color-text-muted);
+}
+
+.supply-task-badge {
+  background-color: rgba(59, 130, 246, 0.15);
+  color: #60a5fa;
+  font-family: var(--font-family-mono);
+  font-size: 0.7rem;
+  padding: 2px 6px;
+  border-radius: 4px;
+  border: 1px solid rgba(59, 130, 246, 0.3);
+}
+
+/* Date Picker Overrides */
 :deep(.dp__input) {
-  width: 320px !important;
-  height: 40px !important;
-  padding: 8px 16px !important;
-  font-size: 14px !important;
-  border: 1px solid #d1d5db !important;
-  border-radius: 8px !important;
-  background-color: white !important;
+  background-color: var(--color-bg-tertiary) !important;
+  border-color: var(--color-border-subtle) !important;
+  color: var(--color-text-primary) !important;
+  font-family: var(--font-family-mono) !important;
+  font-size: 0.85rem !important;
 }
-
-:deep(.dark .dp__input) {
-  background-color: #374151 !important;
-  border-color: #4b5563 !important;
-  color: white !important;
-}
-
-:deep(.dp__input:focus) {
-  ring: 2px !important;
-  ring-color: #3b82f6 !important;
-  border-color: #3b82f6 !important;
-  outline: none !important;
-}
-
-
 
 :deep(.dp__menu) {
-  border: 1px solid #e5e7eb !important;
-  border-radius: 8px !important;
-  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05) !important;
+  background-color: var(--color-bg-secondary) !important;
+  border-color: var(--color-border-subtle) !important;
 }
 
-:deep(.dark .dp__menu) {
-  background-color: #1f2937 !important;
-  border-color: #374151 !important;
+:deep(.dp__theme_dark) {
+  --dp-background-color: var(--color-bg-secondary);
+  --dp-text-color: var(--color-text-primary);
+  --dp-hover-color: rgba(255, 255, 255, 0.1);
+  --dp-hover-text-color: var(--color-text-primary);
+  --dp-hover-icon-color: var(--color-text-primary);
+  --dp-primary-color: var(--color-accent-primary);
+  --dp-primary-text-color: #000;
+  --dp-secondary-color: var(--color-text-muted);
+  --dp-border-color: var(--color-border-subtle);
+  --dp-menu-border-color: var(--color-border-subtle);
+  --dp-border-color-hover: var(--color-text-muted);
 }
 </style>
 
@@ -406,6 +746,11 @@ import { defineComponent } from 'vue'
 import VueDatePicker from '@vuepic/vue-datepicker'
 import '@vuepic/vue-datepicker/dist/main.css'
 
+import TacticalCard from '@/components/TacticalCard.vue'
+import TacticalButton from '@/components/TacticalButton.vue'
+import TacticalBadge from '@/components/TacticalBadge.vue'
+import { ChevronLeft } from 'lucide-vue-next'
+
 function debounce(fn, delay) {
   let timeout
   return function(...args) {
@@ -416,7 +761,11 @@ function debounce(fn, delay) {
 
 export default {
     components: {
-        VueDatePicker
+        VueDatePicker,
+        TacticalCard,
+        TacticalButton,
+        TacticalBadge,
+        ChevronLeft
     },
     data() {
         return {
@@ -770,9 +1119,38 @@ export default {
             const month = String(d.getMonth() + 1).padStart(2, '0')
             return `${day}.${month}`
         },
-        async handleDateRangeChange() {
+        getProfitabilityClass(value) {
+            if (value === undefined || value === null) return ''
+            if (value >= 0.3) return 'text-success'
+            if (value >= 0.1) return 'text-warning'
+            return 'text-danger'
+        },
+        getAdStatusVariant(status) {
+            switch (status) {
+                case 9: return 'success' // идут показы
+                case 11: return 'warning' // на паузе
+                case 4: return 'primary' // готова к запуску
+                case 7: return 'neutral' // завершена
+                case 8: return 'danger' // отказался
+                default: return 'neutral'
+            }
+        },
+        getCampaignStatusVariant(createdAt, profitability) {
+            if (!createdAt) return 'neutral'
+            const createdDate = new Date(createdAt)
+            const now = new Date()
+            const diffTime = Math.abs(now - createdDate)
+            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
+            const weeks = Math.floor(diffDays / 7)
+
+            if (weeks < 4) return 'success'
+            if (weeks < 8) return 'warning'
+            if (profitability < 0.4) return 'danger'
+            return 'primary'
+        },
+        handleDateRangeChange() {
             this.loadingMetrics = true
-            await this.loadMetrics()
+            this.loadMetrics()
             this.$nextTick(this.renderMetricsChart)
         },
     },

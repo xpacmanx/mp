@@ -6,6 +6,8 @@ import router from './router'
 
 
 import './assets/tailwind.css';
+import './assets/styles/variables.css'
+import './assets/styles/base.css'
 import './assets/main.css'
 
 

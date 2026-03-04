@@ -1,48 +1,48 @@
 <template>
   <div>
-    <form @submit.prevent="onSubmit">
+    <form @submit.prevent="onSubmit" class="tactical-form">
       <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
         <!-- Колонка 1 -->
         <div>
           <div class="mb-4">
-            <label class="block mb-1 font-medium">Имя</label>
-            <input v-model="form.first_name" class="input" />
+            <label class="tactical-label">Имя</label>
+            <input v-model="form.first_name" class="tactical-input" />
           </div>
           <div class="mb-4">
-            <label class="block mb-1 font-medium">Фамилия</label>
-            <input v-model="form.last_name" class="input" />
+            <label class="tactical-label">Фамилия</label>
+            <input v-model="form.last_name" class="tactical-input" />
           </div>
           <div class="mb-4">
-            <label class="block mb-1 font-medium">День рождения</label>
-            <input v-model="form.birthdate" type="date" class="input" />
+            <label class="tactical-label">День рождения</label>
+            <input v-model="form.birthdate" type="date" class="tactical-input" />
           </div>
           <div class="mb-4">
-            <label class="block mb-1 font-medium">Email</label>
-            <input v-model="form.email" type="email" class="input" required />
+            <label class="tactical-label">Email</label>
+            <input v-model="form.email" type="email" class="tactical-input" required />
           </div>
         </div>
         <!-- Колонка 2 -->
         <div>
           <div class="mb-4">
-            <label class="block mb-1 font-medium">Телеграм ник</label>
-            <input v-model="form.telegram_nick" class="input" />
+            <label class="tactical-label">Телеграм ник</label>
+            <input v-model="form.telegram_nick" class="tactical-input" />
           </div>
           <div class="mb-4">
-            <label class="block mb-1 font-medium">Telegram ID</label>
-            <input v-model="form.telegram_id" class="input" />
+            <label class="tactical-label">Telegram ID</label>
+            <input v-model="form.telegram_id" class="tactical-input" />
           </div>
           <div class="mb-4">
-            <label class="block mb-1 font-medium">Фото профиля</label>
+            <label class="tactical-label">Фото профиля</label>
             <!-- Превью текущего фото -->
             <div v-if="form.photo && !showImageCropper" class="mb-3">
               <div class="flex items-center space-x-4">
-                <div class="w-16 h-16 rounded-full overflow-hidden border-2 border-gray-200">
+                <div class="w-16 h-16 rounded-full overflow-hidden border border-gray-600">
                   <img :src="form.photo" alt="Текущее фото" class="w-full h-full object-cover" />
                 </div>
                 <button 
                   type="button" 
                   @click="showImageCropper = true" 
-                  class="text-sm text-blue-600 hover:text-blue-800"
+                  class="text-sm text-accent hover:underline"
                 >
                   Изменить фото
                 </button>
@@ -54,23 +54,23 @@
               v-if="!form.photo && !showImageCropper"
               type="button" 
               @click="showImageCropper = true"
-              class="w-full border-2 border-dashed border-gray-300 rounded-lg p-4 text-center hover:border-gray-400 transition-colors"
+              class="w-full border border-dashed border-gray-600 rounded-lg p-4 text-center hover:border-gray-400 transition-colors bg-transparent"
             >
               <svg class="w-8 h-8 mx-auto mb-2 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
               </svg>
-              <span class="text-gray-600">Загрузить фото</span>
+              <span class="text-gray-400">Загрузить фото</span>
             </button>
 
             <!-- Модальное окно с редактором -->
-            <div v-if="showImageCropper" class="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
-              <div class="bg-white rounded-lg max-w-4xl w-full max-h-screen overflow-y-auto">
+            <div v-if="showImageCropper" class="fixed inset-0 bg-black bg-opacity-80 z-50 flex items-center justify-center p-4">
+              <div class="bg-panel rounded-lg max-w-4xl w-full max-h-screen overflow-y-auto border border-gray-700">
                 <div class="p-6">
                   <div class="flex justify-between items-center mb-4">
-                    <h3 class="text-lg font-medium">Редактирование фото профиля</h3>
+                    <h3 class="text-lg font-medium text-white">Редактирование фото профиля</h3>
                     <button 
                       @click="closeImageCropper" 
-                      class="text-gray-400 hover:text-gray-600 text-2xl"
+                      class="text-gray-400 hover:text-white text-2xl"
                     >
                       ×
                     </button>
@@ -88,30 +88,36 @@
         <!-- Колонка 3 -->
         <div>
           <div class="mb-4">
-            <label class="block mb-1 font-medium">Логин</label>
-            <input v-model="form.username" :disabled="isEdit" class="input" required />
+            <label class="tactical-label">Логин</label>
+            <input v-model="form.username" :disabled="isEdit" class="tactical-input" required />
           </div>
           <div class="mb-4" v-if="form.role !== undefined">
-            <label class="block mb-1 font-medium">Роль</label>
-            <select v-model="form.role" class="input">
+            <label class="tactical-label">Роль</label>
+            <select v-model="form.role" class="tactical-input">
               <option value="user">Пользователь</option>
               <option value="admin">Администратор</option>
+              <option value="top">Топ-менеджер</option>
+              <option value="logistics">Логист</option>
+              <option value="masters">Мастер</option>
+              <option value="marketing">Маркетинг</option>
+              <option value="production">Производство</option>
+              <option value="packers">Упаковщик</option>
             </select>
           </div>
           <div v-if="!isEdit" class="mb-4">
-            <label class="block mb-1 font-medium">Пароль</label>
-            <input v-model="form.password" type="password" class="input" required />
+            <label class="tactical-label">Пароль</label>
+            <input v-model="form.password" type="password" class="tactical-input" required />
           </div>
           <div v-if="!isEdit" class="mb-4">
-            <label class="block mb-1 font-medium">Повторите пароль</label>
-            <input v-model="form.password2" type="password" class="input" required />
+            <label class="tactical-label">Повторите пароль</label>
+            <input v-model="form.password2" type="password" class="tactical-input" required />
           </div>
         </div>
       </div>
-      <div v-if="error" class="text-red-600 mb-2">{{ error }}</div>
-      <div class="flex justify-end space-x-2 mt-4">
-        <button type="button" class="btn" @click="$emit('cancel')">Отмена</button>
-        <button type="submit" class="btn bg-lime-500 text-white">Сохранить</button>
+      <div v-if="error" class="text-danger mb-2">{{ error }}</div>
+      <div class="flex justify-end space-x-2 mt-6 pt-4 border-t border-gray-800">
+        <TacticalButton type="button" variant="secondary" @click="$emit('cancel')">ОТМЕНА</TacticalButton>
+        <TacticalButton type="submit" variant="primary">СОХРАНИТЬ</TacticalButton>
       </div>
     </form>
   </div>
@@ -120,6 +126,7 @@
 <script setup>
 import { reactive, toRefs, watch, ref } from 'vue'
 import ProfileImageCropper from './ProfileImageCropper.vue'
+import TacticalButton from './TacticalButton.vue'
 
 const props = defineProps({
   user: { type: Object, default: null },
@@ -235,13 +242,51 @@ function onSubmit() {
 </script>
 
 <style scoped>
-.input {
-  @apply w-full border rounded px-3 py-2 mb-1;
-}
-.btn {
-  @apply rounded px-4 py-2 font-bold hover:bg-lime-600 bg-gray-200;
-}
-form {
+.tactical-form {
   min-width: 700px;
+}
+
+.tactical-label {
+  display: block;
+  margin-bottom: 4px;
+  font-family: var(--font-family-mono);
+  font-size: 0.75rem;
+  color: var(--color-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.tactical-input {
+  width: 100%;
+  background-color: var(--color-bg-tertiary);
+  border: 1px solid var(--color-border-subtle);
+  padding: 8px 12px;
+  border-radius: var(--border-radius-sm);
+  color: var(--color-text-primary);
+  font-family: var(--font-family-mono);
+  font-size: 0.9rem;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.tactical-input:focus {
+  border-color: var(--color-accent-primary);
+}
+
+.tactical-input:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.text-accent {
+  color: var(--color-accent-primary);
+}
+
+.text-danger {
+  color: var(--color-accent-danger);
+}
+
+.bg-panel {
+  background-color: var(--color-bg-panel);
 }
 </style> 
