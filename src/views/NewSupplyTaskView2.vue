@@ -306,7 +306,7 @@
 									<div v-if="position.suggestion && position.suggestion.moscow_reserved_amount > 0" class="mt-1">
 										<span class="inline-block bg-blue-100 text-blue-800 text-xs font-medium px-2 py-0.5 rounded dark:bg-blue-900 dark:text-blue-300 whitespace-nowrap cursor-help"
 											title="Зарезервировано для первой поставки в Москву">
-											Зарезервировано {{position.suggestion.moscow_reserved_amount}} шт.
+											Из них зарезервировано {{position.suggestion.moscow_reserved_amount}} шт.
 										</span>
 									</div>
 								</td>
